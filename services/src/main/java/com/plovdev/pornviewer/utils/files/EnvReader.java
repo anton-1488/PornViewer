@@ -12,7 +12,7 @@ public class EnvReader {
     private final Properties properties = new Properties();
 
     public EnvReader() {
-        this("/.env");
+        this("/.properties");
     }
 
     public EnvReader(String name) {
