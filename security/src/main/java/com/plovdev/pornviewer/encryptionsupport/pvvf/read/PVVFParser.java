@@ -113,7 +113,7 @@ public class PVVFParser implements AutoCloseable {
             VideoHeader header = new VideoHeader(fileVersion, flag, mimeType, lastChunkPaddingSize, plainVideoSize, encryptedVideoSize, baseNonce, crc32);
 
             // check the checksum
-            if (crc32 != header.calculateCRC32()) {
+            if (crc32 != (int) header.calculateCRC32()) {
                 log.warn("Getted crc: {}, calculated crc: {}", crc32, header.calculateCRC32());
                 log.warn("Header CRC32 суммы не совпадают! RED FLAG, PORN ACCESS DENIED... System.exit(9)...");
             }
@@ -181,7 +181,7 @@ public class PVVFParser implements AutoCloseable {
             VideoMetadata metadata = new VideoMetadata(totalMetadataSize, encryptedJsonSize, encryptedPreviewSize, baseNonce, ecryptedJson, jsonTag, ecryptedPreview, previewTag, crc32);
 
             // check the checksum
-            if (crc32 != metadata.calculateCRC32()) {
+            if (crc32 != (int) metadata.calculateCRC32()) {
                 log.warn("Getted heaser crc: {}, calculated crc: {}", crc32, metadata.calculateCRC32());
                 log.warn("Metadata CRC32 суммы не совпадают! RED FLAG, PORN ACCESS DENIED... System.exit(9)...");
             }
