@@ -31,7 +31,7 @@ public class Launcher {
         System.setProperty("sun.net.httpserver.maxRspTime", "600");
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         try {
             if (Taskbar.isTaskbarSupported()) {
                 Taskbar taskbar = Taskbar.getTaskbar();

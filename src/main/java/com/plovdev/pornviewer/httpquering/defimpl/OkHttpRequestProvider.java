@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,9 @@ public class OkHttpRequestProvider implements PornRequestProvider {
             } else {
                 log.warn("Non success get response: {}", response);
             }
-        } catch (Exception e) {
+        } catch (UnknownHostException e) {
+            log.debug("Cann't to connect: ", e);
+        }catch (Exception e) {
             log.error("Error execute get: ", e);
         }
         return "";
