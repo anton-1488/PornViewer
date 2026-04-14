@@ -326,7 +326,7 @@ public class FavoritePane extends AnchorPane {
             FavoriteVideos.getAll().forEach(e -> {
                 e.render();
                 allFavorites.add(e);
-                log.info("Video: {}  --  {}", e.getTitle(), e.getGroup());
+                log.debug("Video: {}  --  {}", e.getTitle(), e.getGroup());
                 Platform.runLater(() -> pane.getChildren().add(e));
             });
             recountGroups();

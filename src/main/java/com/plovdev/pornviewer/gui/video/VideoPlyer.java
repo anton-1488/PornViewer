@@ -1,6 +1,7 @@
 package com.plovdev.pornviewer.gui.video;
 
 import com.plovdev.pornviewer.models.DownloadedVideoCard;
+import com.plovdev.pornviewer.models.FavoriteVideo;
 import com.plovdev.pornviewer.models.PornCard;
 import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.utility.sharing.Sharer;
@@ -8,6 +9,7 @@ import com.plovdev.pornviewer.utility.video.magnifier.Magnifier;
 import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -18,6 +20,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 import static javafx.scene.media.MediaPlayer.Status.PAUSED;
 import static javafx.scene.media.MediaPlayer.Status.READY;
@@ -32,19 +36,26 @@ public class VideoPlyer extends StackPane {
     private final BorderPane content;
     private final PauseTransition hideTimer;
     private boolean isPlay = false;
+    private final ToggleButton playStop = new ToggleButton("| |");
 
     public VideoPlyer(Media media, VideoCard card, Stage stage) {
+        stage.setMaximized(true);
+
         mediaPlayer = new MediaPlayer(media);
         mediaView = new MediaView(mediaPlayer);
         mediaView.fitWidthProperty().bind(widthProperty());
         mediaView.fitHeightProperty().bind(heightProperty());
 
+        TimecodesBar timecodesBar = new TimecodesBar(DurationUtils.ofJavaFxDuraion(mediaPlayer.getTotalDuration()));
+
         Label totalLabel = new Label(DurationUtils.formatDurationToString(DurationUtils.ofJavaFxDuraion(mediaPlayer.getTotalDuration())));
         totalLabel.getStyleClass().add("marker-download");
         timeLabel.getStyleClass().add("marker-download");
-        mediaPlayer.setOnReady(() -> totalLabel.setText(DurationUtils.formatDurationToString(DurationUtils.ofJavaFxDuraion(mediaPlayer.getTotalDuration()))));
+        mediaPlayer.setOnReady(() -> {
+            totalLabel.setText(DurationUtils.formatDurationToString(DurationUtils.ofJavaFxDuraion(mediaPlayer.getTotalDuration())));
+            timecodesBar.setTotalDuration(DurationUtils.ofJavaFxDuraion(mediaPlayer.getTotalDuration()));
+        });
 
-        ToggleButton playStop = new ToggleButton("| |");
         playStop.setMinSize(70, 70);
         playStop.setPrefSize(70, 70);
         playStop.setMaxSize(70, 70);
@@ -52,10 +63,8 @@ public class VideoPlyer extends StackPane {
         playStop.selectedProperty().addListener((p1, p2, p3) -> {
             if (p3) {
                 pause();
-                playStop.setText("►");
             } else {
                 play();
-                playStop.setText("| |");
             }
             resetHideTimer(); // Сброс таймера при взаимодействии
         });
@@ -80,7 +89,8 @@ public class VideoPlyer extends StackPane {
         if (!(card instanceof DownloadedVideoCard)) {
             top.getChildren().add(getShareButton(stage, card));
         }
-        HBox center = new HBox(slider);
+
+        HBox center = new HBox(new StackPane(slider, timecodesBar));
         HBox bottom = new HBox(timeLabel, hReg(), totalLabel);
 
         content = new BorderPane();
@@ -96,15 +106,9 @@ public class VideoPlyer extends StackPane {
         setup();
 
         mediaView.setSmooth(true);
-
-        // Скрытие панели когда мышь уходит
         mediaView.setOnMouseExited(event -> resetHideTimer());
-
-        // Сброс таймера при любом взаимодействии с элементами управления
         setupControlInteractions();
-
         mediaPlayer.setAutoPlay(true);
-
         getChildren().addAll(mediaView, content);
 
         Magnifier magnifier = new Magnifier(this);
@@ -113,36 +117,53 @@ public class VideoPlyer extends StackPane {
         this.setFocusTraversable(true);
         this.setOnMouseClicked(event -> this.requestFocus());
 
-        Slider setSoomSlider = new Slider(1,5,2);
+        Slider setSoomSlider = new Slider(1, 5, 2);
         setSoomSlider.getStyleClass().add("video-slider");
-        setSoomSlider.valueProperty().addListener((p1,p2,p3) -> magnifier.setZoomFactor(p3.doubleValue()));
+        setSoomSlider.valueProperty().addListener((p1, p2, p3) -> magnifier.setZoomFactor(p3.doubleValue()));
         CustomMenuItem setZoom = new CustomMenuItem(setSoomSlider, false);
         setZoom.setGraphic(new Label("zoom"));
 
-        Slider setSizeSlider = new Slider(100,150,125);
+        Slider setSizeSlider = new Slider(100, 150, 125);
         setSizeSlider.getStyleClass().add("video-slider");
-        setSizeSlider.valueProperty().addListener((p1,p2,p3) -> magnifier.setMagnifierRadius(p3.doubleValue()));
+        setSizeSlider.valueProperty().addListener((p1, p2, p3) -> magnifier.setMagnifierRadius(p3.doubleValue()));
         CustomMenuItem setSize = new CustomMenuItem(setSizeSlider, false);
         setSize.setGraphic(new Label("size"));
         ContextMenu contextMenu = new ContextMenu(setZoom, setSize);
         magn.setOnMousePressed(e -> {
             double x = e.getScreenX();
             double y = e.getScreenY();
-            contextMenu.show(magn, x ,y);
+            contextMenu.show(magn, x, y);
         });
 
         this.setOnKeyPressed(event -> {
             if (event.isControlDown()) {
                 magnifier.toggle();
-                event.consume();
             }
-            if (event.getCharacter().equals(" ")) {
+            if (event.getCode() == KeyCode.T) {
+                if (card instanceof FavoriteVideo || card instanceof DownloadedVideoCard) {
+                    TextInputDialog inputText = new TextInputDialog();
+                    inputText.setTitle("Timecode");
+                    inputText.setContentText("Введите описание таймкода:");
+                    Optional<String> optText = inputText.showAndWait();
+                    optText.ifPresent(text -> {
+                        if (!text.isEmpty()) {
+                            log.info("Adding timecode text: {}", text);
+                            TimecodeView view = new TimecodeView(text, DurationUtils.ofJavaFxDuraion(mediaPlayer.getCurrentTime()));
+                            view.setOnChecked(() -> mediaPlayer.seek(DurationUtils.ofJavaDuration(view.getTime())));
+                            timecodesBar.addTimecode(view);
+                        }
+                    });
+                }
+            }
+            if (event.getCode() == KeyCode.SPACE) {
                 if (isPlay) {
                     pause();
                 } else {
                     play();
                 }
             }
+
+            event.consume();
         });
 
         mediaView.setOnMouseMoved(event -> {
@@ -214,6 +235,7 @@ public class VideoPlyer extends StackPane {
             });
         }
         isPlay = true;
+        playStop.setText("| |");
         resetHideTimer();
     }
 
@@ -246,6 +268,7 @@ public class VideoPlyer extends StackPane {
     public void pause() {
         mediaPlayer.pause();
         isPlay = false;
+        playStop.setText("►");
         resetHideTimer();
     }
 

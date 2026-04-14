@@ -27,10 +27,12 @@ public class OkHttpRequestProvider implements PornRequestProvider {
                 .followRedirects(true)
                 .cookieJar(new CookieJar() {
                     private final Map<String, List<Cookie>> cookieStore = new ConcurrentHashMap<>();
+
                     @Override
                     public void saveFromResponse(@NotNull HttpUrl url, @NotNull List<Cookie> cookies) {
                         cookieStore.put(url.host(), cookies);
                     }
+
                     @Override
                     public @NotNull List<Cookie> loadForRequest(@NotNull HttpUrl url) {
                         return cookieStore.getOrDefault(url.host(), new ArrayList<>());
@@ -49,7 +51,7 @@ public class OkHttpRequestProvider implements PornRequestProvider {
             }
         } catch (UnknownHostException e) {
             log.debug("Cann't to connect: ", e);
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error execute get: ", e);
         }
         return "";
@@ -63,6 +65,8 @@ public class OkHttpRequestProvider implements PornRequestProvider {
             } else {
                 log.warn("Non success raw response: {}", response);
             }
+        } catch (UnknownHostException e) {
+            log.debug("Cann't to connect to raw: ", e);
         } catch (Exception e) {
             log.error("Error execute raw: ", e);
         }
@@ -82,6 +86,8 @@ public class OkHttpRequestProvider implements PornRequestProvider {
                 return response.body().byteStream();
             }
             response.close();
+        } catch (UnknownHostException e) {
+            log.debug("Cann't to connect to stream: ", e);
         } catch (Exception e) {
             log.error("Error execute stream: ", e);
         }

@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 
 public class DownloadedVideoInfo {
     private static final Logger log = LoggerFactory.getLogger(DownloadedVideoInfo.class);
@@ -156,6 +157,18 @@ public class DownloadedVideoInfo {
 
         public void setText(String text) {
             this.text = text;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            Timecode timecode = (Timecode) o;
+            return Objects.equals(time, timecode.time) && Objects.equals(text, timecode.text);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(time, text);
         }
 
         @Override

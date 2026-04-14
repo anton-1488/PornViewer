@@ -25,6 +25,7 @@ import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,6 +40,15 @@ public class VideoCard extends PornCard {
     protected VideoInfo info;
     protected boolean isFavorite;
     private final SVGPath favPath = new SVGPath();
+    protected List<String> tags;
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
 
     protected final PBPornHandler handler = new PBPornHandler();
 
@@ -166,7 +176,7 @@ public class VideoCard extends PornCard {
 
                     Platform.runLater(() -> box.getChildren().addFirst(view));
                 } catch (Exception e) {
-                    log.error("Error to load preview: ", e);
+                    log.error("Error to load preview: {}", e.getMessage());
                 }
             });
 

@@ -1,24 +1,31 @@
 package com.plovdev.pornviewer;
 
-import com.plovdev.pornviewer.databases.FavoriteVideos;
 import com.plovdev.pornviewer.databases.SecureDB;
 import com.plovdev.pornviewer.encryptionsupport.videoparser.read.PVVFParser;
 import com.plovdev.pornviewer.encryptionsupport.videoparser.read.PVVFVideoReader;
 import com.plovdev.pornviewer.encryptionsupport.videoparser.videomodel.EncryptedVideo;
 import com.plovdev.pornviewer.models.DownloadedVideoInfo;
-import com.plovdev.pornviewer.pornimpl.porn365.DefRes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Test {
     private static final Logger log = LoggerFactory.getLogger(Test.class);
 
     public static void main(String[] args) throws Exception {
-        FavoriteVideos.updateUrls(DefRes.BASE6);
+        List<DownloadedVideoInfo.Timecode> timecodes = new ArrayList<>();
+        timecodes.add(new DownloadedVideoInfo.Timecode(Duration.ZERO, "hi"));
+        timecodes.add(new DownloadedVideoInfo.Timecode(Duration.ZERO, "by"));
+        System.out.println(timecodes);
+
+        timecodes.remove(new DownloadedVideoInfo.Timecode(Duration.ZERO, "by"));
+        System.out.println(timecodes);
     }
 
     private static void processVideo(String videoFile) {
