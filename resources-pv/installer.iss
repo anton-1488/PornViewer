@@ -1,13 +1,13 @@
 [Setup]
 AppName=PornViewer
-AppVersion=1.7.5
+AppVersion=1.7.7
 DefaultDirName={pf}\PornViewer
 DefaultGroupName=PornViewer
 UninstallDisplayIcon={app}\PornViewer.exe
 Compression=lzma2
 SolidCompression=yes
 OutputDir=..\installer
-OutputBaseFilename=PornViewer-Setup-1.7.5
+OutputBaseFilename=PornViewer-1.7.7
 PrivilegesRequired=admin
 LicenseFile=..\files\LICENSE.txt
 SetupIconFile=..\files\PornViewer.ico
@@ -33,4 +33,4 @@ Root: HKCR; Subkey: "pornviewer\shell\open\command"; ValueType: string; ValueDat
 
 
 [Run]
-Filename: "{app}\PornViewer.exe"; Description: "Запустить PornViewer"; Flags: postinstall nowait
+Filename: "{app}\PornViewer.exe"; Description: "Launch PornViewer"; Flags: postinstall nowait

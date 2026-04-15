@@ -1,4 +1,4 @@
-jpackage --type pkg \
+/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/jpackage --type pkg \
   --input ./input-pv/ \
   --resource-dir ./resources-pv/ \
   --main-jar PornViewer.jar \
