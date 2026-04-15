@@ -40,7 +40,6 @@ public class ContentUtils {
         // 3. Корректируем позиции для отправки клиенту
         long realStart = videoStart + start;
         long realEnd = videoStart + end;
-        log.info("Chunk requesting: start: {}, end: {}, realStart: {}, realEnd: {}, videoStart: {}, encVideoLength: {}, metadataSize: {}", start, end, realStart, realEnd, videoStart, encVideoLength, metadataSize);
 
         if (realStart >= file.length() || realStart >= (videoStart + encVideoLength)) {
             exchange.sendResponseHeaders(416, -1);
@@ -52,8 +51,6 @@ public class ContentUtils {
         }
         long contentLength = realEnd - realStart + 1;
         long realContentSize = header.plainVideoSize();
-
-        log.info("Sending range: client {}-{}, real {}-{}, videoLength={}, metadataSize={}, contentLength: {}", start, end, realStart, realEnd, encVideoLength, metadataSize, contentLength);
 
         exchange.getResponseHeaders().set("Content-Type", "video/mp4");
         exchange.getResponseHeaders().set("Accept-Ranges", "bytes");
@@ -68,6 +65,8 @@ public class ContentUtils {
             } else {
                 sendPlainRange(file, realStart, contentLength, os);
             }
+        } catch (Exception e) {
+            log.error("Error to process chunk request: {}", e.getMessage());
         }
     }
 

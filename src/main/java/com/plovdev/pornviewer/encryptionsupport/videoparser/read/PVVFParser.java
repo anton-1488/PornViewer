@@ -270,9 +270,11 @@ public class PVVFParser implements AutoCloseable {
      * Выбрасывает исключение, если количество прочитанных байт не совпадает с длиной массива.
      */
     private void readToByteArray(byte[] array) throws IOException {
-        int readed = RAF.read(array);
-        if (readed != array.length) {
-            throw new IOException("Invalid readed length: " + readed + "/" + array.length);
+        int bytesRead;
+        int offset = 0;
+
+        while (offset < array.length && (bytesRead = RAF.read(array, offset, array.length - offset)) != -1) {
+            offset += bytesRead;
         }
     }
 

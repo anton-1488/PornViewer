@@ -70,9 +70,7 @@ public class ServerDecryptedStreamer {
             }
             stream.flush();
         } catch (IOException e) {
-            if (!e.getMessage().contains("Broken pipe")) {
-                log.error("Streaming error: {}", e.getMessage());
-            }
+            log.error("Error to transfer video: {}", e.getMessage());
         }
     }
 }

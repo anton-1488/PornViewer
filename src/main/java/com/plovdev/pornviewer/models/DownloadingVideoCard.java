@@ -130,6 +130,7 @@ public class DownloadingVideoCard extends DownloadedVideoCard {
     private void addListeners() {
         FileDownloadingListener.addListener(new FileDownloadingEvent() {
             private final DownloadedVideoCard downloadedVideoCard = new DownloadedVideoCard(pane);
+
             @Override
             public void fileDownloading(long downloadedBytes) {
                 loaded.set(downloadedBytes);
@@ -142,7 +143,6 @@ public class DownloadingVideoCard extends DownloadedVideoCard {
 
             @Override
             public void onDownloadFinishing(File file) {
-                System.err.println("End");
                 try {
                     ObservableList<Node> nodes = pane.getChildren();
                     downloadedVideoCard.setPath(file.toURI().toString());
@@ -183,7 +183,7 @@ public class DownloadingVideoCard extends DownloadedVideoCard {
                 }
                 Platform.runLater(() -> {
                     render();
-                    pane.getChildren().addFirst(copyCard(DownloadingVideoCard.this));
+                    pane.getChildren().addFirst(DownloadingVideoCard.this);
                 });
             }
 

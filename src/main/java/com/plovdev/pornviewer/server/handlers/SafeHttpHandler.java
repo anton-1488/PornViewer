@@ -83,8 +83,6 @@ public class SafeHttpHandler implements HttpHandler {
     private void executeHead(HttpExchange exchange, Map<String, String> params) {
         try {
             File file = checkFile(exchange, params);
-            log.info("Sending head request. File: {}", file);
-
             long contentLength;
             try {
                 VideoRequestSet set = getCachedOrCreateSet(file);
@@ -107,7 +105,6 @@ public class SafeHttpHandler implements HttpHandler {
     private void executeGet(HttpExchange exchange, Chunk chunk, Map<String, String> params) {
         try {
             File file = checkFile(exchange, params);
-            log.info("Process GET request. Chunk: {}", chunk);
             String needDecryptParam = params.get("needDecrypt");
             ContentUtils.sendFileRange(exchange, chunk, file, needDecryptParam == null || Boolean.parseBoolean(needDecryptParam), getCachedOrCreateSet(file));
         } catch (Exception e) {

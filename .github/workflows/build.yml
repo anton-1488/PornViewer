@@ -11,6 +11,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: 'pv-legacy'
+          fetch-depth: 1
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -52,12 +55,13 @@ jobs:
             --dest installer `
             --resource-dir resources-pv `
             --icon files\PornViewer.ico `
-            --app-version "1.7.5" `
+            --app-version "1.7.7" `
             --vendor "PlovDev" `
-            --copyright "© 2026 PlovDev. Все права защищены." `
-            --description "Безопасный и анонимный просмотр видео 18+ с шифрованием и поддержкой плагинов" `
+            --copyright "(c) 2026 PlovDev. All rights reserved." `
+            --description "Secure and anonime 18+ video viewer with encrypting and plugins support" `
             --java-options "-Xmx2G" `
             --java-options "-Dfile.encoding=UTF-8" `
+            --java-options "-Dapple.laf.useScreenMenuBar=true" `
             --verbose
 
       - name: Compile Inno Setup Installer
@@ -70,36 +74,3 @@ jobs:
           name: windows-installer
           path: installer/*.exe
           if-no-files-found: error
-
-      - name: UI Smoke Test with Logs
-        shell: powershell
-        run: |
-            # Запускаем EXE и принудительно направляем вывод (stdout и stderr) в файлы
-            $proc = Start-Process -FilePath "installer\PornViewer\PornViewer.exe" `
-              -RedirectStandardOutput "output.log" `
-              -RedirectStandardError "error.log" `
-              -PassThru
-            
-            Start-Sleep -s 30
-            
-            # Читаем содержимое логов прямо в консоль GitHub Actions
-            Write-Host "========== APP LOGS =========="
-            if (Test-Path "output.log") { Get-Content "output.log" }
-            
-            Write-Host "========== ERROR LOGS =========="
-            if (Test-Path "error.log") { Get-Content "error.log" }
-            
-            # Скриншот (оставляем твой код)
-            Add-Type -AssemblyName System.Windows.Forms
-            $bmp = New-Object System.Drawing.Bitmap([System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width, [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height)
-            $graphics = [System.Drawing.Graphics]::FromImage($bmp)
-            $graphics.CopyFromScreen(0, 0, 0, 0, $bmp.Size)
-            $bmp.Save("screen.png")
-            
-            Stop-Process -Id $proc.Id
-
-      - name: Upload Screenshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-ui-check
-          path: C:\Users\runneradmin\Desktop\screen.png

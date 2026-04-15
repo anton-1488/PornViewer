@@ -4,10 +4,10 @@ jpackage --type pkg \
   --main-jar PornViewer.jar \
   --main-class com.plovdev.pornviewer.Launcher \
   --name "PornViewer" \
-  --app-version "1.7.5" \
+  --app-version "1.7.7" \
   --vendor "PlovDev" \
-  --copyright "© 2026 PlovDev. Все права защищены." \
-  --description "Безопасный и анонимный просмотр видео 18+ с шифрованием и поддержкой плагинов" \
+  --copyright "(c) 2026 PlovDev. All rights reserved." \
+  --description "Secure and anonime 18+ video viewer with encrypting and plugins support" \
   --dest dist \
   --icon ./files/PornViewer.icns \
   --java-options "-Xmx2G" \
