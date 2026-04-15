@@ -3,15 +3,14 @@ package com.plovdev.pornviewer.gui.panes;
 import com.plovdev.pornviewer.encryptionsupport.videoparser.read.PVVFParser;
 import com.plovdev.pornviewer.encryptionsupport.videoparser.read.PVVFVideoReader;
 import com.plovdev.pornviewer.events.listeners.EventListener;
-import com.plovdev.pornviewer.events.listeners.FileListener;
 import com.plovdev.pornviewer.gui.filters.FilterBox;
 import com.plovdev.pornviewer.gui.video.DurationUtils;
 import com.plovdev.pornviewer.models.DownloadedVideoCard;
 import com.plovdev.pornviewer.models.DownloadedVideoInfo;
 import com.plovdev.pornviewer.models.DownloadingVideoCard;
 import com.plovdev.pornviewer.models.VideoCard;
+import com.plovdev.pornviewer.utility.Globals;
 import com.plovdev.pornviewer.utility.LauncherHelper;
-import com.plovdev.pornviewer.utility.constants.EntryEventTypes;
 import com.plovdev.pornviewer.utility.files.FileUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -41,17 +40,17 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public class DownloadsPane extends AnchorPane {
     private static final Logger log = LoggerFactory.getLogger(DownloadsPane.class);
     private final ObservableList<DownloadedVideoCard> originNots = FXCollections.observableArrayList();
-    private boolean isSelf = false;
     private final DateTimeFormatter createFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+    private final FlowPane pane = new FlowPane(50, 50);
 
     public DownloadsPane() {
         BorderPane root = new BorderPane();
-        FlowPane pane = new FlowPane(50, 50);
         VBox vBox = new VBox(10);
 
         vBox.getStyleClass().add("vbox");
@@ -124,15 +123,6 @@ public class DownloadsPane extends AnchorPane {
         AnchorPane.setTopAnchor(root, 0.0);
         AnchorPane.setBottomAnchor(root, 0.0);
 
-        FileListener fileListener = new FileListener(FileUtils.getPvDownloadsPath().toString());
-        fileListener.addListener((a, b) -> {
-            if (isSelf) {
-                if (b == EntryEventTypes.ENTRY_CREATE || b == EntryEventTypes.ENTRY_DELETE) {
-                    runPornParsing(pane);
-                }
-            }
-        });
-
         EventListener.addListener(e -> {
             if (e.startsWith("START_DWONLOAD:")) {
                 String name = e.substring(e.indexOf(':') + 1);
@@ -148,6 +138,9 @@ public class DownloadsPane extends AnchorPane {
 
     private Runnable getParseTask(FlowPane pane) {
         return () -> {
+            originNots.clear();
+            Platform.runLater(() -> pane.getChildren().clear());
+
             try (Stream<Path> stream = Files.list(FileUtils.getPvDownloadsPath())
                     .filter(Files::isRegularFile).filter(PVVFParser::isPVVFFile)
                     .sorted((p1, p2) -> {
@@ -157,60 +150,47 @@ public class DownloadsPane extends AnchorPane {
                             return 0;
                         }
                     })) {
-
                 List<Path> paths = stream.toList();
-                List<DownloadedVideoCard> cards = paths.parallelStream().map(p -> {
-                    DownloadedVideoCard card = new DownloadedVideoCard(pane);
-                    File file = p.toFile();
-                    try {
-                        BasicFileAttributes attributes = Files.readAttributes(p, BasicFileAttributes.class);
-                        FileTime time = attributes.creationTime();
-                        LocalDateTime dateTime = LocalDateTime.ofInstant(time.toInstant(), ZoneId.systemDefault());
-                        card.setDate(dateTime.format(createFormatter));
-                        card.setTitle(p.getFileName().toString());
-                        card.setPath(file.toURI().toString());
-                        card.setDeleteRun(() -> {
-                            isSelf = card.isSelf();
-                            try {
-                                boolean isDeleted = Files.deleteIfExists(Path.of(URI.create(card.getOriginalPath())));
-                                log.info("File {} deleted: {}", card.getOriginalPath(), isDeleted);
-
-                                Platform.runLater(() -> pane.getChildren().remove(card));
-                                originNots.remove(card);
-                            } catch (Exception e) {
-                                System.err.println(e.getMessage());
-                            }
-                        });
-
-                        BigDecimal size = new BigDecimal(String.valueOf(file.length())).divide(new BigDecimal("1000000.0"), 10, RoundingMode.HALF_UP);
-                        DecimalFormat format = new DecimalFormat("#0.00MB");
-                        card.setSize(format.format(size));
-
-                        try {
-                            DownloadedVideoInfo videoInfo = PVVFVideoReader.readInfo(file);
-                            card.setTitle(videoInfo.getTitle());
-                            card.setDuration(DurationUtils.formatDurationToString(videoInfo.getTotalDuration()));
-                            card.setDescription(videoInfo.getDescription());
-                            card.setPreview(videoInfo.getPreviewBytes());
-                            card.setTimecodes(videoInfo.getTimecodes());
-                        } catch (Exception e) {
-                            log.error("Error read metadata: {}", e.getMessage());
-                        }
-                    } catch (Exception e) {
-                        System.err.println(e.getMessage());
-                    }
-                    return card;
-                }).toList();
-                originNots.clear();
-                Platform.runLater(() -> pane.getChildren().clear());
-                cards.forEach(e -> {
-                    e.render();
-                    originNots.add(e);
+                paths.forEach(p -> {
+                    CompletableFuture<DownloadedVideoCard> cardFuture = prepareCard(p);
+                    cardFuture.thenAccept(card -> {
+                        card.render();
+                        originNots.add(card);
+                        Platform.runLater(() -> pane.getChildren().add(card));
+                    });
                 });
-                Platform.runLater(() -> pane.getChildren().addAll(originNots));
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                log.error("Error parsing task: ", e);
             }
         };
+    }
+
+    private CompletableFuture<DownloadedVideoCard> prepareCard(Path p) {
+        return CompletableFuture.supplyAsync(() -> {
+            DownloadedVideoCard card = new DownloadedVideoCard(pane);
+            File file = p.toFile();
+            try {
+                BasicFileAttributes attributes = Files.readAttributes(p, BasicFileAttributes.class);
+                FileTime time = attributes.creationTime();
+                LocalDateTime dateTime = LocalDateTime.ofInstant(time.toInstant(), ZoneId.systemDefault());
+                card.setDate(dateTime.format(createFormatter));
+                card.setTitle(p.getFileName().toString());
+                card.setPath(file.toURI().toString());
+
+                BigDecimal size = new BigDecimal(String.valueOf(file.length())).divide(new BigDecimal("1000000.0"), 10, RoundingMode.HALF_UP);
+                DecimalFormat format = new DecimalFormat("#0.00MB");
+                card.setSize(format.format(size));
+
+                DownloadedVideoInfo videoInfo = PVVFVideoReader.readInfo(file);
+                card.setTitle(videoInfo.getTitle());
+                card.setDuration(DurationUtils.formatDurationToString(videoInfo.getTotalDuration()));
+                card.setDescription(videoInfo.getDescription());
+                card.setPreview(videoInfo.getPreviewBytes());
+                card.setTimecodes(videoInfo.getTimecodes());
+            } catch (Exception e) {
+                log.error("Error prepare card: ", e);
+            }
+            return card;
+        }, Globals.GLOBAL_EXECUTOR);
     }
 }

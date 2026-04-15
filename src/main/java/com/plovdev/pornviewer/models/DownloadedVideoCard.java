@@ -14,11 +14,15 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 
 public class DownloadedVideoCard extends VideoCard {
@@ -28,15 +32,6 @@ public class DownloadedVideoCard extends VideoCard {
     private String date;
     private String description;
     private byte[] preview;
-    protected boolean isSelf = false;
-
-    public boolean isSelf() {
-        return isSelf;
-    }
-
-    public void setSelf(boolean self) {
-        isSelf = self;
-    }
 
     public String getDate() {
         return date;
@@ -55,7 +50,6 @@ public class DownloadedVideoCard extends VideoCard {
     }
 
     protected final Pane pane;
-    protected Runnable deleteRun;
 
     public DownloadedVideoCard(Pane component) {
         pane = component;
@@ -67,14 +61,6 @@ public class DownloadedVideoCard extends VideoCard {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Runnable getDeleteRun() {
-        return deleteRun;
-    }
-
-    public void setDeleteRun(Runnable deleteRun) {
-        this.deleteRun = deleteRun;
     }
 
     public Pane getPane() {
@@ -194,9 +180,8 @@ public class DownloadedVideoCard extends VideoCard {
 
     }
 
-    private void fillActinsMenu(ContextMenu menu) {
-        MenuItem delete = new MenuItem("Удалить");
-        delete.setOnAction(a -> deleteRun.run());
+    private void fillActinsMenu(@NotNull ContextMenu menu) {
+        MenuItem delete = getDeleteMenuItem();
 
         MenuItem export = new MenuItem("Экспортировать");
         export.setOnAction(a -> {
@@ -207,6 +192,20 @@ public class DownloadedVideoCard extends VideoCard {
         });
 
         menu.getItems().addAll(delete, export);
+    }
+
+    private @NotNull MenuItem getDeleteMenuItem() {
+        MenuItem delete = new MenuItem("Удалить");
+        delete.setOnAction(a -> {
+            try {
+                boolean isDeleted = Files.deleteIfExists(Path.of(URI.create(getOriginalPath())));
+                log.info("File {} deleted: {}", getOriginalPath(), isDeleted);
+                Platform.runLater(() -> pane.getChildren().remove(this));
+            } catch (Exception e) {
+                log.error("Error delete card: ", e);
+            }
+        });
+        return delete;
     }
 
     private Region getVRegion() {

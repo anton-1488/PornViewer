@@ -1,10 +1,11 @@
 package com.plovdev.pornviewer.models;
 
 import com.plovdev.pornviewer.databases.FavoriteVideos;
+import com.plovdev.pornviewer.databases.UserPreferences;
 import com.plovdev.pornviewer.events.listeners.FavoriteListener;
 import com.plovdev.pornviewer.gui.video.VideoPlayerPane;
+import com.plovdev.pornviewer.httpquering.PornParser;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
-import com.plovdev.pornviewer.pornimpl.porn365.DefPornParser;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
@@ -34,13 +35,14 @@ import java.util.concurrent.Executors;
 public class VideoCard extends PornCard {
     private static final Logger log = LoggerFactory.getLogger(VideoCard.class);
     protected static final ExecutorService previewLoader = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+    private final PornParser parser = UserPreferences.get("0000").getPornAdapter().getParser();
+    private final SVGPath favPath = new SVGPath();
 
     protected String duration;
     protected int views;
     protected String rating;
     protected VideoInfo info;
     protected boolean isFavorite;
-    private final SVGPath favPath = new SVGPath();
     protected List<String> tags;
 
     private List<DownloadedVideoInfo.Timecode> timecodes = new ArrayList<>();
@@ -113,6 +115,12 @@ public class VideoCard extends PornCard {
         return info;
     }
 
+    private void initInfo() {
+        if (info == null) {
+            this.info = parser.parseVideo(getUrl());
+        }
+    }
+
     public void setInfo(VideoInfo info) {
         this.info = info;
     }
@@ -144,7 +152,6 @@ public class VideoCard extends PornCard {
     @Override
     public void render() {
         try {
-            DefPornParser parser = new DefPornParser();
             StackPane mainContainer = new StackPane();
             mainContainer.setMaxWidth(400);
 
@@ -153,8 +160,7 @@ public class VideoCard extends PornCard {
 
             Hyperlink titleLabel = new Hyperlink(title);
             titleLabel.setOnAction(e -> {
-                System.out.println(getUrl());
-                setInfo(parser.parseVideo(getUrl()));
+                initInfo();
                 VideoPlayerPane player = new VideoPlayerPane(this);
                 player.show();
             });
@@ -219,10 +225,6 @@ public class VideoCard extends PornCard {
             download.setFitHeight(30);
             download.setPreserveRatio(true);
 
-            download.setOnMousePressed(e -> {
-                setInfo(parser.parseVideo(getUrl()));
-                showContextMenu(download, e.getScreenX(), e.getScreenY());
-            });
             fillDownloadMenu(download);
 
             VBox vBox = new VBox(new HBox(r1, new VBox(10, fav, download)), r, new HBox(label, region, dur));
@@ -256,29 +258,20 @@ public class VideoCard extends PornCard {
     }
 
     private void fillDownloadMenu(ImageView download) {
-        ContextMenu menu = new ContextMenu();
-        menu.getStyleClass().add("options");
-        for (String str : info.getUrls().keySet()) {
-            menu.getItems().add(getLoader(str));
-        }
-        download.setOnMouseClicked(e -> Platform.runLater(() -> {
-            menu.show(download, e.getScreenX(), e.getScreenY());
-            if (menu.getScene() != null) {
-                menu.getScene().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/plovdev/pornviewer/styles/context-menu.css")).toExternalForm());
+        download.setOnMouseClicked(e -> {
+            initInfo();
+            ContextMenu menu = new ContextMenu();
+            menu.getStyleClass().add("options");
+            for (String str : info.getUrls().keySet()) {
+                menu.getItems().add(getLoader(str));
             }
-        }));
-    }
-
-    private void showContextMenu(ImageView node, double x, double y) {
-        ContextMenu menu = new ContextMenu();
-        menu.getStyleClass().add("options");
-        for (String str : info.getUrls().keySet()) {
-            menu.getItems().add(getLoader(str));
-        }
-        menu.show(node, x, y);
-        if (menu.getScene() != null) {
-            menu.getScene().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/plovdev/pornviewer/styles/context-menu.css")).toExternalForm());
-        }
+            Platform.runLater(() -> {
+                menu.show(download, e.getScreenX(), e.getScreenY());
+                if (menu.getScene() != null) {
+                    menu.getScene().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/plovdev/pornviewer/styles/context-menu.css")).toExternalForm());
+                }
+            });
+        });
     }
 
     protected MenuItem getLoader(String qual) {

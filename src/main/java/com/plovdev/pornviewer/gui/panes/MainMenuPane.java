@@ -100,14 +100,12 @@ public class MainMenuPane extends AnchorPane {
 
         field.setOnAction(e -> {
             if (!checker.canSearch()) return;
-
             String txt = field.getText();
             if (txt.startsWith("pv://") || txt.startsWith("pornviewer://")) {
                 field.setText("");
                 LauncherHelper.getInstance().notifyDeepLink(URI.create(txt));
                 return;
             }
-            txt = txt.replace("/", "");
             if (!txt.isEmpty()) {
                 String url = resourcer.baseUrl() + resourcer.searchUrl() + URLEncoder.encode(field.getText(), Charset.defaultCharset()) + "/popular";
                 runPornParsing(pane, url);
@@ -208,20 +206,13 @@ public class MainMenuPane extends AnchorPane {
     private Runnable getParseTask(FlowPane pane, String url) {
         return () -> {
             try {
-                System.out.println("start");
                 PornParser pornParser = adapter.getParser();
-
-                System.out.println("handled");
                 List<VideoCard> cards = pornParser.getAllVideos(handler.requestPorn(url));
-                System.out.println("parsed");
-
-                cards.forEach(e -> {
+                cards.parallelStream().forEach(e -> {
                     e.render();
-                    System.out.println("Rendering: " + e.getPic());
                     originNots.add(e);
                     Platform.runLater(() -> pane.getChildren().add(e));
                 });
-                System.out.println("Added");
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }

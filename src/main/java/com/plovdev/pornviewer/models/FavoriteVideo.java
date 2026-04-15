@@ -41,11 +41,7 @@ public class FavoriteVideo extends VideoCard {
     }
 
     public static FavoriteVideo ofVideoCard(VideoCard card) {
-        log.info("VideoCard: {}", card);
-        FavoriteVideo favoriteVideo = new FavoriteVideo(card.getCardId(), card.getTitle(), card.getUrl(), card.getPic(), card.getDuration(), card.getViews(), card.getRating(), card.getInfo(), card.isFavorite(), null);
-        log.info("FavoriteVideo: {}", card);
-        log.info("Fav URL: {}", favoriteVideo.getUrl());
-        return favoriteVideo;
+        return new FavoriteVideo(card.getCardId(), card.getTitle(), card.getUrl(), card.getPic(), card.getDuration(), card.getViews(), card.getRating(), card.getInfo(), card.isFavorite(), null);
     }
 
     private void setupDragAndDrop() {

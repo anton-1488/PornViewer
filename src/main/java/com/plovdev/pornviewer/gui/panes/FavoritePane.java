@@ -27,10 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,7 +50,6 @@ public class FavoritePane extends AnchorPane {
         BorderPane root = new BorderPane();
         VBox vBox = new VBox(10);
 
-        System.out.println("Inited");
         vBox.getStyleClass().add("vbox");
         TextField field = new TextField();
         field.getStyleClass().add("porn-search");
@@ -70,7 +66,6 @@ public class FavoritePane extends AnchorPane {
         box4.getStyleClass().add("porn-check-box");
         CheckBox box6 = new CheckBox("Теги");
         box6.getStyleClass().add("porn-check-box");
-        System.out.println("Created filteres");
 
         Region r1 = new Region();
         HBox.setHgrow(r1, Priority.ALWAYS);
@@ -182,7 +177,6 @@ public class FavoritePane extends AnchorPane {
             }
         });
 
-        System.out.println("Create scroll");
         ScrollPane pornScroll = new ScrollPane(pane);
         pornScroll.setFitToHeight(true);
         pornScroll.setFitToWidth(true);
@@ -194,7 +188,6 @@ public class FavoritePane extends AnchorPane {
         AnchorPane.setRightAnchor(root, 0.0);
         AnchorPane.setTopAnchor(root, 0.0);
         AnchorPane.setBottomAnchor(root, 0.0);
-        System.out.println("Created components");
 
         FavoriteListener.addListener((videoCard) -> Platform.runLater(() -> {
             log.info("Favorite event: {}", videoCard);
@@ -212,7 +205,6 @@ public class FavoritePane extends AnchorPane {
                 }
             }
         }));
-        System.out.println("Finish init");
     }
 
     private FavoriteVideo copyCard(FavoriteVideo videoCard) {
@@ -230,13 +222,18 @@ public class FavoritePane extends AnchorPane {
                 CURRENT_TOGGLE = button.getText();
                 List<FavoriteVideo> currentGroup = groups.computeIfAbsent(name, k -> new CopyOnWriteArrayList<>());
                 currentList.setAll(currentGroup);
-                log.info("Current list size: {}", currentList.size());
                 Platform.runLater(() -> pane.getChildren().setAll(currentList));
             }
         });
         MenuItem delete = getMenuItem(name, groupsBox, button);
-        button.setContextMenu(new ContextMenu(delete));
-
+        ContextMenu contextMenu = new ContextMenu(delete);
+        contextMenu.getStyleClass().add("options");
+        contextMenu.setOnShowing(e -> {
+            if (contextMenu.getScene() != null) {
+                contextMenu.getScene().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/plovdev/pornviewer/styles/context-menu.css")).toExternalForm());
+            }
+        });
+        button.setContextMenu(contextMenu);
         setupDnDToButton(button, name);
     }
 
@@ -279,18 +276,15 @@ public class FavoritePane extends AnchorPane {
 
                 if (videoGroup != null) {
                     if (videoGroup.equals(group)) {
-                        log.info("Одинаковые группы!");
                         return;
                     }
                     if (containsId(videoId, groups.computeIfAbsent(group, s -> new CopyOnWriteArrayList<>()))) {
-                        log.info("Target group already has this video!");
                         return;
                     }
                     pane.getChildren().remove(video);
                     groups.computeIfAbsent(videoGroup, s -> new CopyOnWriteArrayList<>()).remove(video);
                 }
 
-                log.info("Dropped a new video: {}", videoId);
                 FavoriteVideos.update("mark", group, videoId);
                 groups.computeIfAbsent(group, s -> new CopyOnWriteArrayList<>()).addFirst(video);
                 video.render();
@@ -326,7 +320,6 @@ public class FavoritePane extends AnchorPane {
             FavoriteVideos.getAll().forEach(e -> {
                 e.render();
                 allFavorites.add(e);
-                log.debug("Video: {}  --  {}", e.getTitle(), e.getGroup());
                 Platform.runLater(() -> pane.getChildren().add(e));
             });
             recountGroups();
@@ -335,10 +328,16 @@ public class FavoritePane extends AnchorPane {
 
     private void showContextMenu(Node node, double x, double y) {
         ContextMenu menu = new ContextMenu();
+        menu.getStyleClass().add("options");
         for (String str : List.of("1080p", "SD", "LQ", "HQ", "HD")) {
             menu.getItems().add(getLoader(str));
         }
-        menu.show(node, x, y);
+        Platform.runLater(() -> {
+            menu.show(node, x, y);
+            if (menu.getScene() != null) {
+                menu.getScene().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/plovdev/pornviewer/styles/context-menu.css")).toExternalForm());
+            }
+        });
     }
 
     protected MenuItem getLoader(String qual) {
@@ -347,7 +346,7 @@ public class FavoritePane extends AnchorPane {
         PornParser parser = adapter.getParser();
         List<FavoriteVideo> toLoad = new ArrayList<>(currentList);
 
-        item.setOnAction(e ->  {
+        item.setOnAction(e -> {
             for (FavoriteVideo video : toLoad) {
                 executor.execute(() -> {
                     VideoInfo info = video.getInfo();

@@ -4,7 +4,6 @@ import com.plovdev.pornviewer.encryptionsupport.videoparser.read.PVVFVideoReader
 import com.plovdev.pornviewer.events.FileDownloadingEvent;
 import com.plovdev.pornviewer.events.listeners.FileDownloadingListener;
 import com.plovdev.pornviewer.gui.video.DurationUtils;
-import com.plovdev.pornviewer.utility.DialogShower;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.LongProperty;
@@ -29,12 +28,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -98,19 +95,11 @@ public class DownloadingVideoCard extends DownloadedVideoCard {
         AnchorPane.setRightAnchor(dateLabel, 40.0);
         anchorPane.getChildren().add(dateLabel);
 
-        Label sizeLabel = new Label(size + "MB");
+        Label sizeLabel = new Label("0,00MB");
         sizeLabel.getStyleClass().add("marker-download");
         AnchorPane.setBottomAnchor(sizeLabel, 10.0);
         AnchorPane.setRightAnchor(sizeLabel, 40.0);
         anchorPane.getChildren().add(sizeLabel);
-
-        Label delete = new Label("×");
-        delete.getStyleClass().add("delete-label");
-        delete.setOnMousePressed(e -> DialogShower.showConfirm("Удалить видео?", deleteRun));
-        AnchorPane.setBottomAnchor(delete, 45.0);
-        AnchorPane.setTopAnchor(delete, 45.0);
-        AnchorPane.setRightAnchor(delete, 10.0);
-        anchorPane.getChildren().add(delete);
 
         getStyleClass().add("download-video-card");
 
@@ -189,37 +178,43 @@ public class DownloadingVideoCard extends DownloadedVideoCard {
                     setDate(dateTime.format(createFormatter));
                     downloadedVideoCard.setTitle(getTitle());
                     setTitle(getTitle());
-
-                    downloadedVideoCard.setDeleteRun(() -> {
-                        downloadedVideoCard.setSelf(false);
-                        try {
-                            Files.delete(Path.of(URI.create(getOriginalPath())));
-                            pane.getChildren().forEach(fp -> {
-                                if (fp instanceof VideoCard vc) {
-                                    if (vc.getTitle().equals(getTitle()))
-                                        Platform.runLater(() -> pane.getChildren().remove(fp));
-                                }
-                            });
-                        } catch (Exception e) {
-                            System.err.println(e.getMessage());
-                        }
-                    });
                 } catch (Exception e) {
-                    System.err.println(e.getMessage());
+                    log.error("Error process video starting: ", e);
                 }
-
                 Platform.runLater(() -> {
                     render();
-                    pane.getChildren().addFirst(DownloadingVideoCard.this);
+                    pane.getChildren().addFirst(copyCard(DownloadingVideoCard.this));
                 });
             }
 
             @Override
             public void onError(Exception e) {
                 progressBar.getStyleClass().add("porn-downloading-bar-error");
-                System.err.println(e.getMessage());
+                log.error("Error downloading video: ", e);
             }
         });
+    }
+
+    public static DownloadingVideoCard copyCard(DownloadingVideoCard card) {
+        DownloadingVideoCard toReturn = new DownloadingVideoCard(card.getPane());
+        toReturn.setCardId(card.getCardId());
+        toReturn.setTitle(card.getTitle());
+        toReturn.setUrl(card.getUrl());
+        toReturn.setPic(card.getPic());
+
+        toReturn.setDuration(card.getDuration());
+        toReturn.setViews(card.getViews());
+        toReturn.setRating(card.getRating());
+        toReturn.setInfo(card.getInfo());
+        toReturn.setFavorite(card.isFavorite());
+        toReturn.setTags(List.copyOf(card.getTags() == null ? new ArrayList<>() : card.getTags()));
+
+        toReturn.setSize(card.getSize());
+        toReturn.setDate(card.getDate());
+        toReturn.setDescription(card.getDescription());
+        toReturn.setPreview(card.getPreview());
+
+        return toReturn;
     }
 
     private int getById(List<Node> nodes) {
