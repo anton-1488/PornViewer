@@ -2,19 +2,28 @@ package com.plovdev.pornviewer.models;
 
 import com.plovdev.pornviewer.events.listeners.ClickListener;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
+import com.plovdev.pornviewer.utility.Globals;
+import com.plovdev.pornviewer.utility.sharing.ShareParameter;
+import com.plovdev.pornviewer.utility.sharing.Sharer;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
+import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
+
+import static com.plovdev.pornviewer.gui.utils.ShareUtils.getShareButton;
 
 public class ModelCard extends PornCard {
     private static final Logger log = LoggerFactory.getLogger(ModelCard.class);
@@ -78,7 +87,6 @@ public class ModelCard extends PornCard {
             box.prefWidthProperty().bind(pane.widthProperty().divide(3.5));
             box.maxWidthProperty().bind(pane.widthProperty().divide(3.5));
 
-
             Label county = new Label(modelInfo.getCountry());
             county.getStyleClass().add("model-country");
 
@@ -88,7 +96,8 @@ public class ModelCard extends PornCard {
             Region region = new Region();
             HBox.setHgrow(region, Priority.ALWAYS);
 
-            HBox infoOverlay = new HBox(county, region, videos);
+            String modelName = modelInfo.getUrl().substring(modelInfo.getUrl().lastIndexOf("/") + 1);
+            HBox infoOverlay = new HBox(county, region, new VBox(10, videos, getShareButton(Globals.getPrimaryStage(), this, new ShareParameter("name", modelName))));
             infoOverlay.setVisible(false);
             infoOverlay.getStyleClass().add("model-hover");
 
