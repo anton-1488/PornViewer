@@ -54,6 +54,7 @@ public class VideoPlyer extends StackPane {
         mediaPlayer.setOnReady(() -> {
             totalLabel.setText(DurationUtils.formatDurationToString(DurationUtils.ofJavaFxDuraion(mediaPlayer.getTotalDuration())));
             timecodesBar.setTotalDuration(DurationUtils.ofJavaFxDuraion(mediaPlayer.getTotalDuration()));
+            timecodesBar.addTimecodes(card.getTimecodes().stream().map(t -> new TimecodeView(t.getText(), t.getTime())).toList());
         });
 
         playStop.setMinSize(70, 70);
@@ -162,7 +163,6 @@ public class VideoPlyer extends StackPane {
                     play();
                 }
             }
-
             event.consume();
         });
 

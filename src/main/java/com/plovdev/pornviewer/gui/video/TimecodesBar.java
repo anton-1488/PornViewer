@@ -80,6 +80,14 @@ public class TimecodesBar extends AnchorPane {
         addTimecodeToBar(timecode, getWidth());
     }
 
+    public void addTimecodes(List<TimecodeView> timecodes) {
+        if (timecodes.isEmpty()) return;
+        for (TimecodeView timecode : timecodes) {
+            timecodes.add(timecode);
+            addTimecodeToBar(timecode, getWidth());
+        }
+    }
+
     public void removeTimecode(TimecodeView timecode) {
         timecodes.remove(timecode);
         getChildren().remove(timecode);

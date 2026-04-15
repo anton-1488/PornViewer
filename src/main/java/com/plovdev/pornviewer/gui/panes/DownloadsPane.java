@@ -195,6 +195,7 @@ public class DownloadsPane extends AnchorPane {
                             card.setDuration(DurationUtils.formatDurationToString(videoInfo.getTotalDuration()));
                             card.setDescription(videoInfo.getDescription());
                             card.setPreview(videoInfo.getPreviewBytes());
+                            card.setTimecodes(videoInfo.getTimecodes());
                         } catch (Exception e) {
                             log.error("Error read metadata: {}", e.getMessage());
                         }

@@ -7,7 +7,10 @@ import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -144,7 +147,7 @@ public class DownloadedVideoCard extends VideoCard {
             Label dateLabel = new Label(date);
             dateLabel.getStyleClass().add("marker");
 
-            Button actions = new Button("|||");
+            Label actions = new Label("|||");
             actions.getStyleClass().add("options");
             fillActionsBox(actions);
 
@@ -177,16 +180,17 @@ public class DownloadedVideoCard extends VideoCard {
         Platform.runLater(() -> box.getChildren().addFirst(view));
     }
 
-    private void fillActionsBox(Button actions) {
-        actions.setOnMousePressed(e -> {
-            ContextMenu menu = new ContextMenu();
-            menu.getStyleClass().add("options");
-            fillActinsMenu(menu);
+    private void fillActionsBox(Label actions) {
+        ContextMenu menu = new ContextMenu();
+        menu.getStyleClass().add("options");
+        fillActinsMenu(menu);
+
+        actions.setOnMouseClicked(e -> Platform.runLater(() -> {
             menu.show(actions, e.getScreenX(), e.getScreenY());
             if (menu.getScene() != null) {
                 menu.getScene().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/plovdev/pornviewer/styles/context-menu.css")).toExternalForm());
             }
-        });
+        }));
 
     }
 

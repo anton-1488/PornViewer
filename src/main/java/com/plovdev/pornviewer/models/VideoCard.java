@@ -25,6 +25,7 @@ import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -42,6 +43,8 @@ public class VideoCard extends PornCard {
     private final SVGPath favPath = new SVGPath();
     protected List<String> tags;
 
+    private List<DownloadedVideoInfo.Timecode> timecodes = new ArrayList<>();
+
     public List<String> getTags() {
         return tags;
     }
@@ -54,6 +57,14 @@ public class VideoCard extends PornCard {
 
     public boolean isFavorite() {
         return isFavorite;
+    }
+
+    public List<DownloadedVideoInfo.Timecode> getTimecodes() {
+        return timecodes;
+    }
+
+    public void setTimecodes(List<DownloadedVideoInfo.Timecode> timecodes) {
+        this.timecodes = timecodes;
     }
 
     public VideoCard(int id, String title, String url, String pic, String duration, int views, String rating, VideoInfo info, boolean isFavorite) {

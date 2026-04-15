@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<installer-gui-script minSpecVersion="1">
+  <title>PornViewer</title>
+  <background file="PornViewer-background.png" mime-type="image/png" alignment="bottomleft" scaling="none"></background>
+  <background-darkAqua file="PornViewer-background-darkAqua.png" mime-type="image/png" alignment="bottomleft" scaling="none"></background-darkAqua>
+  <license file="/Users/mac/IdeaProjects/PornViewer/./files/LICENSE.txt" mime-type="text/rtf"></license>
+  <pkg-ref id="com.plovdev.pornviewer"></pkg-ref>
+  <choice id="com.plovdev.pornviewer" visible="false">
+    <pkg-ref id="com.plovdev.pornviewer"></pkg-ref>
+  </choice>
+  <pkg-ref id="com.plovdev.pornviewer" version="1.7.7" onConclusion="none">PornViewer-app.pkg</pkg-ref>
+  <options customize="never" require-scripts="false" hostArchitectures="x86_64"></options>
+  <choices-outline>
+    <line choice="default">
+      <line choice="com.plovdev.pornviewer"></line>
+    </line>
+  </choices-outline>
+  <choice id="default"></choice>
+
+  <style>
+      .title {
+          font-size: 18pt;
+          font-weight: bold;
+          color: #E65C00;
+      }
+      .content {
+          font-size: 12pt;
+          color: #FFFFFF;
+      }
+  </style>
+</installer-gui-script>

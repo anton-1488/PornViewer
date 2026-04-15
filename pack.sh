@@ -21,7 +21,4 @@ jpackage --type pkg \
   --license-file ./files/LICENSE.txt \
   --about-url "https://github.com/anton-1488/PornViewer" \
   --file-associations ./files/video-assoc.properties \
-  --temp build_temp \
   --verbose
-
-rm -rf build_temp
