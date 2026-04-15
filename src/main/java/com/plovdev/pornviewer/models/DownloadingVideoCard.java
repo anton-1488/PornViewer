@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
@@ -192,7 +193,7 @@ public class DownloadingVideoCard extends DownloadedVideoCard {
                     downloadedVideoCard.setDeleteRun(() -> {
                         downloadedVideoCard.setSelf(false);
                         try {
-                            Files.delete(Path.of(getPath().substring(getPath().indexOf(':') + 1)));
+                            Files.delete(Path.of(URI.create(getOriginalPath())));
                             pane.getChildren().forEach(fp -> {
                                 if (fp instanceof VideoCard vc) {
                                     if (vc.getTitle().equals(getTitle()))

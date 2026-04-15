@@ -223,6 +223,7 @@ public class VideoCard extends PornCard {
                 setInfo(parser.parseVideo(getUrl()));
                 showContextMenu(download, e.getScreenX(), e.getScreenY());
             });
+            fillDownloadMenu(download);
 
             VBox vBox = new VBox(new HBox(r1, new VBox(10, fav, download)), r, new HBox(label, region, dur));
             vBox.setPadding(new Insets(10));
@@ -252,6 +253,20 @@ public class VideoCard extends PornCard {
         } catch (Exception e) {
             log.error("Rendering error: ", e);
         }
+    }
+
+    private void fillDownloadMenu(ImageView download) {
+        ContextMenu menu = new ContextMenu();
+        menu.getStyleClass().add("options");
+        for (String str : info.getUrls().keySet()) {
+            menu.getItems().add(getLoader(str));
+        }
+        download.setOnMouseClicked(e -> Platform.runLater(() -> {
+            menu.show(download, e.getScreenX(), e.getScreenY());
+            if (menu.getScene() != null) {
+                menu.getScene().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/plovdev/pornviewer/styles/context-menu.css")).toExternalForm());
+            }
+        }));
     }
 
     private void showContextMenu(ImageView node, double x, double y) {

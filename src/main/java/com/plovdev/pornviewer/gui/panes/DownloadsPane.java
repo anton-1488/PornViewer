@@ -31,8 +31,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -174,9 +172,8 @@ public class DownloadsPane extends AnchorPane {
                         card.setDeleteRun(() -> {
                             isSelf = card.isSelf();
                             try {
-                                String filePath = URLDecoder.decode(card.getOriginalPath(), StandardCharsets.UTF_8).substring(5);
-                                boolean isDeleted = Files.deleteIfExists(Path.of(filePath));
-                                log.info("File {} deleted: {}", filePath, isDeleted);
+                                boolean isDeleted = Files.deleteIfExists(Path.of(URI.create(card.getOriginalPath())));
+                                log.info("File {} deleted: {}", card.getOriginalPath(), isDeleted);
 
                                 Platform.runLater(() -> pane.getChildren().remove(card));
                                 originNots.remove(card);
