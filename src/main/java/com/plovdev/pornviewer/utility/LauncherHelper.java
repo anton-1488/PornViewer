@@ -15,6 +15,7 @@ public class LauncherHelper {
     private static volatile LauncherHelper INSTANCE = null;
     private final PBPornHandler handler = new PBPornHandler();
     private static final Gson GSON = new Gson();
+
     public static LauncherHelper getInstance() {
         if (INSTANCE == null) {
             synchronized (LauncherHelper.class) {
@@ -25,7 +26,9 @@ public class LauncherHelper {
         }
         return INSTANCE;
     }
-    private LauncherHelper() {}
+
+    private LauncherHelper() {
+    }
 
     public boolean checkPrimaryApp() {
         try {
@@ -39,6 +42,7 @@ public class LauncherHelper {
         }
         return true;
     }
+
     public void notifyDeepLink(URI link) {
         log.info("Notifing deeplink: {}", link);
         String response = handler.executePost(ServerPaths.getInstance().getDeeplinkUrl(), link.toString());

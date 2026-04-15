@@ -15,6 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class FavoriteVideos {
     private static final Logger log = LoggerFactory.getLogger(FavoriteVideos.class);
     private static final Connection con;
+
     static {
         try {
             con = SecureDB.initCipherer();
@@ -58,20 +59,22 @@ public class FavoriteVideos {
     }
 
     public static FavoriteVideo get(String id) {
-        try (Statement stt = con.createStatement();
-             ResultSet set = stt.executeQuery("SELECT * FROM Favorites WHERE id = " + id)) {
+        try (PreparedStatement stt = con.prepareStatement("SELECT * FROM Favorites WHERE id = ?")) {
+            stt.setString(1, id);
 
-            if (set.next()) {
-                int cardId = Integer.parseInt(id);
-                String title = set.getString("title");
-                String url = set.getString("url");
-                String pic = set.getString("pic");
-                String duration = set.getString("duration");
-                int views = Integer.parseInt(set.getString("views"));
-                String rating = set.getString("rating");
-                String group = set.getString("mark");
+            try (ResultSet set = stt.executeQuery()) {
+                if (set.next()) {
+                    int cardId = Integer.parseInt(id);
+                    String title = set.getString("title");
+                    String url = set.getString("url");
+                    String pic = set.getString("pic");
+                    String duration = set.getString("duration");
+                    int views = Integer.parseInt(set.getString("views"));
+                    String rating = set.getString("rating");
+                    String group = set.getString("mark");
 
-                return new FavoriteVideo(cardId, title, url, pic, duration, views, rating, null, true, group);
+                    return new FavoriteVideo(cardId, title, url, pic, duration, views, rating, null, true, group);
+                }
             }
         } catch (Exception e) {
             log.error("Error get favorite video: ", e);
@@ -119,20 +122,20 @@ public class FavoriteVideos {
 
     public static List<FavoriteVideo> getAll(String group) {
         List<FavoriteVideo> list = new CopyOnWriteArrayList<>();
-        try {
-            Statement stt = con.createStatement();
-            ResultSet set = stt.executeQuery("SELECT * FROM Favorites WHERE mark = '" + group + "'");
+        try (PreparedStatement stt = con.prepareStatement("SELECT * FROM Favorites WHERE mark = ?")) {
+            stt.setString(1, group);
+            try (ResultSet set = stt.executeQuery()) {
+                while (set.next()) {
+                    int cardId = Integer.parseInt(set.getString("id"));
+                    String title = set.getString("title");
+                    String url = set.getString("url");
+                    String pic = set.getString("pic");
+                    String duration = set.getString("duration");
+                    int views = Integer.parseInt(set.getString("views"));
+                    String rating = set.getString("rating");
 
-            while (set.next()) {
-                int cardId = Integer.parseInt(set.getString("id"));
-                String title = set.getString("title");
-                String url = set.getString("url");
-                String pic = set.getString("pic");
-                String duration = set.getString("duration");
-                int views = Integer.parseInt(set.getString("views"));
-                String rating = set.getString("rating");
-
-                list.add(new FavoriteVideo(cardId, title, url, pic, duration, views, rating, null, true, group));
+                    list.add(new FavoriteVideo(cardId, title, url, pic, duration, views, rating, null, true, group));
+                }
             }
         } catch (Exception e) {
             log.error("Error to get all favorite videos: ", e);

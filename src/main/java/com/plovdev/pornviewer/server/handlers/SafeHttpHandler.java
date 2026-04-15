@@ -69,10 +69,10 @@ public class SafeHttpHandler implements HttpHandler {
                         String range = ranges.getFirst();
                         executeGet(exchange, parseChunk(range, file), params);
                     } else {
-                        executeGet(exchange, parseChunk(String.valueOf(file.length()), file), params);
+                        executeGet(exchange, parseChunk("bytes=0-", file), params);
                     }
                 } else {
-                    executeGet(exchange, parseChunk(String.valueOf(file.length()), file), params);
+                    executeGet(exchange, parseChunk("bytes=0-", file), params);
                 }
             } catch (Exception e) {
                 log.error("Error to process get request: ", e);

@@ -49,31 +49,19 @@ public class ServerDecryptedStreamer {
 
     public void transferToOutput(BufferedOutputStream stream) {
         try {
-            // 1. Определяем логические индексы чанков по 128КБ
             long startChunk = startPosition / VideoChunk.PLAIN_CHUNK_SIZE;
             long endChunk = (startPosition + length - 1) / VideoChunk.PLAIN_CHUNK_SIZE;
-
-            // 2. Смещение внутри ПЕРВОГО запрошенного чанка
             long offsetInStartChunk = startPosition % VideoChunk.PLAIN_CHUNK_SIZE;
-
-            long remaining = length; // Сколько байт Плеер ЖДЕТ (contentLength)
+            long remaining = length;
 
             for (long i = startChunk; i <= endChunk && remaining > 0; i++) {
-                // Читаем чанк. PVVFParser сам найдет его в файле: 42 + i * (128KB + 16B)
                 byte[] plainChunk = chunkReader.readEncryptedChunk(i);
+                long start = (i == startChunk) ? offsetInStartChunk : 0;
 
-                // Если это первый чанк в запросе — начинаем с offset, иначе с 0
-                int start = (i == startChunk) ? (int) offsetInStartChunk : 0;
-
-                // Сколько байт реально осталось в этом чанке?
-                // (Важно: plainChunk может быть меньше 128КБ, если это самый конец видео)
-                int availableInChunk = plainChunk.length - start;
-
-                // Пишем либо всё что есть в чанке, либо столько, сколько осталось до конца запроса
-                int toWrite = (int) Math.min(availableInChunk, remaining);
-
+                long availableInChunk = plainChunk.length - start;
+                long toWrite = Math.min(availableInChunk, remaining);
                 if (toWrite > 0) {
-                    stream.write(plainChunk, start, toWrite);
+                    stream.write(plainChunk, (int) start, (int) toWrite);
                     remaining -= toWrite;
                 }
             }

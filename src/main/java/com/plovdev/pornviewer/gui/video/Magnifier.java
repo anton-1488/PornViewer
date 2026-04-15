@@ -1,4 +1,4 @@
-package com.plovdev.pornviewer.utility.video.magnifier;
+package com.plovdev.pornviewer.gui.video;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.SnapshotParameters;

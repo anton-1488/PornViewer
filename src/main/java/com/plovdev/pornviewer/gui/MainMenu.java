@@ -15,6 +15,7 @@ import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.FavoriteVideo;
 import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.models.VideoInfo;
+import com.plovdev.pornviewer.utility.Globals;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -32,6 +33,8 @@ public class MainMenu extends Application {
 
     @Override
     public void start(Stage stage) {
+        Globals.setPrimaryStage(stage);
+
         Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/com/plovdev/pornviewer/pv-logo.png")));
         stage.getIcons().add(icon);
 

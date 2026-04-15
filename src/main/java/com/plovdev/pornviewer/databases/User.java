@@ -2,11 +2,9 @@ package com.plovdev.pornviewer.databases;
 
 import com.plovdev.pornviewer.httpquering.PornVideoAdapter;
 import com.plovdev.pornviewer.pornimpl.porn365.Porn365VideoAdapter;
-import com.plovdev.pornviewer.pornimpl.sexstuds.SexStudsVideoAdapter;
 
 public class User {
     private final PornVideoAdapter p365Adapter = new Porn365VideoAdapter();
-    private final PornVideoAdapter ssAdapter = new SexStudsVideoAdapter();
 
     private String pvva;
     private String id;
@@ -28,7 +26,7 @@ public class User {
     }
 
     public PornVideoAdapter getPornAdapter() {
-        return getPvva().equals("p365")? p365Adapter : ssAdapter;
+        return p365Adapter;
     }
 
     public String getPvva() {

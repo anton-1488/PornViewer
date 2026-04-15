@@ -2,10 +2,7 @@ package com.plovdev.pornviewer.gui.video;
 
 import com.plovdev.pornviewer.models.DownloadedVideoCard;
 import com.plovdev.pornviewer.models.FavoriteVideo;
-import com.plovdev.pornviewer.models.PornCard;
 import com.plovdev.pornviewer.models.VideoCard;
-import com.plovdev.pornviewer.utility.sharing.Sharer;
-import com.plovdev.pornviewer.utility.video.magnifier.Magnifier;
 import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.scene.control.*;
@@ -14,8 +11,6 @@ import javafx.scene.layout.*;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.slf4j.Logger;
@@ -23,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+import static com.plovdev.pornviewer.gui.utils.ShareUtils.getShareButton;
 import static javafx.scene.media.MediaPlayer.Status.PAUSED;
 import static javafx.scene.media.MediaPlayer.Status.READY;
 
@@ -282,22 +278,5 @@ public class VideoPlyer extends StackPane {
         Region region = new Region();
         VBox.setVgrow(region, Priority.ALWAYS);
         return region;
-    }
-
-    private Button getShareButton(Stage stage, PornCard card) {
-        Button shareButton = new Button();
-        shareButton.getStyleClass().add("share-button");
-        SVGPath shareIcon = new SVGPath();
-        shareIcon.setContent("M1613,203a2.967,2.967,0,0,1-1.86-.661l-3.22,2.01a2.689,2.689,0,0,1,0,1.3l3.22,2.01A2.961,2.961,0,0,1,1613,207a3,3,0,1,1-3,3,3.47,3.47,0,0,1,.07-0.651l-3.21-2.01a3,3,0,1,1,0-4.678l3.21-2.01A3.472,3.472,0,0,1,1610,200,3,3,0,1,1,1613,203Zm0,8a1,1,0,1,0-1-1A1,1,0,0,0,1613,211Zm-8-7a1,1,0,1,0,1,1A1,1,0,0,0,1605,204Zm8-5a1,1,0,1,0,1,1A1,1,0,0,0,1613,199Z");
-        shareIcon.setStroke(Color.WHITE);
-        shareIcon.setScaleY(1.5);
-        shareIcon.setScaleX(1.5);
-        shareIcon.setStrokeWidth(1);
-        shareIcon.setFill(Color.TRANSPARENT);
-
-        shareButton.setGraphic(shareIcon);
-        shareButton.setOnAction(e -> Sharer.share(stage, card));
-
-        return shareButton;
     }
 }

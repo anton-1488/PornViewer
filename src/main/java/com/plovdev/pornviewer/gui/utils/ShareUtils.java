@@ -1,6 +1,6 @@
 package com.plovdev.pornviewer.gui.utils;
 
-import com.plovdev.pornviewer.models.ModelCard;
+import com.plovdev.pornviewer.models.PornCard;
 import com.plovdev.pornviewer.utility.sharing.ShareParameter;
 import com.plovdev.pornviewer.utility.sharing.Sharer;
 import javafx.scene.control.Button;
@@ -9,7 +9,7 @@ import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 
 public class ShareUtils {
-    public static Button getShareButton(Stage stage, ModelCard card, ShareParameter... p) {
+    public static Button getShareButton(Stage stage, PornCard card, ShareParameter... p) {
         Button shareButton = new Button();
         shareButton.getStyleClass().add("share-button");
         SVGPath shareIcon = new SVGPath();
