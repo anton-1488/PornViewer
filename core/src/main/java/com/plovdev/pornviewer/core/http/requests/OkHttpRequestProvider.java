@@ -69,7 +69,7 @@ public class OkHttpRequestProvider implements PornRequestProvider {
     public InputStream requestStream(PornRequest request) {
         try {
             Response response = client.newCall(configurateRequest(request)).execute();
-            if (response.isSuccessful() && response.body() != null) {
+            if (response.isSuccessful()) {
                 return response.body().byteStream();
             }
             response.close();

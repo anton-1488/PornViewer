@@ -7,13 +7,14 @@ import com.plovdev.pornviewer.security.CryptoEngine;
 import com.plovdev.pornviewer.security.PVSecurityManager;
 import com.plovdev.pornviewer.utils.json.DownloadedVideoInfo;
 import com.plovdev.pornviewer.utils.json.VideoInfoSerializer;
+import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.Cipher;
-import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 public class PVVFVideoReader {
-    public static VideoHeader readHeader(File file) {
+    public static VideoHeader readHeader(Path file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             return pvvfParser.parseVideoHeader();
         } catch (Exception e) {
@@ -21,7 +22,7 @@ public class PVVFVideoReader {
         }
     }
 
-    public static VideoMetadata readMetadata(File file) {
+    public static VideoMetadata readMetadata(Path file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             return pvvfParser.collectEncryptedVideo().getVideoMetadata();
         } catch (Exception e) {
@@ -29,7 +30,7 @@ public class PVVFVideoReader {
         }
     }
 
-    public static EncryptedVideo readVideo(File file) {
+    public static EncryptedVideo readVideo(Path file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             return pvvfParser.collectEncryptedVideo();
         } catch (Exception e) {
@@ -37,7 +38,7 @@ public class PVVFVideoReader {
         }
     }
 
-    public static DownloadedVideoInfo readInfo(File file) {
+    public static @NotNull DownloadedVideoInfo readInfo(Path file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             EncryptedVideo video = pvvfParser.collectEncryptedVideo();
             VideoMetadata metadata = video.getVideoMetadata();

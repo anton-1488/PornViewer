@@ -6,11 +6,12 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.file.Path;
 
 public record PVFileManager() {
-    public final static String PORN_VIEWER_SIGN = DigestUtils.md5("PornViewer");
-    private final static Path PV_BASE_PATH = Path.of(System.getProperty("user.home"), ".PornViewer");
-    private final static Path PV_DOWNLOADS = Path.of("downloads");
-    private final static Path PV_SYSTEM = Path.of("system");
-    private final static Path PV_DB_PATH = Path.of(DigestUtils.sha256("pornviewer.db"));
+    public static final String PORN_VIEWER = "PornViewer";
+    public static final String PORN_VIEWER_SIGN = DigestUtils.md5("PornViewer");
+    private static final Path PV_BASE_PATH = Path.of(System.getProperty("user.home"), ".PornViewer");
+    private static final Path PV_DOWNLOADS = Path.of("downloads");
+    private static final Path PV_SYSTEM = Path.of("system");
+    private static final Path PV_DB_PATH = Path.of(DigestUtils.sha256("pornviewer.db"));
 
     @NotNull
     public static Path getPVBasePath() {

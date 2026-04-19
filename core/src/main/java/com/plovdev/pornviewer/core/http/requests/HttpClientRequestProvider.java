@@ -1,6 +1,7 @@
 package com.plovdev.pornviewer.core.http.requests;
 
 import com.plovdev.pornviewer.core.http.PornRequest;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +85,7 @@ public class HttpClientRequestProvider implements PornRequestProvider {
         return 0;
     }
 
-    private HttpRequest cofigureRequest(PornRequest request) {
+    private HttpRequest cofigureRequest(@NotNull PornRequest request) {
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(request.path());
 
         Map<String, String> headers = request.headers();

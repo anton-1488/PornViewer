@@ -1,18 +1,21 @@
 package com.plovdev.pornviewer.security;
 
-import com.github.javakeyring.Keyring;
 import com.plovdev.pornviewer.utils.files.PVFileManager;
+import org.jetbrains.annotations.NotNull;
+import org.plovdev.keyer.Keychain;
 
 public class PVSecurityManager {
-    private PVSecurityManager() {
+    public static final String PORN_VIEWER_VIDEO_AILAS = "VIDEOS";
+    private static final Keychain KEYCHAIN = Keychain.getKeychain(PVFileManager.PORN_VIEWER);
 
+    private PVSecurityManager() {
     }
 
-    public static char[] getPassword() {
-        try (Keyring keyring = Keyring.create()) {
-            return keyring.getPassword(PVFileManager.PORN_VIEWER_SIGN, PVFileManager.PORN_VIEWER_SIGN).toCharArray();
-        } catch (Exception e) {
-            throw new NullPointerException("Getted password is null!");
+    public static char @NotNull [] getPassword() {
+        char[] password = KEYCHAIN.getPassword(PORN_VIEWER_VIDEO_AILAS);
+        if (password == null) {
+            throw new IllegalStateException("Master password not found in Keychain!");
         }
+        return password;
     }
 }

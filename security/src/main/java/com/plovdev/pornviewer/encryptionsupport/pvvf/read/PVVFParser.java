@@ -4,12 +4,15 @@ import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.EncryptedVideo;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoChunk;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoHeader;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoMetadata;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -40,31 +43,36 @@ public class PVVFParser implements AutoCloseable {
     /**
      * Source, from parser will read data.
      */
-    private File file;
-    private RandomAccessFile RAF;
+    private final Path file;
+    private final long fileSize;
+    private final Arena fileArena = Arena.ofConfined();
+    private final MemorySegment mappedFile;
 
     /**
      * Создает экземпляр парсера для указанного файла.
      *
      * @param file Файл в формате PVVF для анализа.
      */
-    public PVVFParser(File file) {
+    public PVVFParser(Path file) {
         this.file = file;
-        updateRaf(file);
+        try (FileChannel channel = FileChannel.open(file, StandardOpenOption.READ)) {
+            this.fileSize = channel.size();
+            if (fileSize < 42) {
+                throw new IllegalArgumentException("File size is incrorrect");
+            }
+            this.mappedFile = channel.map(FileChannel.MapMode.READ_ONLY, 0, fileSize, fileArena);
+        } catch (Exception e) {
+            fileArena.close();
+            throw new RuntimeException("Failed to memory-map file: " + file, e);
+        }
     }
 
-    public File getFile() {
+    public Path getFile() {
         return file;
     }
 
-    /**
-     * Обновляет целевой файл и переоткрывает поток чтения.
-     *
-     * @param file Новый файл для парсинга.
-     */
-    public synchronized void setFile(File file) {
-        this.file = file;
-        updateRaf(file);
+    public long getFileSize() {
+        return fileSize;
     }
 
     /**
@@ -74,40 +82,41 @@ public class PVVFParser implements AutoCloseable {
      * @throws RuntimeException если структура заголовка нарушена или файл поврежден.
      */
     public synchronized VideoHeader parseVideoHeader() {
-        final byte[] FOUR_BYTE_ARRAY = new byte[4];
-
+        long offset = 0;
         try {
-            // always setup RAF to file start
-            RAF.seek(0);
-
             // step 1 - check magic number:
-            String readedMagic = readString(FOUR_BYTE_ARRAY);
+            String readedMagic = readString(offset, 4); // 4 = "PVVF".length()
+            offset += 4;
             if (!readedMagic.equals(MAGIC_NUMBER)) {
                 throw new IOException("Illegal magic number in file: " + readedMagic);
             }
 
             // step 2 - read version:
-            byte fileVersion = RAF.readByte();
+            byte fileVersion = mappedFile.get(ValueLayout.JAVA_BYTE, offset);
+            offset++;
             // step 3 - read flag:
-            byte flag = RAF.readByte();
+            byte flag = mappedFile.get(ValueLayout.JAVA_BYTE, offset);
+            offset++;
 
             // step 4 - read video mime type:
-            String mimeType = readString(FOUR_BYTE_ARRAY);
+            String mimeType = readString(offset, 4); // MIME type always 4 bytes(MP4 , WEBM, etc.)
+            offset += 4;
 
             // step 5 - reading sizes:
-            int lastChunkPaddingSize = RAF.readInt();
-            long plainVideoSize = RAF.readLong();
-            long encryptedVideoSize = RAF.readLong();
+            int lastChunkPaddingSize = mappedFile.get(ValueLayout.JAVA_INT_UNALIGNED, offset);
+            offset += 4;
+
+            long plainVideoSize = mappedFile.get(ValueLayout.JAVA_LONG_UNALIGNED, offset);
+            offset += 8;
+
+            long encryptedVideoSize = mappedFile.get(ValueLayout.JAVA_LONG_UNALIGNED, offset);
+            offset += 8;
 
             // step 6 - read nonce and crc:
-            byte[] baseNonce = new byte[BASE_NONCE_LENGTH];
-            readToByteArray(baseNonce);
-            int crc32 = RAF.readInt();
+            byte[] baseNonce = readBytes(offset, BASE_NONCE_LENGTH);
+            offset += BASE_NONCE_LENGTH;
 
-            // step 7 - check if file pointer is equal header size:
-            if (RAF.getFilePointer() != HEADER_SIZE) {
-                throw new IOException("Error parse file header: invalid pointer: " + RAF.getFilePointer());
-            }
+            int crc32 = mappedFile.get(ValueLayout.JAVA_INT_UNALIGNED, offset);
 
             // collecting results and return VideoHeader class
             VideoHeader header = new VideoHeader(fileVersion, flag, mimeType, lastChunkPaddingSize, plainVideoSize, encryptedVideoSize, baseNonce, crc32);
@@ -138,8 +147,7 @@ public class PVVFParser implements AutoCloseable {
 
         try {
             // calculate real metadata position(42 + enc video size):
-            long metadataOffset = HEADER_SIZE + encVideoSize;
-            RAF.seek(metadataOffset); // seek to metadata block
+            long offset = HEADER_SIZE + encVideoSize;
 
             /*
             Задача прочитать блок с метаданными:
@@ -150,35 +158,41 @@ public class PVVFParser implements AutoCloseable {
              */
 
             // sizes block
-            int totalMetadataSize = RAF.readInt();
-            int encryptedJsonSize = RAF.readInt();
-            int encryptedPreviewSize = RAF.readInt();
+            int totalMetadataSize = mappedFile.get(ValueLayout.JAVA_INT, offset);
+            offset += 4;
+
+            int encryptedJsonSize = mappedFile.get(ValueLayout.JAVA_INT, offset);
+            offset += 4;
+
+            int encryptedPreviewSize = mappedFile.get(ValueLayout.JAVA_INT, offset);
+            offset += 4;
 
             // base nonce
-            byte[] baseNonce = new byte[BASE_NONCE_LENGTH];
-            readToByteArray(baseNonce);
+            byte[] baseNonce = readBytes(offset, BASE_NONCE_LENGTH);
+            offset += BASE_NONCE_LENGTH;
 
             // read JSON and tag:
-            byte[] ecryptedJson = new byte[encryptedJsonSize]; // use encryptedJsonSize to create buffer
-            readToByteArray(ecryptedJson);
-            byte[] jsonTag = new byte[TAG_SIZE];
-            readToByteArray(jsonTag);
+            byte[] encryptedJson = readBytes(offset, encryptedJsonSize);
+            offset += encryptedJsonSize;
+            byte[] jsonTag = readBytes(offset, TAG_SIZE);
+            offset += TAG_SIZE;
 
             // read preview and tag:
-            byte[] ecryptedPreview = new byte[encryptedPreviewSize]; // use encryptedPreviewSize to create preview buffer
-            readToByteArray(ecryptedPreview);
-            byte[] previewTag = new byte[TAG_SIZE];
-            readToByteArray(previewTag);
+            byte[] encryptedPreview = readBytes(offset, encryptedPreviewSize);
+            offset += encryptedPreviewSize;
+            byte[] previewTag = readBytes(offset, TAG_SIZE);
+            offset += TAG_SIZE;
 
-            int crc32 = RAF.readInt();
+            int crc32 = mappedFile.get(ValueLayout.JAVA_INT, offset);
+            offset += 4;
 
             // check if file pointer at end:
-            if (RAF.getFilePointer() != file.length()) {
-                throw new IOException("Error parse video metadata: invalid pointer: " + RAF.getFilePointer());
+            if (offset != fileSize) {
+                throw new IOException("Error parse video metadata: invalid pointer: " + offset);
             }
 
             // collecting results and create VideoMetadata class
-            VideoMetadata metadata = new VideoMetadata(totalMetadataSize, encryptedJsonSize, encryptedPreviewSize, baseNonce, ecryptedJson, jsonTag, ecryptedPreview, previewTag, crc32);
+            VideoMetadata metadata = new VideoMetadata(totalMetadataSize, encryptedJsonSize, encryptedPreviewSize, baseNonce, encryptedJson, jsonTag, encryptedPreview, previewTag, crc32);
 
             // check the checksum
             if (crc32 != (int) metadata.calculateCRC32()) {
@@ -217,7 +231,6 @@ public class PVVFParser implements AutoCloseable {
         try {
             // step 1 - calculating chunk offset in file:
             long chunkStart = HEADER_SIZE + (TOTAL_CHUNK_SIZE * chunkIndex);
-            RAF.seek(chunkStart); // seek to chunk
 
             /*
             Задача прочитать чанк:
@@ -225,11 +238,10 @@ public class PVVFParser implements AutoCloseable {
             2 - ChaCha20 тег чанка
              */
 
-            byte[] chunkContent = new byte[PLAIN_CHUNK_SIZE]; // always 128kb
-            readToByteArray(chunkContent);
+            byte[] chunkContent = readBytes(chunkStart, PLAIN_CHUNK_SIZE);
+            chunkStart += PLAIN_CHUNK_SIZE;
 
-            byte[] chunkTag = new byte[TAG_SIZE]; // always 16b
-            readToByteArray(chunkTag);
+            byte[] chunkTag = readBytes(chunkStart, TAG_SIZE);
 
             // collecting results:
             return new VideoChunk(chunkIndex, chunkContent, chunkTag);
@@ -258,45 +270,26 @@ public class PVVFParser implements AutoCloseable {
     /**
      * Вспомогательный метод для чтения строки фиксированной длины.
      */
-    private String readString(byte[] array) throws IOException {
-        readToByteArray(array);
-        return new String(array, IO_CHARSET);
+    @Contract("_, _ -> new")
+    private @NotNull String readString(long offset, int length) {
+        return new String(readBytes(offset, length), IO_CHARSET);
     }
 
     /**
      * Вспомогательный метод для заполнения массива байт из текущей позиции RAF.
      * Выбрасывает исключение, если количество прочитанных байт не совпадает с длиной массива.
      */
-    private void readToByteArray(byte[] array) throws IOException {
-        int readed = RAF.read(array);
-        if (readed != array.length) {
-            throw new IOException("Invalid readed length: " + readed + "/" + array.length);
-        }
+    private byte @NotNull [] readBytes(long offset, int length) {
+        MemorySegment slice = mappedFile.asSlice(offset, length);
+        return slice.toArray(ValueLayout.JAVA_BYTE);
     }
 
     /**
-     * Инициализирует или переоткрывает {@link RandomAccessFile} в режиме чтения.
-     *
-     * @param file Файл для открытия.
-     * @throws RuntimeException если файл не найден или доступ запрещен.
-     */
-    private void updateRaf(File file) {
-        try {
-            if (RAF != null) {
-                RAF.close();
-            }
-            RAF = new RandomAccessFile(file, "r");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Закрывает {@link RandomAccessFile}.
+     * Закрывает file arena.
      * Вызывается автоматически при использовании в try-with-resources.
      */
     @Override
-    public void close() throws Exception {
-        RAF.close();
+    public void close() {
+        fileArena.close();
     }
 }

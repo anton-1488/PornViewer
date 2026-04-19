@@ -19,9 +19,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.javakeyring</groupId>
-            <artifactId>java-keyring</artifactId>
-            <version>1.0.4</version>
+            <groupId>io.github.anton-1488</groupId>
+            <artifactId>Keyer</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>com.plovdev.pornviewer</groupId>
