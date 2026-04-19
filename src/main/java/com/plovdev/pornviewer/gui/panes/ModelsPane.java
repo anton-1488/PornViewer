@@ -183,11 +183,8 @@ public class ModelsPane extends AnchorPane {
                     return;
                 }
 
-                System.out.println("start");
                 PornParser pornParser = adapter.getParser();
-                System.out.println("handled");
                 List<VideoCard> cards = pornParser.getAllVideos(handler.requestPorn(url));
-                System.out.println("parsed");
                 cards.forEach(e -> {
                     e.render();
                     Platform.runLater(() -> pane.getChildren().add(e));

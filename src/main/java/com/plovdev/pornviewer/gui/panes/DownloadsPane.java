@@ -15,6 +15,7 @@ import com.plovdev.pornviewer.utility.files.FileUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
@@ -22,6 +23,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +42,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -46,10 +50,14 @@ import java.util.stream.Stream;
 public class DownloadsPane extends AnchorPane {
     private static final Logger log = LoggerFactory.getLogger(DownloadsPane.class);
     private final ObservableList<DownloadedVideoCard> originNots = FXCollections.observableArrayList();
+    private final SortedList<DownloadedVideoCard> filteredVideos = new SortedList<>(originNots);
+
     private final DateTimeFormatter createFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
     private final FlowPane pane = new FlowPane(50, 50);
 
     public DownloadsPane() {
+        filteredVideos.setComparator(Comparator.comparing(DownloadedVideoCard::getCreationDate));
+
         BorderPane root = new BorderPane();
         VBox vBox = new VBox(10);
 
@@ -94,11 +102,12 @@ public class DownloadsPane extends AnchorPane {
         field.textProperty().addListener((e1, e2, e3) -> {
             clear.setVisible(!e3.isEmpty());
 
-            List<Pane> panes = new ArrayList<>(originNots);
+            List<Pane> panes = new ArrayList<>(filteredVideos);
             panes = panes.stream().filter(e -> {
                 VideoCard card = (VideoCard) e;
                 return card.getTitle().toLowerCase().contains(e3.trim().toLowerCase());
             }).toList();
+            pane.getChildren().clear();
             pane.getChildren().setAll(panes);
         });
         field.setOnAction(a -> {
@@ -165,7 +174,8 @@ public class DownloadsPane extends AnchorPane {
         };
     }
 
-    private CompletableFuture<DownloadedVideoCard> prepareCard(Path p) {
+    @Contract("_ -> new")
+    private @NotNull CompletableFuture<DownloadedVideoCard> prepareCard(Path p) {
         return CompletableFuture.supplyAsync(() -> {
             DownloadedVideoCard card = new DownloadedVideoCard(pane);
             File file = p.toFile();

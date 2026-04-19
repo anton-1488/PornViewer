@@ -73,7 +73,7 @@ public class PornTabPane extends TabPane {
                         PornVideoAdapter adapter = UserPreferences.get("0000").getPornAdapter();
                         Resourcer resourcer = adapter.getResourcer();
                         ModelInfo info = new ModelInfo();
-                        info.setUrl(resourcer.baseUrl() + resourcer.modelUrl(link.getParams().get("model")));
+                        info.setUrl(resourcer.baseUrl() + resourcer.modelUrl(link.getParams().get("name")));
                         log.info("Notify model sharing: {}", info.getUrl());
                         ClickListener.notifyListeners(info);
                     }

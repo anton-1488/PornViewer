@@ -23,10 +23,14 @@ import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class DownloadedVideoCard extends VideoCard {
     private static final Logger log = LoggerFactory.getLogger(DownloadedVideoCard.class);
+    private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+
     protected String path;
     protected String size;
     private String date;
@@ -35,6 +39,10 @@ public class DownloadedVideoCard extends VideoCard {
 
     public String getDate() {
         return date;
+    }
+
+    public LocalDate getCreationDate() {
+        return LocalDate.parse(date, format);
     }
 
     public void setDate(String date) {

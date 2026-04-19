@@ -10,7 +10,7 @@ public class DefRes implements Resourcer {
     public static final String BASE3 = "http://7porno365.net";
     public static final String BASE4 = "http://1porno365.info";
     public static final String BASE5 = "http://2porno365.info";
-    public static final String BASE6 = "http://6porno365.info";
+    public static final String BASE6 = "http://7porno365.info";
 
     @Override
     public String baseUrl() {
