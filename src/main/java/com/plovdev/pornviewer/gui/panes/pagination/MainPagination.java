@@ -10,6 +10,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
@@ -18,19 +20,17 @@ import java.util.Set;
 public class MainPagination {
     private final Set<ObservableList<Pane>> cahe = new HashSet<>();
     private final IntegerProperty page = new SimpleIntegerProperty(0);
-    private String baseUrl = "http://5porno365.net/russkoe";
-    private String nextUrl = "http://5porno365.net/russkoe/1";
-    private final TrinaglePaginationBlock block;
+    private String baseUrl = "http://7porno365.info/";
 
     public MainPagination(FlowPane content, TrinaglePaginationBlock block) {
         block.setOnBack(() -> {
-            int next = Math.max(0, page.get()-1);
+            int next = Math.max(0, page.get() - 1);
             content.getChildren().clear();
-            runPornParsing(content, baseUrl + "/" + next);
+            runPornParsing(content, baseUrl + next);
             block.getBack().setDisable(next == 0);
             page.set(next);
 
-            block.getBack().setText("Назад " + Math.max(0, next-1));
+            block.getBack().setText("Назад " + Math.max(0, next - 1));
             block.getNext().setText((page.get()) + " Вперед");
         });
         block.setOnToStart(() -> {
@@ -39,20 +39,18 @@ public class MainPagination {
             page.set(0);
         });
         block.setOnNext(() -> {
+            int next = Math.max(0, page.get() + 1);
             content.getChildren().clear();
-            runPornParsing(content, nextUrl);
-            page.set(page.get()+1);
+            runPornParsing(content, baseUrl + next);
+            page.set(next);
 
             block.getBack().setText("Назад " + page.get());
-            block.getNext().setText((page.get()+1) + " Вперед");
+            block.getNext().setText((next + 1) + " Вперед");
         });
-        this.block = block;
     }
 
     private void runPornParsing(FlowPane pane, String url) {
-        Thread thread = new Thread(getParseTask(pane, url), "Parser");
-        thread.setPriority(Thread.MAX_PRIORITY);
-        thread.start();
+        Thread.startVirtualThread(getParseTask(pane, url));
     }
 
     public Set<ObservableList<Pane>> getCahe() {
@@ -75,18 +73,14 @@ public class MainPagination {
         this.baseUrl = baseUrl;
     }
 
-    private Runnable getParseTask(FlowPane pane, String url) {
+    @Contract(pure = true)
+    private @NotNull Runnable getParseTask(FlowPane pane, String url) {
         return () -> {
             try {
                 PBPornHandler handler = new PBPornHandler();
-                System.out.println("start");
                 String htmlPage = handler.requestPorn(url);
-                nextUrl = handler.getNextLink(htmlPage);
-                block.getNext().setDisable(nextUrl == null);
-                DefPornParser pornParser = new DefPornParser();//new String(Files.readAllBytes(Path.of("src/html.html"))));
-                System.out.println("handled");
+                DefPornParser pornParser = new DefPornParser();
                 List<VideoCard> cards = pornParser.getAllVideos(htmlPage);
-                System.out.println("parsed");
                 cards.forEach(e -> {
                     e.render();
                     Platform.runLater(() -> pane.getChildren().add(e));

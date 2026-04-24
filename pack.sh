@@ -4,7 +4,7 @@
   --main-jar PornViewer.jar \
   --main-class com.plovdev.pornviewer.Launcher \
   --name "PornViewer" \
-  --app-version "1.7.7" \
+  --app-version "1.7.8" \
   --vendor "PlovDev" \
   --copyright "(c) 2026 PlovDev. All rights reserved." \
   --description "Secure and anonime 18+ video viewer with encrypting and plugins support" \
