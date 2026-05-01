@@ -5,13 +5,13 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-public class TrinaglePaginationBlock extends VBox {
+public class TrianglePaginationBlock extends VBox {
     private final Button toStart = new Button("В начало");
     private final Button back = new Button("Назад 0");
     private final Button next = new Button("1 Вперед");
 
 
-    public TrinaglePaginationBlock(Runnable r1, Runnable r2, Runnable r3) {
+    public TrianglePaginationBlock(Runnable r1, Runnable r2, Runnable r3) {
         super(5);
 
         toStart.setOnAction(e -> r1.run());

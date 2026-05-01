@@ -114,7 +114,7 @@ public class OkHttpRequestProvider implements PornRequestProvider {
         return 0;
     }
 
-    private Request configurateRequest(PornRequest request) {
+    private @NotNull Request configurateRequest(@NotNull PornRequest request) {
         Request.Builder builder = new Request.Builder();
         builder.url(request.url());
 

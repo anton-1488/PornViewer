@@ -4,6 +4,7 @@ import com.plovdev.pornviewer.databases.FavoriteVideos;
 import com.plovdev.pornviewer.httpquering.PornParser;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.*;
+import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,12 +22,11 @@ public class DefPornParser implements PornParser {
     private static final Logger log = LoggerFactory.getLogger(DefPornParser.class);
 
     @Override
-    public List<VideoCard> getAllVideos(String html) {
+    public List<VideoCard> getAllVideos(@NotNull String html) {
         Document doc = Jsoup.parse(html);
         List<VideoCard> cards = new ArrayList<>();
         try (ExecutorService service = Executors.newVirtualThreadPerTaskExecutor()) {
             List<Future<VideoCard>> futures = new ArrayList<>();
-
             Elements elements = doc.select("li.video_block");
             elements.forEach(e -> {
                 Future<VideoCard> future = service.submit(() -> (VideoCard) parseVideoBlock(e));
@@ -72,7 +72,7 @@ public class DefPornParser implements PornParser {
         return cards;
     }
 
-    private PornCard parseVideoBlock(Element videoElement) {
+    private @NotNull PornCard parseVideoBlock(@NotNull Element videoElement) {
         VideoCard pornCard = new VideoCard();
 
         pornCard.setCardId(Integer.parseInt(videoElement.id())); // "45894"
@@ -115,8 +115,7 @@ public class DefPornParser implements PornParser {
     @Override
     public List<Category> getCategories(String html) {
         List<Category> categories = new ArrayList<>();
-        try (ExecutorService service = Executors.newFixedThreadPool(10)) {
-
+        try (ExecutorService service = Executors.newVirtualThreadPerTaskExecutor()) {
             Document doc = Jsoup.parse(html);
 
             Elements elements = doc.select("div ul.top-menu li a[href]");

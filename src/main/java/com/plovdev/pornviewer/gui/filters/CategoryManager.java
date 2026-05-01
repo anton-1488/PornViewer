@@ -5,6 +5,7 @@ import com.plovdev.pornviewer.events.listeners.PornUpdateListener;
 import com.plovdev.pornviewer.httpquering.*;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.Category;
+import com.plovdev.pornviewer.pornimpl.porn365.DefRes;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
@@ -17,6 +18,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.util.Callback;
 import javafx.util.Duration;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -27,6 +29,7 @@ public class CategoryManager extends VBox {
     private static final ObservableList<Hyperlink> originNots = FXCollections.observableArrayList();
     private static final FilteredList<Hyperlink> filtereds = new FilteredList<>(originNots, p -> true);
     private static final SortedList<Hyperlink> sortered = new SortedList<>(filtereds);
+
     private final PBPornHandler handler = new PBPornHandler();
     private final Resourcer resourcer;
 
@@ -75,13 +78,14 @@ public class CategoryManager extends VBox {
     }
 
     private void load() {
-        new Thread(() -> {
+        Thread.startVirtualThread(() -> {
             PornVideoAdapter adapter = UserPreferences.get("0000").getPornAdapter();
             PornChecker checker = adapter.getChecker();
             if (!checker.hasCategories()) return;
 
             PornParser parser = adapter.getParser();
             List<Category> ctgs = parser.getCategories(handler.requestPorn(resourcer.baseUrl()));
+            ctgs.add(new Category("Главная", DefRes.BASE6));
 
             for (Category category : ctgs) {
                 Hyperlink link = new Hyperlink(category.getName());
@@ -91,10 +95,10 @@ public class CategoryManager extends VBox {
                 });
                 originNots.add(link);
             }
-        }).start();
+        });
     }
 
-    public void resize(AnchorPane anchorPane) {
+    public void resize(@NotNull AnchorPane anchorPane) {
         Pane pane = new Pane();
         pane.setPrefWidth(4);
 

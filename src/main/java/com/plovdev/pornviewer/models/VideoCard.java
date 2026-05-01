@@ -19,13 +19,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -197,7 +196,6 @@ public class VideoCard extends PornCard {
                 }
             });
 
-            // Панель с дополнительной информацией (показывается при наведении)
             Region region = new Region();
             HBox.setHgrow(region, Priority.ALWAYS);
 
@@ -257,7 +255,7 @@ public class VideoCard extends PornCard {
         }
     }
 
-    private void fillDownloadMenu(ImageView download) {
+    private void fillDownloadMenu(@NotNull ImageView download) {
         download.setOnMouseClicked(e -> {
             initInfo();
             ContextMenu menu = new ContextMenu();
@@ -281,28 +279,6 @@ public class VideoCard extends PornCard {
             handler.downloadPorn(url, info.getTitle(), info);
         }).start());
         return item;
-    }
-
-
-    public String getVideoDuration(javafx.util.Duration total) {
-        if (total != javafx.util.Duration.UNKNOWN) {
-            BigDecimal mills = new BigDecimal(String.valueOf(total.toMillis()));
-
-            BigDecimal totalSeconds = mills.divide(new BigDecimal("1000.0"), 10, RoundingMode.HALF_UP);
-
-            int hours = totalSeconds.intValue() / (60 * 60);
-            String h = "";
-            if (hours != 0) h = hours + ":";
-
-            BigDecimal minutes = totalSeconds.divide(new BigDecimal("60.0"), 10, RoundingMode.HALF_UP);
-            BigDecimal seconds = totalSeconds.remainder(new BigDecimal("60.0"));
-
-            long sec = Math.round(seconds.doubleValue());
-            long min = Math.round(minutes.doubleValue());
-
-            return h + String.format("%2s:%2s", min, sec);
-        }
-        return "00:00";
     }
 
     @Override

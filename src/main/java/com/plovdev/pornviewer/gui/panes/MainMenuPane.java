@@ -4,7 +4,7 @@ import com.plovdev.pornviewer.databases.UserPreferences;
 import com.plovdev.pornviewer.events.listeners.FavoriteListener;
 import com.plovdev.pornviewer.events.listeners.PornUpdateListener;
 import com.plovdev.pornviewer.gui.filters.CategoryManager;
-import com.plovdev.pornviewer.gui.filters.TrinaglePaginationBlock;
+import com.plovdev.pornviewer.gui.filters.TrianglePaginationBlock;
 import com.plovdev.pornviewer.gui.panes.pagination.MainPagination;
 import com.plovdev.pornviewer.httpquering.PornChecker;
 import com.plovdev.pornviewer.httpquering.PornParser;
@@ -14,6 +14,8 @@ import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.utility.LauncherHelper;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -21,6 +23,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -35,7 +39,7 @@ public class MainMenuPane extends AnchorPane {
     private final PornChecker checker = adapter.getChecker();
     private final PBPornHandler handler = new PBPornHandler();
     private static final double TRIGGER_THRESHOLD = 300.0;
-    private String CURRENT_URL = resourcer.baseUrl();
+    private final StringProperty CURRENT_URL = new SimpleStringProperty(resourcer.baseUrl());
     private double totalDeltaY = 0;
 
     public MainMenuPane() {
@@ -73,7 +77,7 @@ public class MainMenuPane extends AnchorPane {
         clear.getStyleClass().add("clear-search");
 
 
-        TrinaglePaginationBlock block = new TrinaglePaginationBlock(null, null, null);
+        TrianglePaginationBlock block = new TrianglePaginationBlock(null, null, null);
         block.setTranslateX(38);
         block.setTranslateY(35);
         block.prefWidthProperty().bind(widthProperty().divide(5));
@@ -109,7 +113,7 @@ public class MainMenuPane extends AnchorPane {
             if (!txt.isEmpty()) {
                 String url = resourcer.baseUrl() + resourcer.searchUrl() + URLEncoder.encode(field.getText(), Charset.defaultCharset()) + "/popular";
                 runPornParsing(pane, url);
-                CURRENT_URL = url;
+                CURRENT_URL.setValue(url);
             }
         });
         field.textProperty().addListener((e1, e2, e3) -> {
@@ -126,6 +130,10 @@ public class MainMenuPane extends AnchorPane {
             pane.getChildren().setAll(panes);
         });
 
+        CURRENT_URL.addListener((p1, p2, p3) -> {
+            pagination.reset();
+            pagination.setBaseUrl(CURRENT_URL.getValue());
+        });
 
         ScrollPane pornScroll = new ScrollPane(pane);
         pornScroll.getStyleClass().add("porn-scroll");
@@ -141,7 +149,7 @@ public class MainMenuPane extends AnchorPane {
                 }
                 updateDelta(pane, e.getDeltaY());
                 if (totalDeltaY >= TRIGGER_THRESHOLD) {
-                    runPornParsing(pane, CURRENT_URL);
+                    runPornParsing(pane, CURRENT_URL.getValue());
                     totalDeltaY = 0;
                     pane.setTranslateY(0);
                     e.consume();
@@ -164,7 +172,7 @@ public class MainMenuPane extends AnchorPane {
             if (t == 0) {
                 runPornParsing(pane, e);
                 pagination.setBaseUrl(e);
-                CURRENT_URL = e;
+                CURRENT_URL.setValue(e);
             }
         });
 
@@ -191,19 +199,20 @@ public class MainMenuPane extends AnchorPane {
         }
     }
 
-    private void updateDelta(FlowPane pane, double delta) {
+    private void updateDelta(@NotNull FlowPane pane, double delta) {
         totalDeltaY += delta;
         pane.setTranslateY(calculateRubberPull(totalDeltaY));
     }
 
 
-    private void runPornParsing(FlowPane pane, String url) {
+    private void runPornParsing(@NotNull FlowPane pane, String url) {
         pane.getChildren().clear();
         originNots.clear();
         Thread.startVirtualThread(getParseTask(pane, url));
     }
 
-    private Runnable getParseTask(FlowPane pane, String url) {
+    @Contract(pure = true)
+    private @NotNull Runnable getParseTask(FlowPane pane, String url) {
         return () -> {
             try {
                 PornParser pornParser = adapter.getParser();

@@ -18,7 +18,7 @@ public class VideoInfoParser {
     private static final String DURATION = "og:duration";
 
     private static final String COL_VIDEO = "div.col_video";
-    private static final int URL_ID_OFFSET = "http://5porno365.info/movie/".length() + 1;
+    private static final int URL_ID_OFFSET = 29;
 
     public static VideoInfo parseInfo(Document document) {
         VideoInfo info = new VideoInfo();

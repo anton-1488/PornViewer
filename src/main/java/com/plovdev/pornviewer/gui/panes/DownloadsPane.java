@@ -145,7 +145,8 @@ public class DownloadsPane extends AnchorPane {
         Thread.startVirtualThread(getParseTask(pane));
     }
 
-    private Runnable getParseTask(FlowPane pane) {
+    @Contract(pure = true)
+    private @NotNull Runnable getParseTask(FlowPane pane) {
         return () -> {
             originNots.clear();
             Platform.runLater(() -> pane.getChildren().clear());

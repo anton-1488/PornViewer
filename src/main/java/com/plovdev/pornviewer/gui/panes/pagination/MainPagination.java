@@ -1,28 +1,37 @@
 package com.plovdev.pornviewer.gui.panes.pagination;
 
-import com.plovdev.pornviewer.gui.filters.TrinaglePaginationBlock;
+import com.plovdev.pornviewer.gui.filters.TrianglePaginationBlock;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.pornimpl.porn365.DefPornParser;
+import com.plovdev.pornviewer.pornimpl.porn365.DefRes;
+import com.plovdev.pornviewer.utility.Globals;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.collections.ObservableList;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Pane;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public class MainPagination {
-    private final Set<ObservableList<Pane>> cahe = new HashSet<>();
+    private static final Logger log = LoggerFactory.getLogger(MainPagination.class);
+    private final Object parserLock = new Object();
     private final IntegerProperty page = new SimpleIntegerProperty(0);
-    private String baseUrl = "http://7porno365.info/";
+    private String baseUrl = DefRes.BASE6;
+    private final TrianglePaginationBlock block;
+    private final DefPornParser pornParser = new DefPornParser();
+    private final PBPornHandler pornHandler = new PBPornHandler();
+    private volatile CompletableFuture<List<VideoCard>> currentParser = null;
 
-    public MainPagination(FlowPane content, TrinaglePaginationBlock block) {
+    public MainPagination(FlowPane content, @NotNull TrianglePaginationBlock block) {
+        this.block = block;
+        setBaseUrl(baseUrl);
+
         block.setOnBack(() -> {
             int next = Math.max(0, page.get() - 1);
             content.getChildren().clear();
@@ -35,8 +44,8 @@ public class MainPagination {
         });
         block.setOnToStart(() -> {
             content.getChildren().clear();
+            reset();
             runPornParsing(content, baseUrl);
-            page.set(0);
         });
         block.setOnNext(() -> {
             int next = Math.max(0, page.get() + 1);
@@ -50,44 +59,46 @@ public class MainPagination {
     }
 
     private void runPornParsing(FlowPane pane, String url) {
-        Thread.startVirtualThread(getParseTask(pane, url));
+        CompletableFuture<List<VideoCard>> current = currentParser;
+        if (current != null && !current.isDone()) {
+            log.info("Cancelling previous task");
+            current.cancel(true);
+        }
+
+        CompletableFuture<List<VideoCard>> newParser = getParseTask(url);
+        synchronized (parserLock) {
+            currentParser = newParser;
+        }
+
+        newParser.thenAccept(cards -> {
+            synchronized (parserLock) {
+                if (currentParser != newParser) {
+                    return;
+                }
+            }
+            Platform.runLater(() -> cards.forEach(e -> {
+                e.render();
+                pane.getChildren().add(e);
+            }));
+        });
     }
 
-    public Set<ObservableList<Pane>> getCahe() {
-        return cahe;
+    public void reset() {
+        page.set(0);
+        block.getBack().setText("Назад 0");
+        block.getNext().setText("1 Вперед");
     }
 
-    public int getPage() {
-        return page.get();
-    }
-
-    public IntegerProperty pageProperty() {
-        return page;
-    }
-
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
+    public void setBaseUrl(@NotNull String baseUrl) {
+        this.baseUrl = baseUrl + (baseUrl.endsWith("/") ? "" : "/");
     }
 
     @Contract(pure = true)
-    private @NotNull Runnable getParseTask(FlowPane pane, String url) {
-        return () -> {
-            try {
-                PBPornHandler handler = new PBPornHandler();
-                String htmlPage = handler.requestPorn(url);
-                DefPornParser pornParser = new DefPornParser();
-                List<VideoCard> cards = pornParser.getAllVideos(htmlPage);
-                cards.forEach(e -> {
-                    e.render();
-                    Platform.runLater(() -> pane.getChildren().add(e));
+    private @NotNull CompletableFuture<List<VideoCard>> getParseTask(String url) {
+        return CompletableFuture.supplyAsync(() -> pornParser.getAllVideos(pornHandler.requestPorn(url)), Globals.GLOBAL_EXECUTOR)
+                .exceptionally(throwable -> {
+                    log.error("Error was happened: ", throwable);
+                    return List.of();
                 });
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
-        };
     }
 }

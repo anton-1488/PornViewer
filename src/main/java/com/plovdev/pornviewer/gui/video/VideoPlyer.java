@@ -6,13 +6,13 @@ import com.plovdev.pornviewer.models.VideoCard;
 import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +33,9 @@ public class VideoPlyer extends StackPane {
     private final PauseTransition hideTimer;
     private boolean isPlay = false;
     private final ToggleButton playStop = new ToggleButton("| |");
+    private Duration oneVideoDurationPercent = Duration.millis(5000);
 
-    public VideoPlyer(Media media, VideoCard card, Stage stage) {
+    public VideoPlyer(Media media, VideoCard card, @NotNull Stage stage) {
         stage.setMaximized(true);
 
         mediaPlayer = new MediaPlayer(media);
@@ -48,9 +49,12 @@ public class VideoPlyer extends StackPane {
         totalLabel.getStyleClass().add("marker-download");
         timeLabel.getStyleClass().add("marker-download");
         mediaPlayer.setOnReady(() -> {
-            totalLabel.setText(DurationUtils.formatDurationToString(DurationUtils.ofJavaFxDuraion(mediaPlayer.getTotalDuration())));
-            timecodesBar.setTotalDuration(DurationUtils.ofJavaFxDuraion(mediaPlayer.getTotalDuration()));
+            Duration totalDuration = mediaPlayer.getTotalDuration();
+            totalLabel.setText(DurationUtils.formatDurationToString(DurationUtils.ofJavaFxDuraion(totalDuration)));
+            timecodesBar.setTotalDuration(DurationUtils.ofJavaFxDuraion(totalDuration));
             timecodesBar.addTimecodes(card.getTimecodes().stream().map(t -> new TimecodeView(t.getText(), t.getTime())).toList());
+            double totalMillis = totalDuration.toMillis();
+            oneVideoDurationPercent = Duration.millis(totalMillis / 100);
         });
 
         playStop.setMinSize(70, 70);
@@ -136,27 +140,37 @@ public class VideoPlyer extends StackPane {
             if (event.isControlDown()) {
                 magnifier.toggle();
             }
-            if (event.getCode() == KeyCode.T) {
-                if (card instanceof FavoriteVideo || card instanceof DownloadedVideoCard) {
-                    TextInputDialog inputText = new TextInputDialog();
-                    inputText.setTitle("Timecode");
-                    inputText.setContentText("Введите описание таймкода:");
-                    Optional<String> optText = inputText.showAndWait();
-                    optText.ifPresent(text -> {
-                        if (!text.isEmpty()) {
-                            log.info("Adding timecode text: {}", text);
-                            TimecodeView view = new TimecodeView(text, DurationUtils.ofJavaFxDuraion(mediaPlayer.getCurrentTime()));
-                            view.setOnChecked(() -> mediaPlayer.seek(DurationUtils.ofJavaDuration(view.getTime())));
-                            timecodesBar.addTimecode(view);
-                        }
-                    });
+            switch (event.getCode()) {
+                case T -> {
+                    if (card instanceof FavoriteVideo || card instanceof DownloadedVideoCard) {
+                        TextInputDialog inputText = new TextInputDialog();
+                        inputText.setTitle("Timecode");
+                        inputText.setContentText("Введите описание таймкода:");
+                        Optional<String> optText = inputText.showAndWait();
+                        optText.ifPresent(text -> {
+                            if (!text.isEmpty()) {
+                                log.info("Adding timecode text: {}", text);
+                                TimecodeView view = new TimecodeView(text, DurationUtils.ofJavaFxDuraion(mediaPlayer.getCurrentTime()));
+                                view.setOnChecked(() -> mediaPlayer.seek(DurationUtils.ofJavaDuration(view.getTime())));
+                                timecodesBar.addTimecode(view);
+                            }
+                        });
+                    }
                 }
-            }
-            if (event.getCode() == KeyCode.SPACE) {
-                if (isPlay) {
-                    pause();
-                } else {
-                    play();
+                case SPACE -> {
+                    if (isPlay) {
+                        pause();
+                    } else {
+                        play();
+                    }
+                }
+                case RIGHT -> {
+                    Duration current = mediaPlayer.getCurrentTime();
+                    mediaPlayer.seek(current.add(oneVideoDurationPercent));
+                }
+                case LEFT -> {
+                    Duration current = mediaPlayer.getCurrentTime();
+                    mediaPlayer.seek(current.subtract(oneVideoDurationPercent));
                 }
             }
             event.consume();

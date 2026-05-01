@@ -8,6 +8,7 @@ import com.plovdev.pornviewer.models.VideoInfo;
 import javafx.scene.Scene;
 import javafx.scene.media.Media;
 import javafx.stage.Stage;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,7 @@ import java.util.Objects;
 public class VideoPlayerPane extends Stage {
     private static final Logger log = LoggerFactory.getLogger(VideoPlayerPane.class);
 
-    public VideoPlayerPane(VideoCard card) {
+    public VideoPlayerPane(@NotNull VideoCard card) {
         log.info("In player");
         PornVideoAdapter adapter = UserPreferences.get("0000").getPornAdapter();
         PornParser parser = adapter.getParser();
