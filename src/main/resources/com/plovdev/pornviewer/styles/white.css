@@ -502,3 +502,14 @@
     -fx-text-fill: #ffffff !important;
     -fx-background-radius: 5px;
 }
+
+.deep-search-button {
+    -fx-background-color: rgb(255, 180, 40);
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-font-size: 17px;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+}

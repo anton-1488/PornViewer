@@ -192,7 +192,7 @@ public class VideoCard extends PornCard {
 
                     Platform.runLater(() -> box.getChildren().addFirst(view));
                 } catch (Exception e) {
-                    log.error("Error to load preview: {}", e.getMessage());
+                    log.debug("Error to load preview: {}", e.getMessage());
                 }
             });
 

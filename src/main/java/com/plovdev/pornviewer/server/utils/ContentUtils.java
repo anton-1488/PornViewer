@@ -7,6 +7,7 @@ import com.plovdev.pornviewer.encryptionsupport.videoparser.videomodel.VideoMeta
 import com.plovdev.pornviewer.server.decryptionimpl.ServerDecryptedStreamer;
 import com.plovdev.pornviewer.utility.files.FileUtils;
 import com.sun.net.httpserver.HttpExchange;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +67,7 @@ public class ContentUtils {
                 sendPlainRange(file, realStart, contentLength, os);
             }
         } catch (Exception e) {
-            log.error("Error to process chunk request: {}", e.getMessage());
+            log.debug("Error to process chunk request: {}", e.getMessage());
         }
     }
 
@@ -91,7 +92,7 @@ public class ContentUtils {
     }
 
 
-    public static File checkFile(HttpExchange exchange, Map<String, String> params) throws Exception {
+    public static @NotNull File checkFile(HttpExchange exchange, @NotNull Map<String, String> params) throws Exception {
         String filePath = params.get("file");
         if (filePath == null) {
             exchange.sendResponseHeaders(400, -1);

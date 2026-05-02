@@ -88,6 +88,7 @@ public class MainMenuPane extends AnchorPane {
         Button deepSaarch = new Button("Глубокий поиск");
         deepSaarch.setVisible(false);
         deepSaarch.getStyleClass().add("deep-search-button");
+        deepSaarch.setTranslateY(5);
         deepSaarch.setOnAction(e -> {
             deepSaarch.setDisable(true);
             try {
@@ -119,7 +120,7 @@ public class MainMenuPane extends AnchorPane {
         block.prefWidthProperty().bind(widthProperty().divide(5));
 
         Region space = new Region();
-        space.setPrefWidth(30);
+        space.setPrefWidth(60);
 
         vBox.getChildren().addAll(new HBox(field, clear, space, deepSaarch), new HBox(30, new VBox(10, box1, box3), new VBox(10, box4, box6), r1, block, categ));
         vBox.setPadding(new Insets(0, 0, 30, 0));
@@ -159,6 +160,7 @@ public class MainMenuPane extends AnchorPane {
             clear.setVisible(!e3.isEmpty());
             deepSaarch.setVisible(!e3.isEmpty());
             if (!(e3.startsWith("pv://") || e3.startsWith("pornviewer://"))) {
+                deepSaarch.setVisible(true);
                 List<Pane> panes = new ArrayList<>(originNots);
                 panes = panes.stream().filter(e -> {
                     if (e instanceof VideoCard card) {
@@ -168,6 +170,8 @@ public class MainMenuPane extends AnchorPane {
                 }).toList();
 
                 pane.getChildren().setAll(panes);
+            } else {
+                deepSaarch.setVisible(false);
             }
         });
 

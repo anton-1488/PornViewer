@@ -1,9 +1,11 @@
 package com.plovdev.pornviewer.gui.utils;
 
 import com.plovdev.pornviewer.events.SearcherFoundVideoListener;
+import com.plovdev.pornviewer.gui.toast.Toast;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.pornimpl.porn365.DefPornParser;
+import com.plovdev.pornviewer.utility.Globals;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -16,6 +18,7 @@ public class DeepSearcher {
     private static final Logger log = LoggerFactory.getLogger(DeepSearcher.class);
 
     public static synchronized void searchVideo(@NotNull DefPornParser pornParser, String url, List<String> keywords, @NotNull SearcherFoundVideoListener onFound) {
+        new Toast(Globals.getPrimaryStage(), "Начался глубокий поиск").show();
         PBPornHandler handler = new PBPornHandler();
         String html = handler.requestPorn(url + 0);
         Optional<VideoCard> mc = containsKeywordsInVideos(pornParser.getAllVideos(html), keywords);
@@ -33,6 +36,8 @@ public class DeepSearcher {
                 Thread.currentThread().interrupt();
             }
         }
+
+        new Toast(Globals.getPrimaryStage(), "Глубокий поиск завершен").show();
     }
 
     @Contract(pure = true)

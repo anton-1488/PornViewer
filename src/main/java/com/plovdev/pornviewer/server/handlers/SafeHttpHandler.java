@@ -49,7 +49,7 @@ public class SafeHttpHandler implements HttpHandler {
         }
 
         String method = exchange.getRequestMethod();
-        log.info("Handling request. Method: {}", method);
+        log.debug("Handling request. Method: {}", method);
         if (!checkMethod(method)) return;
 
         processRequest(params, exchange);

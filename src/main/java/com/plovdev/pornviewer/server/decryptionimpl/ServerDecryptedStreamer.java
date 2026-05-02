@@ -70,7 +70,7 @@ public class ServerDecryptedStreamer {
             }
             stream.flush();
         } catch (IOException e) {
-            log.error("Error to transfer video: {}", e.getMessage());
+            log.debug("Error to transfer video: {}", e.getMessage());
         }
     }
 }
