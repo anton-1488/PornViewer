@@ -9,22 +9,33 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class OkHttpRequestProvider implements PornRequestProvider {
     private static final Logger log = LoggerFactory.getLogger(OkHttpRequestProvider.class);
+    private final String sessionToken = UUID.randomUUID().toString();
     private final OkHttpClient client;
 
     public OkHttpRequestProvider() {
         client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
                 .followRedirects(true)
+                .retryOnConnectionFailure(true)
+                .addInterceptor(chain -> {
+                    Request originalRequest = chain.request();
+                    String existingCookies = originalRequest.header("Cookie");
+                    String cookieHeader = "userToken=" + sessionToken;
+
+                    if (existingCookies != null && !existingCookies.isEmpty()) {
+                        cookieHeader = existingCookies + "; " + cookieHeader;
+                    }
+                    Request.Builder builder = originalRequest.newBuilder().header("Cookie", cookieHeader);
+                    return chain.proceed(builder.build());
+                })
                 .cookieJar(new CookieJar() {
                     private final Map<String, List<Cookie>> cookieStore = new ConcurrentHashMap<>();
 
@@ -82,7 +93,7 @@ public class OkHttpRequestProvider implements PornRequestProvider {
     public InputStream requestStream(PornRequest request) {
         try {
             Response response = client.newCall(configurateRequest(request)).execute();
-            if (response.isSuccessful() && response.body() != null) {
+            if (response.isSuccessful()) {
                 return response.body().byteStream();
             }
             response.close();
@@ -96,7 +107,7 @@ public class OkHttpRequestProvider implements PornRequestProvider {
 
 
     @Override
-    public long checkContentLength(PornRequest request) {
+    public long checkContentLength(@NotNull PornRequest request) {
         if (!request.method().equals("HEAD")) {
             request = PornRequest.head(request.url());
         }

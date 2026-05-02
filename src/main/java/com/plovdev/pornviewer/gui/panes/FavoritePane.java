@@ -10,8 +10,10 @@ import com.plovdev.pornviewer.httpquering.PornVideoAdapter;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.FavoriteVideo;
 import com.plovdev.pornviewer.models.FavoriteVideoInfo;
+import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.models.VideoInfo;
 import com.plovdev.pornviewer.utility.LauncherHelper;
+import com.plovdev.pornviewer.utility.deeplink.DeepLinker;
 import com.plovdev.pornviewer.utility.json.JSONSerializer;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -80,7 +82,6 @@ public class FavoritePane extends AnchorPane {
         clear.setVisible(false);
         clear.setOnMousePressed(e -> field.setText(""));
         clear.getStyleClass().add("clear-search");
-
 
         Button addGroup = new Button("➕");
         addGroup.getStyleClass().add("add-favorite-group");
@@ -155,18 +156,20 @@ public class FavoritePane extends AnchorPane {
         }
         // Favorites groups::[end]
 
+        DeepLinker.bindAutocompleteToSearchFiled(field);
         field.textProperty().addListener((e1, e2, e3) -> {
             clear.setVisible(!e3.isEmpty());
+            if (!(e3.startsWith("pv://") || e3.startsWith("pornviewer://"))) {
+                List<Pane> panes = new ArrayList<>(currentList);
+                panes = panes.stream().filter(e -> {
+                    if (e instanceof FavoriteVideo card) {
+                        return card.getTitle().toLowerCase().contains(e3.trim().toLowerCase());
+                    }
+                    return true;
+                }).toList();
 
-            List<Pane> panes = new ArrayList<>(currentList);
-            panes = panes.stream().filter(e -> {
-                if (e instanceof FavoriteVideo card) {
-                    return card.getTitle().toLowerCase().contains(e3.trim().toLowerCase());
-                }
-                return true;
-            }).toList();
-
-            pane.getChildren().setAll(panes);
+                pane.getChildren().setAll(panes);
+            }
         });
 
         field.setOnAction(a -> {

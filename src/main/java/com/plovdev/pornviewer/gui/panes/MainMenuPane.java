@@ -6,13 +6,16 @@ import com.plovdev.pornviewer.events.listeners.PornUpdateListener;
 import com.plovdev.pornviewer.gui.filters.CategoryManager;
 import com.plovdev.pornviewer.gui.filters.TrianglePaginationBlock;
 import com.plovdev.pornviewer.gui.panes.pagination.MainPagination;
+import com.plovdev.pornviewer.gui.utils.DeepSearcher;
 import com.plovdev.pornviewer.httpquering.PornChecker;
 import com.plovdev.pornviewer.httpquering.PornParser;
 import com.plovdev.pornviewer.httpquering.PornVideoAdapter;
 import com.plovdev.pornviewer.httpquering.Resourcer;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.VideoCard;
+import com.plovdev.pornviewer.pornimpl.porn365.DefPornParser;
 import com.plovdev.pornviewer.utility.LauncherHelper;
+import com.plovdev.pornviewer.utility.deeplink.DeepLinker;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -25,14 +28,18 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainMenuPane extends AnchorPane {
+    private static final Logger log = LoggerFactory.getLogger(MainMenuPane.class);
     private final ObservableList<VideoCard> originNots = FXCollections.observableArrayList();
     private final PornVideoAdapter adapter = UserPreferences.get("0000").getPornAdapter();
     private final Resourcer resourcer = adapter.getResourcer();
@@ -53,6 +60,8 @@ public class MainMenuPane extends AnchorPane {
 
         vBox.getStyleClass().add("vbox");
         TextField field = new TextField();
+        DeepLinker.bindAutocompleteToSearchFiled(field);
+
         field.getStyleClass().add("porn-search");
         field.prefWidthProperty().bind(widthProperty().divide(1.2));
         field.setPrefHeight(35);
@@ -76,13 +85,43 @@ public class MainMenuPane extends AnchorPane {
         clear.setOnMousePressed(e -> field.setText(""));
         clear.getStyleClass().add("clear-search");
 
+        Button deepSaarch = new Button("Глубокий поиск");
+        deepSaarch.setVisible(false);
+        deepSaarch.getStyleClass().add("deep-search-button");
+        deepSaarch.setOnAction(e -> {
+            deepSaarch.setDisable(true);
+            try {
+                TextInputDialog keywordsInput = new TextInputDialog();
+                keywordsInput.setTitle("Input");
+                keywordsInput.setHeaderText("Input keywords");
+                keywordsInput.setContentText("Введите ключевые слова для поиска через ','");
+                keywordsInput.showAndWait().ifPresent(string -> {
+                    originNots.clear();
+                    String[] keywords = string.toLowerCase().replace(" ", "").split(",");
+                    String url = resourcer.baseUrl() + resourcer.searchUrl() + URLEncoder.encode(field.getText(), Charset.defaultCharset()) + "/popular/";
+                    DeepSearcher.searchVideo(new DefPornParser(), url, Arrays.stream(keywords).toList(), card -> {
+                        card.render();
+                        originNots.add(card);
+                        Platform.runLater(() -> pane.getChildren().add(card));
+                    });
+                });
+            } catch (Exception ex) {
+                log.error("Error while deep search: ", ex);
+            } finally {
+                deepSaarch.setDisable(false);
+            }
+        });
+
 
         TrianglePaginationBlock block = new TrianglePaginationBlock(null, null, null);
         block.setTranslateX(38);
         block.setTranslateY(35);
         block.prefWidthProperty().bind(widthProperty().divide(5));
 
-        vBox.getChildren().addAll(new HBox(field, clear), new HBox(30, new VBox(10, box1, box3), new VBox(10, box4, box6), r1, block, categ));
+        Region space = new Region();
+        space.setPrefWidth(30);
+
+        vBox.getChildren().addAll(new HBox(field, clear, space, deepSaarch), new HBox(30, new VBox(10, box1, box3), new VBox(10, box4, box6), r1, block, categ));
         vBox.setPadding(new Insets(0, 0, 30, 0));
         root.setTop(new VBox(vBox));
 
@@ -118,16 +157,18 @@ public class MainMenuPane extends AnchorPane {
         });
         field.textProperty().addListener((e1, e2, e3) -> {
             clear.setVisible(!e3.isEmpty());
+            deepSaarch.setVisible(!e3.isEmpty());
+            if (!(e3.startsWith("pv://") || e3.startsWith("pornviewer://"))) {
+                List<Pane> panes = new ArrayList<>(originNots);
+                panes = panes.stream().filter(e -> {
+                    if (e instanceof VideoCard card) {
+                        return card.getTitle().toLowerCase().contains(e3.trim().toLowerCase());
+                    }
+                    return true;
+                }).toList();
 
-            List<Pane> panes = new ArrayList<>(originNots);
-            panes = panes.stream().filter(e -> {
-                if (e instanceof VideoCard card) {
-                    return card.getTitle().toLowerCase().contains(e3.trim().toLowerCase());
-                }
-                return true;
-            }).toList();
-
-            pane.getChildren().setAll(panes);
+                pane.getChildren().setAll(panes);
+            }
         });
 
         CURRENT_URL.addListener((p1, p2, p3) -> {

@@ -8,9 +8,9 @@ import com.plovdev.pornviewer.gui.video.DurationUtils;
 import com.plovdev.pornviewer.models.DownloadedVideoCard;
 import com.plovdev.pornviewer.models.DownloadedVideoInfo;
 import com.plovdev.pornviewer.models.DownloadingVideoCard;
-import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.utility.Globals;
 import com.plovdev.pornviewer.utility.LauncherHelper;
+import com.plovdev.pornviewer.utility.deeplink.DeepLinker;
 import com.plovdev.pornviewer.utility.files.FileUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -50,12 +50,12 @@ import java.util.stream.Stream;
 public class DownloadsPane extends AnchorPane {
     private static final Logger log = LoggerFactory.getLogger(DownloadsPane.class);
     private final ObservableList<DownloadedVideoCard> originNots = FXCollections.observableArrayList();
-    private final SortedList<DownloadedVideoCard> filteredVideos = new SortedList<>(originNots);
 
     private final DateTimeFormatter createFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
     private final FlowPane pane = new FlowPane(50, 50);
 
     public DownloadsPane() {
+        SortedList<DownloadedVideoCard> filteredVideos = new SortedList<>(originNots);
         filteredVideos.setComparator(Comparator.comparing(DownloadedVideoCard::getCreationDate));
 
         BorderPane root = new BorderPane();
@@ -101,15 +101,19 @@ public class DownloadsPane extends AnchorPane {
 
         field.textProperty().addListener((e1, e2, e3) -> {
             clear.setVisible(!e3.isEmpty());
+            if (!(e3.startsWith("pv://") || e3.startsWith("pornviewer://"))) {
+                List<Pane> panes = new ArrayList<>(originNots);
+                panes = panes.stream().filter(e -> {
+                    if (e instanceof DownloadingVideoCard card) {
+                        return card.getTitle().toLowerCase().contains(e3.trim().toLowerCase());
+                    }
+                    return true;
+                }).toList();
 
-            List<Pane> panes = new ArrayList<>(filteredVideos);
-            panes = panes.stream().filter(e -> {
-                VideoCard card = (VideoCard) e;
-                return card.getTitle().toLowerCase().contains(e3.trim().toLowerCase());
-            }).toList();
-            pane.getChildren().clear();
-            pane.getChildren().setAll(panes);
+                pane.getChildren().setAll(panes);
+            }
         });
+        DeepLinker.bindAutocompleteToSearchFiled(field);
         field.setOnAction(a -> {
             String txt = field.getText();
             if (txt.startsWith("pv://") || txt.startsWith("pornviewer://")) {

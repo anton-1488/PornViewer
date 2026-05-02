@@ -56,4 +56,17 @@ public class DefRes implements Resourcer {
     public String buildVideoUrlFromId(int id) {
         return baseUrl() + videoUrl() + id;
     }
+
+    @Override
+    public String getTrailerUrl(String videoId) {
+        if (videoId == null || videoId.isEmpty()) return null;
+
+        int idInt = Integer.parseInt(videoId);
+
+        if (idInt < 10) {
+            return String.format("https://vid8.vide365.com/porno365/trailers/0/%s.mp4", videoId);
+        } else {
+            return String.format("https://vid8.vide365.com/porno365/trailers/%c/%c/%s.mp4", videoId.charAt(0), videoId.charAt(1), videoId);
+        }
+    }
 }

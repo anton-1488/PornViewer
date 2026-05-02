@@ -467,3 +467,38 @@
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
 }
+
+
+.auto-complete-popup {
+    -fx-background-color: transparent !important;
+    -fx-border-color: transparent !important;
+}
+
+.auto-complete-popup > .list-view {
+    -fx-background-color: rgba(30, 30, 30, 0.95) !important;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 2px;
+    -fx-background-insets: 0;
+}
+
+.auto-complete-popup > .list-view > .virtual-flow,
+.auto-complete-popup > .list-view > .virtual-flow > .clipped-container,
+.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet {
+    -fx-background-color: transparent !important;
+}
+
+.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: rgb(255, 180, 40);
+    -fx-font-size: 18px;
+    -fx-font-family: "Arial";
+    -fx-padding: 5px 10px;
+}
+
+.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover,
+.auto-complete-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
+    -fx-background-color: #3d3d3d !important;
+    -fx-text-fill: #ffffff !important;
+    -fx-background-radius: 5px;
+}

@@ -11,6 +11,7 @@ import com.plovdev.pornviewer.models.ModelCard;
 import com.plovdev.pornviewer.models.ModelInfo;
 import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.utility.LauncherHelper;
+import com.plovdev.pornviewer.utility.deeplink.DeepLinker;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,6 +19,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +96,7 @@ public class ModelsPane extends AnchorPane {
             back.setVisible(false);
         });
 
+        DeepLinker.bindAutocompleteToSearchFiled(field);
         field.setOnAction(e -> {
             if (!checker.canSearch()) return;
 
@@ -111,20 +115,18 @@ public class ModelsPane extends AnchorPane {
         });
         field.textProperty().addListener((e1,e2,e3) -> {
             clear.setVisible(!e3.isEmpty());
+            if (!(e3.startsWith("pv://") || e3.startsWith("pornviewer://"))) {
+                List<Pane> panes = new ArrayList<>(originNots);
+                panes = panes.stream().filter(e -> {
+                    if (e instanceof ModelCard card) {
+                        return card.getTitle().toLowerCase().contains(e3.trim().toLowerCase());
+                    }
+                    return true;
+                }).toList();
 
-            List<Pane> panes = new ArrayList<>(originNots);
-            panes = panes.stream().filter(e -> {
-                if (e instanceof ModelCard card) {
-                    return card.getModelInfo().getRusName().toLowerCase().contains(e3.trim().toLowerCase());
-                } else if (e instanceof VideoCard card) {
-                    return card.getTitle().toLowerCase().contains(e3.trim().toLowerCase());
-                }
-                return false;
-            }).toList();
-
-            pane.getChildren().setAll(panes);
+                pane.getChildren().setAll(panes);
+            }
         });
-
 
         ScrollPane pornScroll = new ScrollPane(pane);
         pornScroll.getStyleClass().add("porn-scroll");
@@ -151,7 +153,8 @@ public class ModelsPane extends AnchorPane {
         Thread.startVirtualThread(getParseTask(pane, url));
     }
 
-    private Runnable getParseTask(FlowPane pane, String url) {
+    @Contract(pure = true)
+    private @NotNull Runnable getParseTask(FlowPane pane, String url) {
         return () -> {
             try {
                 if (!checker.hasModels()) return;
@@ -175,7 +178,9 @@ public class ModelsPane extends AnchorPane {
         Platform.runLater(() -> pane.getChildren().clear());
         Thread.startVirtualThread(getParseModelVideosTask(pane, url));
     }
-    private Runnable getParseModelVideosTask(FlowPane pane, String url) {
+
+    @Contract(pure = true)
+    private @NotNull Runnable getParseModelVideosTask(FlowPane pane, String url) {
         return () -> {
             try {
                 if (!checker.hasModels()) {
