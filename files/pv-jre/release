@@ -1,2 +1,2 @@
-JAVA_VERSION="21.0.2"
+JAVA_VERSION="25"
 MODULES="java.base java.datatransfer java.xml java.prefs java.desktop java.logging java.net.http java.transaction.xa java.sql jdk.crypto.ec jdk.httpserver jdk.unsupported"

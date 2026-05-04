@@ -4,7 +4,7 @@
   --main-jar PornViewer.jar \
   --main-class com.plovdev.pornviewer.Launcher \
   --name "PornViewer" \
-  --app-version "1.7.8" \
+  --app-version "1.7.9" \
   --vendor "PlovDev" \
   --copyright "(c) 2026 PlovDev. All rights reserved." \
   --description "Secure and anonime 18+ video viewer with encrypting and plugins support" \
@@ -14,6 +14,7 @@
   --java-options "-Dfile.encoding=UTF-8" \
   --java-options "-Dapple.laf.useScreenMenuBar=true" \
   --java-options "-Dcom.apple.mrj.application.apple.menu.about.name=PornViewer" \
+  --java-options "--enable-native-access=ALL-UNNAMED" \
   --mac-package-identifier "com.plovdev.pornviewer" \
   --mac-package-name "PornViewer" \
   --runtime-image ./files/pv-jre \

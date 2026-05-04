@@ -24,6 +24,7 @@ public class OkHttpRequestProvider implements PornRequestProvider {
                 .readTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .followRedirects(true)
+                .connectionPool(new ConnectionPool(40, 1, TimeUnit.MINUTES))
                 .retryOnConnectionFailure(true)
                 .addInterceptor(chain -> {
                     Request originalRequest = chain.request();

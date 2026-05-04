@@ -1,6 +1,7 @@
 package com.plovdev.pornviewer.pornimpl.porn365;
 
 import com.plovdev.pornviewer.models.VideoInfo;
+import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -20,7 +21,7 @@ public class VideoInfoParser {
     private static final String COL_VIDEO = "div.col_video";
     private static final int URL_ID_OFFSET = 29;
 
-    public static VideoInfo parseInfo(Document document) {
+    public static @NotNull VideoInfo parseInfo(@NotNull Document document) {
         VideoInfo info = new VideoInfo();
         for (Element element : document.select("head meta[property]")) {
             String content = element.attr("content");
@@ -40,7 +41,7 @@ public class VideoInfoParser {
         return info;
     }
 
-    private static void parseColVideo(VideoInfo info, Document document) {
+    private static void parseColVideo(@NotNull VideoInfo info, @NotNull Document document) {
         info.setCategories(parseTechnical(info, document.select("div.video-categories a[href]"), "model_link", false));
         info.setModels(parseTechnical(info, document.select("div.video-models a[href]"), null, false));
         info.setTags(parseTechnical(info, document.select("div.video-tags a[href]"), null, false));
@@ -60,7 +61,7 @@ public class VideoInfoParser {
         info.setComments(new ArrayList<>());
     }
 
-    private static Map<String, String> parseTechnical(VideoInfo info, Elements keys, String excludeClass, boolean reverseKeys) {
+    private static @NotNull Map<String, String> parseTechnical(VideoInfo info, @NotNull Elements keys, String excludeClass, boolean reverseKeys) {
         Map<String, String> keyMap = new HashMap<>();
         for (Element key : keys) {
             if (excludeClass != null) {

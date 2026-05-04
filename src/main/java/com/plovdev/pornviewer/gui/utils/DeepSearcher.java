@@ -5,7 +5,6 @@ import com.plovdev.pornviewer.gui.toast.Toast;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.pornimpl.porn365.DefPornParser;
-import com.plovdev.pornviewer.utility.Globals;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -17,27 +16,36 @@ import java.util.Optional;
 public class DeepSearcher {
     private static final Logger log = LoggerFactory.getLogger(DeepSearcher.class);
 
-    public static synchronized void searchVideo(@NotNull DefPornParser pornParser, String url, List<String> keywords, @NotNull SearcherFoundVideoListener onFound) {
-        new Toast(Globals.getPrimaryStage(), "Начался глубокий поиск").show();
+    public static synchronized void searchVideo(@NotNull DefPornParser pornParser, String url, List<String> keywords, int maxPages, @NotNull SearcherFoundVideoListener onFound) {
+        if (maxPages == 0) return;
+
+        Toast.showToast("Начался глубокий поиск");
         PBPornHandler handler = new PBPornHandler();
         String html = handler.requestPorn(url + 0);
         Optional<VideoCard> mc = containsKeywordsInVideos(pornParser.getAllVideos(html), keywords);
         mc.ifPresent(onFound::onFound);
 
         String nextLink;
+        int page = 0;
         while ((nextLink = handler.getNextLink(html)) != null) {
             try {
+                if (page >= maxPages) break;
+                if (page % 10 == 0) {
+                    Toast.showToast("Обработано " + page + " страниц");
+                }
+
                 html = handler.requestPorn(nextLink);
                 Optional<VideoCard> maybeCard = containsKeywordsInVideos(pornParser.getAllVideos(html), keywords);
                 maybeCard.ifPresent(onFound::onFound);
                 Thread.sleep(500);
+                page++;
             } catch (Exception e) {
                 log.error("Error search video in page: ", e);
+                Toast.showToast("Произошла ошибка поиска: " + e.getMessage());
                 Thread.currentThread().interrupt();
             }
         }
-
-        new Toast(Globals.getPrimaryStage(), "Глубокий поиск завершен").show();
+        Toast.showToast("Глубокий поиск завершен");
     }
 
     @Contract(pure = true)

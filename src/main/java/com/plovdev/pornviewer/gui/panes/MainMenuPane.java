@@ -6,6 +6,7 @@ import com.plovdev.pornviewer.events.listeners.PornUpdateListener;
 import com.plovdev.pornviewer.gui.filters.CategoryManager;
 import com.plovdev.pornviewer.gui.filters.TrianglePaginationBlock;
 import com.plovdev.pornviewer.gui.panes.pagination.MainPagination;
+import com.plovdev.pornviewer.gui.toast.Toast;
 import com.plovdev.pornviewer.gui.utils.DeepSearcher;
 import com.plovdev.pornviewer.httpquering.PornChecker;
 import com.plovdev.pornviewer.httpquering.PornParser;
@@ -24,6 +25,7 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import org.jetbrains.annotations.Contract;
@@ -37,6 +39,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainMenuPane extends AnchorPane {
     private static final Logger log = LoggerFactory.getLogger(MainMenuPane.class);
@@ -47,6 +51,8 @@ public class MainMenuPane extends AnchorPane {
     private final PBPornHandler handler = new PBPornHandler();
     private static final double TRIGGER_THRESHOLD = 300.0;
     private final StringProperty CURRENT_URL = new SimpleStringProperty(resourcer.baseUrl());
+    private final AtomicInteger MAX_PAGES = new AtomicInteger(300);
+
     private double totalDeltaY = 0;
 
     public MainMenuPane() {
@@ -89,28 +95,36 @@ public class MainMenuPane extends AnchorPane {
         deepSaarch.setVisible(false);
         deepSaarch.getStyleClass().add("deep-search-button");
         deepSaarch.setTranslateY(5);
+        Spinner<Integer> maxPagesCounter = new Spinner<>(-1, 10000, MAX_PAGES.get());
+        maxPagesCounter.valueProperty().addListener((v1, v2, v3) -> MAX_PAGES.set(v3));
+        CustomMenuItem item = new CustomMenuItem(maxPagesCounter, false);
+        ContextMenu menu = new ContextMenu(item);
+        menu.setOnShowing(e -> menu.getScene().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/plovdev/pornviewer/styles/context-menu.css")).toExternalForm()));
+        deepSaarch.setContextMenu(menu);
         deepSaarch.setOnAction(e -> {
             deepSaarch.setDisable(true);
-            try {
-                TextInputDialog keywordsInput = new TextInputDialog();
-                keywordsInput.setTitle("Input");
-                keywordsInput.setHeaderText("Input keywords");
-                keywordsInput.setContentText("Введите ключевые слова для поиска через ','");
-                keywordsInput.showAndWait().ifPresent(string -> {
-                    originNots.clear();
+            TextInputDialog keywordsInput = new TextInputDialog();
+            keywordsInput.setTitle("Input");
+            keywordsInput.setHeaderText("Input keywords");
+            keywordsInput.setContentText("Введите ключевые слова для поиска через ','");
+            keywordsInput.getDialogPane().getStylesheets().add("");
+
+            keywordsInput.showAndWait().ifPresent(string -> Thread.startVirtualThread(() -> {
+                try {
+                    Platform.runLater(originNots::clear);
                     String[] keywords = string.toLowerCase().replace(" ", "").split(",");
                     String url = resourcer.baseUrl() + resourcer.searchUrl() + URLEncoder.encode(field.getText(), Charset.defaultCharset()) + "/popular/";
-                    DeepSearcher.searchVideo(new DefPornParser(), url, Arrays.stream(keywords).toList(), card -> {
+                    DeepSearcher.searchVideo(new DefPornParser(), url, Arrays.stream(keywords).toList(), MAX_PAGES.get(), card -> {
                         card.render();
                         originNots.add(card);
                         Platform.runLater(() -> pane.getChildren().add(card));
                     });
-                });
-            } catch (Exception ex) {
-                log.error("Error while deep search: ", ex);
-            } finally {
-                deepSaarch.setDisable(false);
-            }
+                } catch (Exception ex) {
+                    log.error("Deep search error: ", ex);
+                } finally {
+                    deepSaarch.setDisable(false);
+                }
+            }));
         });
 
 
@@ -140,6 +154,12 @@ public class MainMenuPane extends AnchorPane {
         pane.setPadding(new Insets(10, 10, 50, 10));
         runPornParsing(pane, resourcer.baseUrl());
 
+        setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.T) {
+                Toast.showToast("Тестовое уведомление");
+            }
+        });
+
         MainPagination pagination = new MainPagination(pane, block);
 
         field.setOnAction(e -> {
@@ -157,8 +177,6 @@ public class MainMenuPane extends AnchorPane {
             }
         });
         field.textProperty().addListener((e1, e2, e3) -> {
-            clear.setVisible(!e3.isEmpty());
-            deepSaarch.setVisible(!e3.isEmpty());
             if (!(e3.startsWith("pv://") || e3.startsWith("pornviewer://"))) {
                 deepSaarch.setVisible(true);
                 List<Pane> panes = new ArrayList<>(originNots);
@@ -173,6 +191,9 @@ public class MainMenuPane extends AnchorPane {
             } else {
                 deepSaarch.setVisible(false);
             }
+
+            clear.setVisible(!e3.isEmpty());
+            deepSaarch.setVisible(!e3.isEmpty());
         });
 
         CURRENT_URL.addListener((p1, p2, p3) -> {

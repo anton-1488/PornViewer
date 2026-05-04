@@ -134,7 +134,15 @@ public class DefPornParser implements PornParser {
     @Override
     public VideoInfo parseVideo(String videoUrl) {
         PBPornHandler handler = new PBPornHandler();
-        return VideoInfoParser.parseInfo(Jsoup.parse(handler.requestPorn(videoUrl)));
+        String html = handler.requestPorn(videoUrl);
+        if (html == null || html.isEmpty()) {
+            throw new IllegalArgumentException("Html to parsing is empty");
+        }
+        Document document = Jsoup.parse(html);
+        if (document == null) {
+            throw new IllegalArgumentException("Html document to parsing is null");
+        }
+        return VideoInfoParser.parseInfo(document);
     }
 
     @Override

@@ -97,18 +97,19 @@ public class MainMenu extends Application {
             int id = Integer.parseInt(link.getParams().get("id"));
             if (action.equals("add")) {
                 VideoInfo info = parser.parseVideo(resourcer.buildVideoUrlFromId(id));
+                if (info == null) return;
                 String duration = DurationUtils.formatDurationToString(info.getDuration());
                 FavoriteVideo video = new FavoriteVideo(id, info.getTitle(), info.getUrl(), info.getPic(), duration, info.getViews(), info.getRating(), info, true, null);
                 FavoriteVideos.add(video);
                 FavoriteListener.notifyListeners(video);
-                Platform.runLater(() -> new Toast(stage, "Добавлено в избранное").show());
+                Toast.showToast("Добавлено в избранное");
             } else if (action.equals("remove")) {
                 VideoInfo info = parser.parseVideo(resourcer.buildVideoUrlFromId(id));
                 String duration = DurationUtils.formatDurationToString(info.getDuration());
                 FavoriteVideo video = new FavoriteVideo(id, info.getTitle(), info.getUrl(), info.getPic(), duration, info.getViews(), info.getRating(), info, false, null);
                 FavoriteVideos.remove(String.valueOf(id));
                 FavoriteListener.notifyListeners(video);
-                Platform.runLater(() -> new Toast(stage, "Удалено из избранного").show());
+                Toast.showToast("Удалено из избранного");
             }
         });
     }

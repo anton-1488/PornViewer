@@ -460,14 +460,6 @@
 .groups-box {
     -fx-background-color: white;
 }
-.toast {
-    -fx-background-color: black;
-    -fx-text-fill: white;
-    -fx-padding: 10px;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-}
-
 
 .auto-complete-popup {
     -fx-background-color: transparent !important;
@@ -512,4 +504,20 @@
     -fx-border-width: 0;
     -fx-background-radius: 8px;
     -fx-border-radius: 8px;
+}
+
+
+.toast-notify {
+    -fx-background-color: transparent;
+}
+.toast-notify .label {
+    -fx-alignment: center;
+    -fx-padding: 10px;
+    -fx-background-color: black;
+    -fx-text-fill: white;
+    -fx-padding: 10px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
 }

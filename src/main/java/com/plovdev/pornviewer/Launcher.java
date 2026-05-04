@@ -1,7 +1,5 @@
 package com.plovdev.pornviewer;
 
-import com.github.javakeyring.Keyring;
-import com.github.javakeyring.PasswordAccessException;
 import com.plovdev.pornviewer.databases.SecureDB;
 import com.plovdev.pornviewer.encryptionsupport.CipherEngineUtils;
 import com.plovdev.pornviewer.events.listeners.ServerEventListenerAdapter;
@@ -11,6 +9,9 @@ import com.plovdev.pornviewer.utility.LauncherHelper;
 import com.plovdev.pornviewer.utility.deeplink.DeepLinker;
 import com.plovdev.pornviewer.utility.files.FileUtils;
 import javafx.application.Application;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.plovdev.keyer.Keychain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,7 @@ import java.util.Objects;
 public class Launcher {
     private static final Logger log = LoggerFactory.getLogger(Launcher.class);
     private static final LauncherHelper launcherHelper = LauncherHelper.getInstance();
+    private static final Keychain KEYCHAIN = Keychain.getKeychain(FileUtils.PORN_VIEWER_SIGN);
 
     static {
         System.setProperty("sun.net.httpserver.maxReqTime", "600");
@@ -37,11 +39,12 @@ public class Launcher {
                 Taskbar taskbar = Taskbar.getTaskbar();
                 taskbar.setIconImage(ImageIO.read(Objects.requireNonNull(Launcher.class.getResourceAsStream("/com/plovdev/pornviewer/pv-logo.png"))));
             }
-        } catch (Exception e) {
-            log.error("Error setup image icon: ", e);
+        } catch (Throwable e) {
+            log.debug("Error setup image icon: ", e);
         }
+
         try {
-            initPassword();
+            CipherEngineUtils.initPassword();
             SecureDB.initDB();
             startServer(args);
 
@@ -91,38 +94,12 @@ public class Launcher {
         server.startServer();
     }
 
-    private static URI getDeepLink(String[] args) {
+    private static @Nullable URI getDeepLink(String @NonNull [] args) {
         for (String lnk : args) {
             if (lnk.startsWith("pv://") || lnk.startsWith("pornviewer://")) {
                 return URI.create(lnk);
             }
         }
         return null;
-    }
-
-    private static void initPassword() {
-        try (Keyring keyring = Keyring.create()) {
-            String service = FileUtils.PORN_VIEWER_SIGN;
-            String account = FileUtils.PORN_VIEWER_SIGN;
-            String retrievedPassword = null;
-
-            try {
-                retrievedPassword = keyring.getPassword(service, account);
-            } catch (PasswordAccessException e) {
-                log.info("Password not found in keychain, creating new one...");
-            }
-
-            if (retrievedPassword == null) {
-                byte[] password = new byte[32];
-                CipherEngineUtils.createRandomPassword(password);
-                String newPassword = new String(password);
-                keyring.setPassword(service, account, newPassword);
-                log.info("New password generated and saved to keychain");
-                System.gc();
-            }
-        } catch (Exception e) {
-            log.error("Failed to access keychain", e);
-            throw new RuntimeException("Keychain error", e);
-        }
     }
 }
