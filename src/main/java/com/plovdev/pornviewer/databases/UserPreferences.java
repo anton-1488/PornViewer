@@ -1,15 +1,16 @@
 package com.plovdev.pornviewer.databases;
 
-import com.plovdev.pornviewer.utility.files.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserPreferences {
-    private static final String PREFERENCES = FileUtils.getPVJDBCPathProtocol();
     private static final Connection con;
     private static final Logger log = LoggerFactory.getLogger(UserPreferences.class);
 
@@ -22,7 +23,7 @@ public class UserPreferences {
         createTable();
     }
 
-    public static void createTable() {
+    public synchronized static void createTable() {
         try (Statement statement = con.createStatement()) {
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS Prefs (id TEXT, pvva TEXT)");
             statement.executeUpdate("INSERT OR IGNORE INTO Prefs VALUES ('0000', 'p365')");

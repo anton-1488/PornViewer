@@ -37,7 +37,7 @@ public class PornDownloader {
         this.uri = uri;
         this.requestProvider = provider;
         String encryptedFileName = DigestUtils.sha256(filename);
-        this.toWriteFile = new File(FileUtils.getPvDownloadsPath() + (File.separatorChar + encryptedFileName));
+        this.toWriteFile = new File(new FileUtils().getPvDownloadsPath() + (File.separatorChar + encryptedFileName));
     }
 
     public URI getUri() {

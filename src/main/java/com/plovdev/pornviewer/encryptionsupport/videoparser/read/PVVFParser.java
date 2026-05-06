@@ -74,7 +74,7 @@ public class PVVFParser implements AutoCloseable {
      * @throws RuntimeException если структура заголовка нарушена или файл поврежден.
      */
     public synchronized VideoHeader parseVideoHeader() {
-        final byte[] FOUR_BYTE_ARRAY = new byte[4];
+        byte[] FOUR_BYTE_ARRAY = new byte[4];
 
         try {
             // always setup RAF to file start
@@ -110,16 +110,7 @@ public class PVVFParser implements AutoCloseable {
             }
 
             // collecting results and return VideoHeader class
-            VideoHeader header = new VideoHeader(fileVersion, flag, mimeType, lastChunkPaddingSize, plainVideoSize, encryptedVideoSize, baseNonce, crc32);
-
-            int calculatedCrc = (int) header.calculateCRC32();
-            // check the checksum
-            if (crc32 != calculatedCrc) {
-                log.warn("File: {}, getted crc: {}, calculated crc: {}", file.toString(), crc32, calculatedCrc);
-                log.warn("Header CRC32 суммы не совпадают! RED FLAG, PORN ACCESS DENIED... System.exit(9)...");
-            }
-
-            return header;
+            return new VideoHeader(fileVersion, flag, mimeType, lastChunkPaddingSize, plainVideoSize, encryptedVideoSize, baseNonce, crc32);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -129,15 +120,12 @@ public class PVVFParser implements AutoCloseable {
      * Выполняет чтение метаданных, расположенных после зашифрованного тела видео.
      * Использует переданный заголовок для вычисления смещения блока метаданных.
      *
-     * @param encVideoSize размер зашифрованного контента
      * @return Объект {@link VideoMetadata} или null, если заголовок отсутствует.
      */
-    public synchronized VideoMetadata parseVideoMetadata(long encVideoSize) {
-        if (encVideoSize < 0) {
-            throw new IllegalArgumentException("Enc video size must be a greather then 0");
-        }
-
+    public synchronized VideoMetadata parseVideoMetadata() {
         try {
+            RAF.seek(ENC_VIDEO_SIZE_OFFSET);
+            long encVideoSize = RAF.readLong();
             // calculate real metadata position(42 + enc video size):
             long metadataOffset = HEADER_SIZE + encVideoSize;
             RAF.seek(metadataOffset); // seek to metadata block
@@ -172,23 +160,8 @@ public class PVVFParser implements AutoCloseable {
             readToByteArray(previewTag);
 
             int crc32 = RAF.readInt();
-
-            // check if file pointer at end:
-            if (RAF.getFilePointer() != file.length()) {
-                throw new IOException("Error parse video metadata: invalid pointer: " + RAF.getFilePointer());
-            }
-
             // collecting results and create VideoMetadata class
-            VideoMetadata metadata = new VideoMetadata(totalMetadataSize, encryptedJsonSize, encryptedPreviewSize, baseNonce, ecryptedJson, jsonTag, ecryptedPreview, previewTag, crc32);
-
-            // check the checksum
-            int calculatedCrc = (int) metadata.calculateCRC32();
-            if (crc32 != calculatedCrc) {
-                log.warn("Getted heaser crc: {}, calculated crc: {}", crc32, calculatedCrc);
-                log.warn("Metadata CRC32 суммы не совпадают! RED FLAG, PORN ACCESS DENIED... System.exit(9)...");
-            }
-
-            return metadata;
+            return new VideoMetadata(totalMetadataSize, encryptedJsonSize, encryptedPreviewSize, baseNonce, ecryptedJson, jsonTag, ecryptedPreview, previewTag, crc32);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -201,8 +174,7 @@ public class PVVFParser implements AutoCloseable {
      * @return Объект {@link EncryptedVideo}, готовый для использования.
      */
     public EncryptedVideo collectEncryptedVideo() {
-        VideoHeader header = parseVideoHeader();
-        return new EncryptedVideo(header, parseVideoMetadata(header.encVideoSize()));
+        return new EncryptedVideo(parseVideoHeader(), parseVideoMetadata());
     }
 
     /**

@@ -8,6 +8,7 @@ import com.plovdev.pornviewer.server.decryptionimpl.ServerDecryptedStreamer;
 import com.plovdev.pornviewer.utility.files.FileUtils;
 import com.sun.net.httpserver.HttpExchange;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ import java.util.Map;
 public class ContentUtils {
     private static final Logger log = LoggerFactory.getLogger(ContentUtils.class);
 
-    public static void sendFileRange(HttpExchange exchange, Chunk chunk, File file, boolean needDecrypt, VideoRequestSet set) throws Exception {
+    public static void sendFileRange(HttpExchange exchange, @NonNull Chunk chunk, File file, boolean needDecrypt, @NonNull VideoRequestSet set) throws Exception {
         long start = chunk.getStart();
         long end = chunk.getEnd();
 
@@ -62,7 +63,7 @@ public class ContentUtils {
 
         try (BufferedOutputStream os = new BufferedOutputStream(exchange.getResponseBody())) {
             if (needDecrypt) {
-                sendDecryptedRange(file, video, start, contentLength, os, set);
+                sendDecryptedRange(file, start, contentLength, os, set);
             } else {
                 sendPlainRange(file, realStart, contentLength, os);
             }
@@ -86,11 +87,10 @@ public class ContentUtils {
         }
     }
 
-    public static void sendDecryptedRange(File file, EncryptedVideo video, long startInFile, long length, BufferedOutputStream os, VideoRequestSet set) {
-        ServerDecryptedStreamer streamer = new ServerDecryptedStreamer(file,video,  startInFile, length, set);
+    public static void sendDecryptedRange(File file, long startInFile, long length, BufferedOutputStream os, VideoRequestSet set) {
+        ServerDecryptedStreamer streamer = new ServerDecryptedStreamer(file, startInFile, length, set);
         streamer.transferToOutput(os);
     }
-
 
     public static @NotNull File checkFile(HttpExchange exchange, @NotNull Map<String, String> params) throws Exception {
         String filePath = params.get("file");
@@ -110,7 +110,7 @@ public class ContentUtils {
         }
 
         String canonicalPath = file.getCanonicalPath();
-        String basePath = new File(FileUtils.getPvDownloadsPath().toString()).getCanonicalPath();
+        String basePath = new File(new FileUtils().getPvDownloadsPath().toString()).getCanonicalPath();
 
         if (!canonicalPath.startsWith(basePath)) {
             exchange.sendResponseHeaders(403, -1);
@@ -121,7 +121,7 @@ public class ContentUtils {
         return file;
     }
 
-    public static String buildFilePath(String name) {
-        return FileUtils.getPvDownloadsPath() + (File.separatorChar + name);
+    public static @NonNull String buildFilePath(String name) {
+        return new FileUtils().getPvDownloadsPath() + (File.separatorChar + name);
     }
 }

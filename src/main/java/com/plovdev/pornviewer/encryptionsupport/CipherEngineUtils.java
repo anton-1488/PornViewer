@@ -38,6 +38,7 @@ public class CipherEngineUtils {
         SecretKeySpec result = new SecretKeySpec(key, "ChaCha20");
         Arrays.fill(key, (byte) 0); // затираем следы
         Arrays.fill(password, ' ');
+
         return result;
     }
 

@@ -7,6 +7,7 @@ import com.plovdev.pornviewer.encryptionsupport.videoparser.videomodel.VideoHead
 import com.plovdev.pornviewer.encryptionsupport.videoparser.videomodel.VideoMetadata;
 import com.plovdev.pornviewer.models.DownloadedVideoInfo;
 import com.plovdev.pornviewer.utility.json.VideoInfoSerializer;
+import org.jspecify.annotations.NonNull;
 
 import javax.crypto.Cipher;
 import java.io.File;
@@ -23,7 +24,7 @@ public class PVVFVideoReader {
 
     public static VideoMetadata readMetadata(File file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
-            return pvvfParser.collectEncryptedVideo().getVideoMetadata();
+            return pvvfParser.parseVideoMetadata();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -37,20 +38,18 @@ public class PVVFVideoReader {
         }
     }
 
-    public static DownloadedVideoInfo readInfo(File file) {
+    public static @NonNull DownloadedVideoInfo readInfo(File file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             EncryptedVideo video = pvvfParser.collectEncryptedVideo();
             VideoMetadata metadata = video.getVideoMetadata();
-            CryptoEngine engine = new CryptoEngine(Cipher.DECRYPT_MODE, CipherEngineUtils.getPassword().toCharArray(), metadata.metadataNonce());
 
+            CryptoEngine engine = new CryptoEngine(Cipher.DECRYPT_MODE, CipherEngineUtils.getPassword().toCharArray(), metadata.metadataNonce());
             byte[] decryptedJson = engine.processData(metadata.prepareJsonToDecrypt(), VideoMetadata.getJsonFullNonce(metadata.metadataNonce()), VideoMetadata.jsonId());
             String json = new String(decryptedJson, StandardCharsets.UTF_8);
 
             DownloadedVideoInfo info = VideoInfoSerializer.deserializeInfo(json);
-
             byte[] decryptedPreview = engine.processData(metadata.preparePreviewToDecrypt(), VideoMetadata.getPreviewFullNonce(metadata.metadataNonce()), VideoMetadata.previewId());
             info.setPreviewBytes(decryptedPreview);
-
             return info;
         } catch (Exception e) {
             throw new RuntimeException(e);

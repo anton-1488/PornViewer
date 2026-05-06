@@ -39,6 +39,7 @@ public class MainMenu extends Application {
         stage.getIcons().add(icon);
 
         PornTabPane pane = new PornTabPane(stage);
+
         Scene scene = new Scene(pane, 1000, 600);
         stage.setOnCloseRequest(e -> {
             try {

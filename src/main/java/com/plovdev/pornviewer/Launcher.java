@@ -43,26 +43,40 @@ public class Launcher {
             log.debug("Error setup image icon: ", e);
         }
 
-        try {
-            CipherEngineUtils.initPassword();
-            SecureDB.initDB();
-            startServer(args);
+        if (args.length > 1) {
+            String arg = args[0];
+            String val = args[1];
+            if (arg.equals("--app-path")) {
+                if (Files.exists(Path.of(val))) {
+                    log.info("Using another path: {}", val);
+                    System.setProperty("pv.home", val + "/.PornViewer/");
+                }
+            }
+        }
 
-            Path downloadsPath = FileUtils.getPvDownloadsPath();
+        try {
+            FileUtils fileUtils = new FileUtils();
+
+            Path downloadsPath = fileUtils.getPvDownloadsPath();
             if (!Files.exists(downloadsPath)) {
                 Files.createDirectories(downloadsPath);
             }
-            Path systemPath = Path.of(FileUtils.getPvSystemPath());
+            Path systemPath = Path.of(fileUtils.getPvSystemPath());
             if (!Files.exists(systemPath)) {
                 Files.createDirectories(systemPath);
             }
-            Path dbFile = Path.of(FileUtils.getPvDbPath());
+            Path dbFile = Path.of(fileUtils.getPvDbPath());
             if (!Files.exists(dbFile)) {
                 Files.createFile(dbFile);
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            log.error("Error to create paths structure: ", e);
         }
+
+        CipherEngineUtils.initPassword();
+        SecureDB.initDB();
+        startServer(args);
+
         log.info("Launching pv...");
         DeepLinker.init(launcherHelper);
         Application.launch(MainMenu.class, args);

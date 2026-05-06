@@ -5,6 +5,7 @@ import com.plovdev.pornviewer.encryptionsupport.videoparser.read.PVVFVideoReader
 import com.plovdev.pornviewer.events.listeners.EventListener;
 import com.plovdev.pornviewer.gui.filters.FilterBox;
 import com.plovdev.pornviewer.gui.video.DurationUtils;
+import com.plovdev.pornviewer.models.DownloadedCardInfo;
 import com.plovdev.pornviewer.models.DownloadedVideoCard;
 import com.plovdev.pornviewer.models.DownloadedVideoInfo;
 import com.plovdev.pornviewer.models.DownloadingVideoCard;
@@ -15,7 +16,6 @@ import com.plovdev.pornviewer.utility.files.FileUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
@@ -29,20 +29,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -55,9 +50,6 @@ public class DownloadsPane extends AnchorPane {
     private final FlowPane pane = new FlowPane(50, 50);
 
     public DownloadsPane() {
-        SortedList<DownloadedVideoCard> filteredVideos = new SortedList<>(originNots);
-        filteredVideos.setComparator(Comparator.comparing(DownloadedVideoCard::getCreationDate));
-
         BorderPane root = new BorderPane();
         VBox vBox = new VBox(10);
 
@@ -154,20 +146,12 @@ public class DownloadsPane extends AnchorPane {
         return () -> {
             originNots.clear();
             Platform.runLater(() -> pane.getChildren().clear());
-
-            try (Stream<Path> stream = Files.list(FileUtils.getPvDownloadsPath())
-                    .filter(Files::isRegularFile).filter(PVVFParser::isPVVFFile)
-                    .sorted((p1, p2) -> {
-                        try {
-                            return Files.getLastModifiedTime(p2).compareTo(Files.getLastModifiedTime(p1));
-                        } catch (IOException e) {
-                            return 0;
-                        }
-                    })) {
-                List<Path> paths = stream.toList();
-                paths.forEach(p -> {
-                    CompletableFuture<DownloadedVideoCard> cardFuture = prepareCard(p);
-                    cardFuture.thenAccept(card -> {
+            FileUtils fileUtils = new FileUtils();
+            try (Stream<Path> stream = Files.list(fileUtils.getPvDownloadsPath()).filter(Files::isRegularFile).filter(PVVFParser::isPVVFFile)) {
+                stream.forEach(p -> {
+                    CompletableFuture<DownloadedCardInfo> cardFuture = prepareCard(p);
+                    cardFuture.thenAccept(info -> {
+                        DownloadedVideoCard card = DownloadedVideoCard.ofInfo(info, pane);
                         card.render();
                         originNots.add(card);
                         Platform.runLater(() -> pane.getChildren().add(card));
@@ -180,32 +164,30 @@ public class DownloadsPane extends AnchorPane {
     }
 
     @Contract("_ -> new")
-    private @NotNull CompletableFuture<DownloadedVideoCard> prepareCard(Path p) {
+    private @NotNull CompletableFuture<DownloadedCardInfo> prepareCard(Path p) {
         return CompletableFuture.supplyAsync(() -> {
-            DownloadedVideoCard card = new DownloadedVideoCard(pane);
             File file = p.toFile();
+            DownloadedVideoInfo videoInfo = PVVFVideoReader.readInfo(file);
+
+            String date = "00.00.0000";
             try {
                 BasicFileAttributes attributes = Files.readAttributes(p, BasicFileAttributes.class);
                 FileTime time = attributes.creationTime();
                 LocalDateTime dateTime = LocalDateTime.ofInstant(time.toInstant(), ZoneId.systemDefault());
-                card.setDate(dateTime.format(createFormatter));
-                card.setTitle(p.getFileName().toString());
-                card.setPath(file.toURI().toString());
-
-                BigDecimal size = new BigDecimal(String.valueOf(file.length())).divide(new BigDecimal("1000000.0"), 10, RoundingMode.HALF_UP);
-                DecimalFormat format = new DecimalFormat("#0.00MB");
-                card.setSize(format.format(size));
-
-                DownloadedVideoInfo videoInfo = PVVFVideoReader.readInfo(file);
-                card.setTitle(videoInfo.getTitle());
-                card.setDuration(DurationUtils.formatDurationToString(videoInfo.getTotalDuration()));
-                card.setDescription(videoInfo.getDescription());
-                card.setPreview(videoInfo.getPreviewBytes());
-                card.setTimecodes(videoInfo.getTimecodes());
+                date = dateTime.format(createFormatter);
             } catch (Exception e) {
-                log.error("Error prepare card: ", e);
+                log.error("Error to read atrtibutes: ", e);
             }
-            return card;
+
+            String path = file.toURI().toString();
+            String size = String.format("%.2fMB", file.length() / 1000000.0);
+            String title = videoInfo.getTitle();
+            String duration = DurationUtils.formatDurationToString(videoInfo.getTotalDuration());
+            String description = videoInfo.getDescription();
+            byte[] preview = videoInfo.getPreviewBytes();
+            List<DownloadedVideoInfo.Timecode> timecodes = videoInfo.getTimecodes();
+
+            return new DownloadedCardInfo(title, path, size, date, duration, description, timecodes, preview);
         }, Globals.GLOBAL_EXECUTOR);
     }
 }

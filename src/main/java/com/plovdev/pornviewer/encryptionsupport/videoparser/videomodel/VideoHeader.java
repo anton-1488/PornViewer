@@ -2,12 +2,12 @@ package com.plovdev.pornviewer.encryptionsupport.videoparser.videomodel;
 
 import com.plovdev.pornviewer.encryptionsupport.CipherEngineUtils;
 import com.plovdev.pornviewer.encryptionsupport.LoadersUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.zip.CRC32;
 
 /**
  * Представляет заголовок видеофайла формата PVVF.
@@ -31,6 +31,8 @@ public record VideoHeader(byte version, byte flag, String mime, int lastChunkPad
      * Фиксированный размер заголовка в байтах.
      */
     public static final int HEADER_SIZE = 42;
+
+    public static final int ENC_VIDEO_SIZE_OFFSET = 22;
 
     /**
      * Магическое число файла: "PVVF".
@@ -67,7 +69,8 @@ public record VideoHeader(byte version, byte flag, String mime, int lastChunkPad
         }
     }
 
-    public static VideoHeader ofOnlyRequired(String mime, int lastChunkPaddingSize, long plainVideoSize) {
+    @Contract("_, _, _ -> new")
+    public static @NonNull VideoHeader ofOnlyRequired(String mime, int lastChunkPaddingSize, long plainVideoSize) {
         byte version = 1;
         byte flag = 0;
 
@@ -75,9 +78,7 @@ public record VideoHeader(byte version, byte flag, String mime, int lastChunkPad
         CipherEngineUtils.createRandomPassword(baseNonce);
 
         long encVideoSize = LoadersUtils.calculateTotalEncVideoSize(plainVideoSize);
-        long crc32 = VideoHeader.calculateCRC32(version, flag, mime, lastChunkPaddingSize, plainVideoSize, encVideoSize, baseNonce);
-
-        return new VideoHeader(version, flag, mime, lastChunkPaddingSize, plainVideoSize, encVideoSize, baseNonce, crc32);
+        return new VideoHeader(version, flag, mime, lastChunkPaddingSize, plainVideoSize, encVideoSize, baseNonce, 0);
     }
 
     /**
@@ -87,23 +88,6 @@ public record VideoHeader(byte version, byte flag, String mime, int lastChunkPad
      */
     public String magic() {
         return MAGIC_NUMBER;
-    }
-
-    public long calculateCRC32() {
-        return calculateCRC32(version, flag, mime, lastChunkPaddingSize, plainVideoSize, encVideoSize, baseNonce);
-    }
-    public static long calculateCRC32(byte version, byte flag, String mime, int lastChunkPaddingSize, long plainVideoSize, long encVideoSize, byte[] baseNonce) {
-        CRC32 crc32 = new CRC32();
-        crc32.update(MAGIC_NUMBER.getBytes(StandardCharsets.US_ASCII));
-        crc32.update(version);
-        crc32.update(flag);
-        crc32.update(mime.getBytes(StandardCharsets.US_ASCII));
-        crc32.update(LoadersUtils.intToBytes(lastChunkPaddingSize));
-        crc32.update(LoadersUtils.longToBytes(plainVideoSize));
-        crc32.update(LoadersUtils.longToBytes(encVideoSize));
-        crc32.update(baseNonce);
-
-        return crc32.getValue();
     }
 
     @NotNull

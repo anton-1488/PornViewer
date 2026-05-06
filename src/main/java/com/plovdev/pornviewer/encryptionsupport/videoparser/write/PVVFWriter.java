@@ -83,7 +83,7 @@ public class PVVFWriter implements AutoCloseable {
 
             // step 6 - write nonce and crc:
             writeStream.write(videoHeader.baseNonce());
-            writeStream.writeInt((int) videoHeader.calculateCRC32());
+            writeStream.writeInt((int) videoHeader.headerCRC32());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

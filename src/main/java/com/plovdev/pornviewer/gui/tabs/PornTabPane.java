@@ -57,16 +57,14 @@ public class PornTabPane extends TabPane {
 
         getTabs().addAll(main, models, favorites, downloads);
 
-        try (ExecutorService service = Executors.newCachedThreadPool()) {
+        try (ExecutorService service = Executors.newVirtualThreadPerTaskExecutor()) {
             service.execute(() -> {
                 MainMenuPane mainMenuPane = new MainMenuPane();
                 Platform.runLater(() -> main.setContent(mainMenuPane));
             });
-
             service.execute(() -> {
                 ModelsPane modelsPane = new ModelsPane();
                 Platform.runLater(() -> models.setContent(modelsPane));
-
                 DeepLinkListener.addListener("share", link -> {
                     if (link.getAction().equals("model")) {
                         Platform.runLater(() -> getSelectionModel().select(models));
@@ -79,16 +77,15 @@ public class PornTabPane extends TabPane {
                     }
                 });
             });
-
             service.execute(() -> {
                 FavoritePane favoritePane = new FavoritePane();
                 Platform.runLater(() -> favorites.setContent(favoritePane));
             });
-
             service.execute(() -> {
                 DownloadsPane downloadsPane = new DownloadsPane();
                 Platform.runLater(() -> downloads.setContent(downloadsPane));
             });
+
             service.shutdown();
         } catch (Exception e) {
             log.error("Initiliazing error: ", e);

@@ -1,6 +1,7 @@
 package com.plovdev.pornviewer.databases;
 
 import com.plovdev.pornviewer.models.FavoriteVideo;
+import com.plovdev.pornviewer.pornimpl.porn365.DefRes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class FavoriteVideos {
     private static final Logger log = LoggerFactory.getLogger(FavoriteVideos.class);
     private static final Connection con;
+    private static final DefRes res = new DefRes();
 
     static {
         try {
@@ -44,7 +46,7 @@ public class FavoriteVideos {
     public static void add(FavoriteVideo card) {
         try (PreparedStatement stt = con.prepareStatement("INSERT INTO Favorites (id, url, title, pic, duration, views, rating, mark) VALUES (?,?,?,?,?,?,?,?)")) {
             stt.setString(1, String.valueOf(card.getCardId()));
-            stt.setString(2, card.getUrl().trim());
+            stt.setString(2, card.getUrl().trim().replace(res.baseUrl(), ""));
             stt.setString(3, card.getTitle().trim());
             stt.setString(4, card.getPic().trim());
             stt.setString(5, card.getDuration().trim());
@@ -73,7 +75,7 @@ public class FavoriteVideos {
                     String rating = set.getString("rating");
                     String group = set.getString("mark");
 
-                    return new FavoriteVideo(cardId, title, url, pic, duration, views, rating, null, true, group);
+                    return new FavoriteVideo(cardId, title, res.baseUrl() + url, pic, duration, views, rating, null, true, group);
                 }
             }
         } catch (Exception e) {
@@ -98,7 +100,7 @@ public class FavoriteVideos {
                 String rating = set.getString("rating");
                 String group = set.getString("mark");
 
-                list.add(new FavoriteVideo(cardId, title, url, pic, duration, views, rating, null, true, group));
+                list.add(new FavoriteVideo(cardId, title, res.baseUrl() + url, pic, duration, views, rating, null, true, group));
             }
         } catch (Exception e) {
             log.error("Error to get all favorite videos: ", e);
@@ -134,7 +136,7 @@ public class FavoriteVideos {
                     int views = Integer.parseInt(set.getString("views"));
                     String rating = set.getString("rating");
 
-                    list.add(new FavoriteVideo(cardId, title, url, pic, duration, views, rating, null, true, group));
+                    list.add(new FavoriteVideo(cardId, title, res.baseUrl() + url, pic, duration, views, rating, null, true, group));
                 }
             }
         } catch (Exception e) {
@@ -175,13 +177,6 @@ public class FavoriteVideos {
             stat.executeUpdate("DELETE FROM Favorites WHERE id = " + value);
         } catch (Exception e) {
             log.error("Error to remove favorite video: ", e);
-        }
-    }
-
-    public static void updateUrls(String url2) {
-        for (FavoriteVideo card : FavoriteVideos.getAll()) {
-            log.info("Updating card: {}", card);
-            FavoriteVideos.update("url", url2 + "/movie/" + card.getCardId(), card.getCardId());
         }
     }
 }

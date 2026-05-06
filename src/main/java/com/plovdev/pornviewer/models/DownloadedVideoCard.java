@@ -1,8 +1,12 @@
 package com.plovdev.pornviewer.models;
 
+import com.google.gson.JsonObject;
 import com.plovdev.pornviewer.gui.toast.Filer;
+import com.plovdev.pornviewer.gui.toast.Toast;
 import com.plovdev.pornviewer.gui.video.DownloadedVideoPlayerPane;
+import com.plovdev.pornviewer.utility.Globals;
 import com.plovdev.pornviewer.utility.files.ServerPaths;
+import com.plovdev.pornviewer.utility.json.JSONSerializer;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
@@ -15,6 +19,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +31,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 public class DownloadedVideoCard extends VideoCard {
     private static final Logger log = LoggerFactory.getLogger(DownloadedVideoCard.class);
@@ -93,6 +99,20 @@ public class DownloadedVideoCard extends VideoCard {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public static @NonNull DownloadedVideoCard ofInfo(@NonNull DownloadedCardInfo info, Pane component) {
+        DownloadedVideoCard card = new DownloadedVideoCard(component);
+        card.setDate(info.date());
+        card.setTitle(info.title());
+        card.setPath(info.path());
+        card.setSize(info.size());
+        card.setDuration(info.duration());
+        card.setDescription(info.description());
+        card.setPreview(info.preview());
+        card.setTimecodes(info.timecodes());
+
+        return card;
     }
 
     @Override
@@ -174,10 +194,10 @@ public class DownloadedVideoCard extends VideoCard {
         Platform.runLater(() -> box.getChildren().addFirst(view));
     }
 
-    private void fillActionsBox(Label actions) {
+    private void fillActionsBox(@NonNull Label actions) {
         ContextMenu menu = new ContextMenu();
         menu.getStyleClass().add("options");
-        fillActinsMenu(menu);
+        fillActionsMenu(menu);
 
         actions.setOnMouseClicked(e -> Platform.runLater(() -> {
             menu.show(actions, e.getScreenX(), e.getScreenY());
@@ -188,14 +208,21 @@ public class DownloadedVideoCard extends VideoCard {
 
     }
 
-    private void fillActinsMenu(@NotNull ContextMenu menu) {
+    private void fillActionsMenu(@NotNull ContextMenu menu) {
         MenuItem delete = getDeleteMenuItem();
 
         MenuItem export = new MenuItem("Экспортировать");
         export.setOnAction(a -> {
             Filer filer = new Filer();
             if (filer.getPath() != null) {
-                handler.executePost(ServerPaths.getInstance().getInfoUrl(), filer.getPath());
+                CompletableFuture.supplyAsync(() -> {
+                    JsonObject exportObject = new JsonObject();
+                    exportObject.addProperty("from", getOriginalPath());
+                    exportObject.addProperty("to", filer.getPath());
+                    String result = handler.executePost(ServerPaths.getInstance().getExportUrl(), JSONSerializer.GSON.toJson(exportObject));
+                    Toast.showToast("Видео экспортированно");
+                    return result;
+                }, Globals.GLOBAL_EXECUTOR);
             }
         });
 
@@ -216,13 +243,13 @@ public class DownloadedVideoCard extends VideoCard {
         return delete;
     }
 
-    private Region getVRegion() {
+    private @NonNull Region getVRegion() {
         Region region = new Region();
         VBox.setVgrow(region, Priority.ALWAYS);
         return region;
     }
 
-    private Region getHRegion() {
+    private @NonNull Region getHRegion() {
         Region region = new Region();
         HBox.setHgrow(region, Priority.ALWAYS);
         return region;

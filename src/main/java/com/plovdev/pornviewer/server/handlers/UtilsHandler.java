@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.plovdev.pornviewer.utility.files.EnvReader;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ public class UtilsHandler implements HttpHandler {
     private static final Gson GSON = new Gson();
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handle(@NonNull HttpExchange exchange) throws IOException {
         Map<String, String> params = parseRequest(exchange.getRequestURI().getQuery());
         String token = params.get("token");
         if (token == null) {
@@ -47,7 +48,7 @@ public class UtilsHandler implements HttpHandler {
         return "GET".equals(method);
     }
 
-    private Map<String, String> parseRequest(String request) {
+    private @NonNull Map<String, String> parseRequest(@NonNull String request) {
         Map<String, String> params = new HashMap<>();
         String[] strings = request.split("&");
 

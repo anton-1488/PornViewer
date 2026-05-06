@@ -56,7 +56,7 @@ public class SafeHttpServer {
             server.createContext("/video", new SafeHttpHandler());
             server.createContext("/info", new UtilsHandler());
             server.createContext("/deeplink", new DeepLinkHandler());
-            server.createContext("/handler", new VideoExportHandler());
+            server.createContext("/export", new VideoExportHandler());
 
             server.setExecutor(Executors.newCachedThreadPool());
             server.start();

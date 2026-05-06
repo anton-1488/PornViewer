@@ -2,6 +2,7 @@ package com.plovdev.pornviewer.databases;
 
 import com.plovdev.pornviewer.encryptionsupport.CipherEngineUtils;
 import com.plovdev.pornviewer.utility.files.FileUtils;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,17 +23,25 @@ public class SecureDB {
         }
     }
 
-    public static synchronized Connection initCipherer() {
+    public static synchronized @NonNull Connection initCipherer() {
         try {
+            FileUtils fileUtils = new FileUtils();
+
             Class.forName("org.sqlite.JDBC");
             String password = CipherEngineUtils.getPassword();
-            String url = FileUtils.getPVJDBCPathProtocol();
+            String url = fileUtils.getPVJDBCPathProtocol();
             Properties props = new Properties();
             props.setProperty("cipher", "chacha20");
             props.setProperty("key", password);
             props.setProperty("temp_store", "MEMORY");
 
-            return DriverManager.getConnection(url, props);
+            Connection connection = DriverManager.getConnection(url, props);
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("PRAGMA journal_mode=WAL;");
+                stmt.execute("PRAGMA busy_timeout = 5000;");
+            }
+
+            return connection;
         } catch (Exception e) {
             log.error("Failed to initialize encrypted database", e);
             throw new RuntimeException(e);
