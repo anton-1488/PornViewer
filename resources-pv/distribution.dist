@@ -8,7 +8,7 @@
   <choice id="com.plovdev.pornviewer" visible="false">
     <pkg-ref id="com.plovdev.pornviewer"></pkg-ref>
   </choice>
-  <pkg-ref id="com.plovdev.pornviewer" version="1.7.7" onConclusion="none">PornViewer-app.pkg</pkg-ref>
+  <pkg-ref id="com.plovdev.pornviewer" version="1.7.9" onConclusion="none">PornViewer-app.pkg</pkg-ref>
   <options customize="never" require-scripts="false" hostArchitectures="x86_64"></options>
   <choices-outline>
     <line choice="default">
