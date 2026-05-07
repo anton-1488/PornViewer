@@ -45,6 +45,35 @@
         <true/>
     </dict>
 
+    <!-- Объявление собственного типа файла -->
+    <key>UTExportedTypeDeclarations</key>
+    <array>
+        <dict>
+            <key>UTTypeIdentifier</key>
+            <string>com.plovdev.pv.plugin</string>
+
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>pvva</string>
+                </array>
+            </dict>
+
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.data</string>
+                <string>public.composite-content</string>
+            </array>
+
+            <key>UTTypeDescription</key>
+            <string>PVVA Plugin Package</string>
+
+            <key>UTTypeIconFile</key>
+            <string>PornViewer.icns</string>
+        </dict>
+    </array>
+
     <!-- Ассоциации файлов (для плагинов .pvva) -->
     <key>CFBundleDocumentTypes</key>
     <array>
@@ -57,7 +86,7 @@
             <string>PornViewer.icns</string>
             <key>LSItemContentTypes</key>
             <array>
-                <string>com.plovdev.pv.plugin</string>
+                <string>com.plovdev.pornviewer.Launcher</string>
             </array>
             <key>LSHandlerRank</key>
             <string>Owner</string>

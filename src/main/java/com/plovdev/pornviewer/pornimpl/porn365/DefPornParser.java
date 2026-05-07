@@ -4,6 +4,7 @@ import com.plovdev.pornviewer.databases.FavoriteVideos;
 import com.plovdev.pornviewer.httpquering.PornParser;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.*;
+import com.plovdev.pornviewer.utility.Globals;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,65 +15,50 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.Callable;
 
 public class DefPornParser implements PornParser {
     private static final Logger log = LoggerFactory.getLogger(DefPornParser.class);
+    private final List<Integer> allIds = FavoriteVideos.getAllId();
 
     @Override
     public List<VideoCard> getAllVideos(@NotNull String html) {
         Document doc = Jsoup.parse(html);
+        Elements elements = doc.select("li.video_block");
         List<VideoCard> cards = new ArrayList<>();
-        try (ExecutorService service = Executors.newVirtualThreadPerTaskExecutor()) {
-            List<Future<VideoCard>> futures = new ArrayList<>();
-            Elements elements = doc.select("li.video_block");
-            elements.forEach(e -> {
-                Future<VideoCard> future = service.submit(() -> (VideoCard) parseVideoBlock(e));
-                futures.add(future);
-            });
 
-            futures.forEach(f -> {
+        try {
+            Globals.GLOBAL_EXECUTOR.invokeAll(elements
+                    .stream()
+                    .map(e -> (Callable<VideoCard>) () -> (VideoCard) parseVideoBlock(e))
+                    .toList()).forEach(f -> {
                 try {
                     cards.add(f.get());
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    log.error("Error to collect parsed video: ", e);
                 }
             });
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Error parse all videos: ", e);
         }
         return cards;
     }
 
-    @Override
-    public List<ModelCard> getAllModels(String html) {
-        Document doc = Jsoup.parse(html);
-        List<ModelCard> cards = new ArrayList<>();
-        try (ExecutorService service = Executors.newVirtualThreadPerTaskExecutor()) {
-            List<Future<ModelCard>> futures = new ArrayList<>();
+    private @NotNull ModelCard parseModelBlock(@NotNull Element videoElement) {
+        ModelCard pornCard = new ModelCard();
 
-            Elements elements = doc.select("li.video_block");
-            elements.forEach(e -> {
-                Future<ModelCard> future = service.submit(() -> (ModelCard) parseVideoBlock(e));
-                futures.add(future);
-            });
+        pornCard.setCardId(Integer.parseInt(videoElement.id()));
+        Element link = videoElement.selectFirst("a.image");
+        pornCard.setUrl(link.attr("abs:href"));
+        Element img = link.selectFirst("img");
+        pornCard.setPic(img.attr("abs:src"));
+        Element title = link.selectFirst("p");
+        pornCard.setTitle(title.text());
 
-            futures.forEach(f -> {
-                try {
-                    cards.add(f.get());
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return cards;
+        return pornCard;
     }
 
-    private @NotNull PornCard parseVideoBlock(@NotNull Element videoElement) {
+    private @NotNull VideoCard parseVideoBlock(@NotNull Element videoElement) {
         VideoCard pornCard = new VideoCard();
 
         pornCard.setCardId(Integer.parseInt(videoElement.id())); // "45894"
@@ -101,12 +87,9 @@ public class DefPornParser implements PornParser {
         Element rating = videoElement.selectFirst("span.mini-rating");
         pornCard.setRating(rating.text()); // "83%" -> 0.83f
 
-        long cardId = pornCard.getCardId();
-        for (Integer vc : FavoriteVideos.getAllId()) {
-            if (vc == cardId) {
-                pornCard.setFavorite(true);
-                break;
-            }
+        int cardId = pornCard.getCardId();
+        if (allIds.contains(cardId)) {
+            pornCard.setFavorite(true);
         }
 
         return pornCard;
@@ -114,20 +97,15 @@ public class DefPornParser implements PornParser {
 
     @Override
     public List<Category> getCategories(String html) {
+        Document doc = Jsoup.parse(html);
         List<Category> categories = new ArrayList<>();
-        try (ExecutorService service = Executors.newVirtualThreadPerTaskExecutor()) {
-            Document doc = Jsoup.parse(html);
 
-            Elements elements = doc.select("div ul.top-menu li a[href]");
-            elements.forEach(e -> service.submit(() -> {
-                String key = e.text().trim();
-                String value = e.attr("abs:href");
-                categories.add(new Category(key, value));
-            }));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
+        Elements elements = doc.select("div ul.top-menu li a[href]");
+        elements.forEach(e -> {
+            String key = e.text().trim();
+            String value = e.attr("abs:href");
+            categories.add(new Category(key, value));
+        });
         return categories;
     }
 

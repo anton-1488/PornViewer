@@ -9,7 +9,6 @@ import com.plovdev.pornviewer.httpquering.Resourcer;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.ModelCard;
 import com.plovdev.pornviewer.models.ModelInfo;
-import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.utility.LauncherHelper;
 import com.plovdev.pornviewer.utility.deeplink.DeepLinker;
 import javafx.application.Platform;
@@ -79,7 +78,7 @@ public class ModelsPane extends AnchorPane {
         clear.setOnMousePressed(e -> field.setText(""));
         clear.getStyleClass().add("clear-search");
 
-        vBox.getChildren().addAll(new HBox(field,clear, r2, back), new HBox(30, new VBox(10, box1, box3), new VBox(10, box4, box6), r1));
+        vBox.getChildren().addAll(new HBox(field, clear, r2, back), new HBox(30, new VBox(10, box1, box3), new VBox(10, box4, box6), r1));
         vBox.setPadding(new Insets(0, 0, 30, 0));
         root.setTop(new VBox(vBox));
 
@@ -106,14 +105,14 @@ public class ModelsPane extends AnchorPane {
                 LauncherHelper.getInstance().notifyDeepLink(URI.create(txt));
                 return;
             }
-            txt = txt.replace("/","");
+            txt = txt.replace("/", "");
             if (!txt.isEmpty()) {
                 pane.getChildren().clear();
                 originNots.clear();
                 runPornParsing(pane, resourcer.baseUrl() + resourcer.modelsSearchUrl() + URLEncoder.encode(field.getText(), Charset.defaultCharset()));
             }
         });
-        field.textProperty().addListener((e1,e2,e3) -> {
+        field.textProperty().addListener((e1, e2, e3) -> {
             clear.setVisible(!e3.isEmpty());
             if (!(e3.startsWith("pv://") || e3.startsWith("pornviewer://"))) {
                 List<Pane> panes = new ArrayList<>(originNots);
@@ -189,8 +188,7 @@ public class ModelsPane extends AnchorPane {
                 }
 
                 PornParser pornParser = adapter.getParser();
-                List<VideoCard> cards = pornParser.getAllVideos(handler.requestPorn(url));
-                cards.forEach(e -> {
+                pornParser.getAllVideos(handler.requestPorn(url)).forEach(e -> {
                     e.render();
                     Platform.runLater(() -> pane.getChildren().add(e));
                 });

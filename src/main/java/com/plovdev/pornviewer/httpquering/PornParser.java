@@ -6,8 +6,10 @@ import java.util.List;
 
 public interface PornParser {
     List<VideoCard> getAllVideos(String html);
-    List<ModelCard> getAllModels(String html);
+
     List<Category> getCategories(String html);
+
     List<ModelInfo> getModels(String html);
+
     VideoInfo parseVideo(String url);
 }

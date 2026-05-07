@@ -23,7 +23,7 @@ import static com.plovdev.pornviewer.gui.utils.ShareUtils.getShareButton;
 public class ModelCard extends PornCard {
     private static final Logger log = LoggerFactory.getLogger(ModelCard.class);
     private ModelInfo modelInfo;
-    private final Pane pane;
+    private Pane pane;
 
     public void setModelInfo(ModelInfo modelInfo) {
         this.modelInfo = modelInfo;
@@ -40,9 +40,17 @@ public class ModelCard extends PornCard {
         return pane;
     }
 
+    public ModelCard() {
+
+    }
+
     public ModelCard(ModelInfo modelInfo, Pane p) {
         this.modelInfo = modelInfo;
         pane = p;
+    }
+
+    public void setPane(Pane pane) {
+        this.pane = pane;
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.plovdev.pornviewer.models.ModelInfo;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,7 @@ import java.util.concurrent.Future;
 public class ModelsParser {
     private static final Logger log = LoggerFactory.getLogger(ModelsParser.class);
 
-    public static List<ModelInfo> parseModels(Document document) {
+    public static @NonNull List<ModelInfo> parseModels(Document document) {
         List<ModelInfo> infos = new ArrayList<>();
 
         try (ExecutorService modelParserExecutor = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -41,7 +42,7 @@ public class ModelsParser {
         return infos;
     }
 
-    private static ModelInfo parseModelBlock(Element modelBlock) {
+    private static @NonNull ModelInfo parseModelBlock(@NonNull Element modelBlock) {
         ModelInfo result = new ModelInfo();
         result.setUrl(modelBlock.selectFirst("a[href]").attr("abs:href").trim());
 
@@ -58,7 +59,7 @@ public class ModelsParser {
         return result;
     }
 
-    private static void setModelName(ModelInfo info, Element modelBlock) {
+    private static void setModelName(@NonNull ModelInfo info, @NonNull Element modelBlock) {
         Element names = modelBlock.selectFirst("span.model_name");
         info.setRusName(names.selectFirst("span.model_rus_name").text());
         info.setEngName(names.selectFirst("span.model_eng_name").text());
