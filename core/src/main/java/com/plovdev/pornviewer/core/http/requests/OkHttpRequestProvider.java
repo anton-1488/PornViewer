@@ -2,11 +2,16 @@ package com.plovdev.pornviewer.core.http.requests;
 
 import com.plovdev.pornviewer.core.http.PornRequest;
 import okhttp3.*;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
+import org.plovdev.pvva.models.configs.httpconfig.HttpConfig;
+import org.plovdev.pvva.models.configs.httpconfig.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,25 +21,12 @@ import java.util.concurrent.TimeUnit;
 
 public class OkHttpRequestProvider implements PornRequestProvider {
     private static final Logger log = LoggerFactory.getLogger(OkHttpRequestProvider.class);
-    private final OkHttpClient client;
+    private OkHttpClient client;
+    private final HttpConfig httpConfig;
 
-    public OkHttpRequestProvider() {
-        client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .followRedirects(true)
-                .cookieJar(new CookieJar() {
-                    private final Map<String, List<Cookie>> cookieStore = new ConcurrentHashMap<>();
-                    @Override
-                    public void saveFromResponse(@NotNull HttpUrl url, @NotNull List<Cookie> cookies) {
-                        cookieStore.put(url.host(), cookies);
-                    }
-                    @Override
-                    public @NotNull List<Cookie> loadForRequest(@NotNull HttpUrl url) {
-                        return cookieStore.getOrDefault(url.host(), new ArrayList<>());
-                    }
-                })
-                .build();
+    public OkHttpRequestProvider(HttpConfig config) {
+        client = configureHttpClient(config);
+        this.httpConfig = config;
     }
 
     @Override
@@ -81,11 +73,7 @@ public class OkHttpRequestProvider implements PornRequestProvider {
 
 
     @Override
-    public long checkContentLength(PornRequest request) {
-        if (!request.method().equals("HEAD")) {
-            request = PornRequest.head(request.path());
-        }
-
+    public long checkContentLength(@NonNull PornRequest request) {
         try (Response response = client.newCall(configurateRequest(request)).execute()) {
             if (response.isSuccessful()) {
                 return Long.parseLong(Objects.requireNonNull(response.header("Content-Length")));
@@ -99,7 +87,7 @@ public class OkHttpRequestProvider implements PornRequestProvider {
         return 0;
     }
 
-    private Request configurateRequest(PornRequest request) {
+    private @NotNull Request configurateRequest(@NotNull PornRequest request) {
         Request.Builder builder = new Request.Builder();
         builder.url(request.path().toString());
 
@@ -117,5 +105,36 @@ public class OkHttpRequestProvider implements PornRequestProvider {
         }
 
         return builder.build();
+    }
+
+    @Override
+    public void setProxy(Proxy proxy) {
+        OkHttpClient.Builder builder = client.newBuilder();
+        builder.proxy(Objects.requireNonNullElse(proxy, Proxy.NO_PROXY));
+        client = builder.build();
+    }
+
+    @Contract("_ -> new")
+    private @NonNull OkHttpClient configureHttpClient(@NonNull HttpConfig config) {
+        return new OkHttpClient.Builder()
+                .connectTimeout(config.connectTimeout(), TimeUnit.MILLISECONDS)
+                .readTimeout(config.readTimeout(), TimeUnit.MILLISECONDS)
+                .writeTimeout(config.writeTimeout(), TimeUnit.MILLISECONDS)
+                .followRedirects(true)
+                .retryOnConnectionFailure(config.retryPolicy() == RetryPolicy.ON_FAILED || config.retryPolicy() == RetryPolicy.ALWAYS)
+                .cookieJar(new CookieJar() {
+                    private final Map<String, List<Cookie>> cookieStore = new ConcurrentHashMap<>();
+
+                    @Override
+                    public void saveFromResponse(@NonNull HttpUrl url, @NonNull List<Cookie> cookies) {
+                        cookieStore.put(url.host(), cookies);
+                    }
+
+                    @Override
+                    public @NonNull List<Cookie> loadForRequest(@NonNull HttpUrl url) {
+                        return cookieStore.getOrDefault(url.host(), new ArrayList<>());
+                    }
+                })
+                .build();
     }
 }

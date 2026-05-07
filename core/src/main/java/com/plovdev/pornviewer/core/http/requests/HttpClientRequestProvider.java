@@ -2,12 +2,15 @@ package com.plovdev.pornviewer.core.http.requests;
 
 import com.plovdev.pornviewer.core.http.PornRequest;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
+import org.plovdev.pvva.models.configs.httpconfig.HttpConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.net.CookieHandler;
 import java.net.CookieManager;
+import java.net.Proxy;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -18,7 +21,7 @@ public class HttpClientRequestProvider implements PornRequestProvider {
     private static final Logger log = LoggerFactory.getLogger(HttpClientRequestProvider.class);
     private final HttpClient client;
 
-    public HttpClientRequestProvider() {
+    public HttpClientRequestProvider(HttpConfig config) {
         CookieHandler.setDefault(new CookieManager());
         client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(20))
@@ -69,7 +72,12 @@ public class HttpClientRequestProvider implements PornRequestProvider {
     }
 
     @Override
-    public long checkContentLength(PornRequest request) {
+    public void setProxy(Proxy proxy) {
+
+    }
+
+    @Override
+    public long checkContentLength(@NonNull PornRequest request) {
         if (!request.method().equals("HEAD")) {
             request = PornRequest.head(request.path());
         }

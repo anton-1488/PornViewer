@@ -10,11 +10,11 @@ import com.plovdev.pornviewer.utils.json.VideoInfoSerializer;
 import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.Cipher;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 
 public class PVVFVideoReader {
-    public static VideoHeader readHeader(Path file) {
+    public static VideoHeader readHeader(File file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             return pvvfParser.parseVideoHeader();
         } catch (Exception e) {
@@ -22,7 +22,7 @@ public class PVVFVideoReader {
         }
     }
 
-    public static VideoMetadata readMetadata(Path file) {
+    public static VideoMetadata readMetadata(File file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             return pvvfParser.collectEncryptedVideo().getVideoMetadata();
         } catch (Exception e) {
@@ -30,7 +30,7 @@ public class PVVFVideoReader {
         }
     }
 
-    public static EncryptedVideo readVideo(Path file) {
+    public static EncryptedVideo readVideo(File file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             return pvvfParser.collectEncryptedVideo();
         } catch (Exception e) {
@@ -38,7 +38,7 @@ public class PVVFVideoReader {
         }
     }
 
-    public static @NotNull DownloadedVideoInfo readInfo(Path file) {
+    public static @NotNull DownloadedVideoInfo readInfo(File file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             EncryptedVideo video = pvvfParser.collectEncryptedVideo();
             VideoMetadata metadata = video.getVideoMetadata();

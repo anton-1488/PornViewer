@@ -26,13 +26,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>20.0.2</javafx.version>
         <controlsfx.version>11.2.1</controlsfx.version>
-        <formsfx.version>11.6.0</formsfx.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.plovdev</groupId>
-            <artifactId>pvva</artifactId>
+            <artifactId>pvva-core</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
