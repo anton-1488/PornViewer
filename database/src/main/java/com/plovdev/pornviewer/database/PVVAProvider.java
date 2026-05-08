@@ -33,7 +33,7 @@ public class PVVAProvider {
                 "author TEXT, " +
                 "authorPage TEXT, " +
                 "licenseUrl TEXT, " +
-                "homePage TEXT" +
+                "homePage TEXT, " +
                 "pathName TEXT" +
                 ")";
         try (Statement statement = con.createStatement()) {

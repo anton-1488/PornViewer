@@ -111,4 +111,9 @@ public class HttpClientRequestProvider implements PornRequestProvider {
 
         return requestBuilder.build();
     }
+
+    @Override
+    public void close() {
+        client.close();
+    }
 }

@@ -5,6 +5,7 @@ import okhttp3.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
+import org.plovdev.pvva.models.configs.httpconfig.HeadersConfig;
 import org.plovdev.pvva.models.configs.httpconfig.HttpConfig;
 import org.plovdev.pvva.models.configs.httpconfig.RetryPolicy;
 import org.slf4j.Logger;
@@ -12,11 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.net.Proxy;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class OkHttpRequestProvider implements PornRequestProvider {
@@ -91,9 +90,13 @@ public class OkHttpRequestProvider implements PornRequestProvider {
         Request.Builder builder = new Request.Builder();
         builder.url(request.path().toString());
 
-        Map<String, String> headers = request.headers();
-        for (String header : headers.keySet()) {
-            builder.header(header, headers.get(header));
+        Optional<HeadersConfig> optionalHttpConfig = httpConfig.headersConfig();
+        if (optionalHttpConfig.isPresent()) {
+            HeadersConfig headersConfig = optionalHttpConfig.get();
+            Optional<Map<String, String>> optHeaders = headersConfig.headerSet();
+            putHeaders(builder, optHeaders.orElse(request.headers()));
+        } else {
+            putHeaders(builder, request.headers());
         }
 
         if (request.method().equals("POST")) {
@@ -105,6 +108,12 @@ public class OkHttpRequestProvider implements PornRequestProvider {
         }
 
         return builder.build();
+    }
+
+    private void putHeaders(Request.Builder builder, @NonNull Map<String, String> headers) {
+        for (String header : headers.keySet()) {
+            builder.header(header, headers.get(header));
+        }
     }
 
     @Override
@@ -136,5 +145,15 @@ public class OkHttpRequestProvider implements PornRequestProvider {
                     }
                 })
                 .build();
+    }
+
+    @Override
+    public void close() {
+        try (ExecutorService service = client.dispatcher().executorService()) {
+            service.shutdownNow();
+            client.connectionPool().evictAll();
+        } catch (Exception e) {
+            log.error("OkHttp client shutdown error: ", e);
+        }
     }
 }

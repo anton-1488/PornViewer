@@ -1,29 +1,25 @@
 package com.plovdev.pornviewer.commons.models;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-public record FullVideoInfo(List<Comment> comments, int views, VideoRating rating, Map<VideoQuality, URI> qualityMap, List<Timecode> timecodes, Map<String, URI> tagLinks, Map<String, URI> modelLiks, Duration videoDuration, int videoId, String description, String title, URI videoUri) {
+public record FullVideoInfo(List<Comment> comments, int views, VideoRating rating, Map<VideoQuality, URI> qualityMap,
+                            List<Timecode> timecodes, Map<String, URI> tagLinks, Map<String, URI> modelLiks,
+                            List<CategoryInfo> categories, Duration videoDuration, String videoId, String description,
+                            String title, URI videoUri, URI previewUrl) {
+
     @Override
-    @NotNull
-    public String toString() {
-        return "FullVideoInfo{" +
-                "comments=" + comments +
-                ", views=" + views +
-                ", rating=" + rating +
-                ", qualityMap=" + qualityMap +
-                ", timecodes=" + timecodes +
-                ", tagLinks=" + tagLinks +
-                ", modelLiks=" + modelLiks +
-                ", videoDuration=" + videoDuration +
-                ", videoId=" + videoId +
-                ", description='" + description + '\'' +
-                ", title='" + title + '\'' +
-                ", videoUri=" + videoUri +
-                '}';
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        FullVideoInfo that = (FullVideoInfo) o;
+        return Objects.equals(videoId, that.videoId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(videoId);
     }
 }

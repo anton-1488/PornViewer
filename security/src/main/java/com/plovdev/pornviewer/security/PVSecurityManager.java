@@ -5,14 +5,13 @@ import org.jetbrains.annotations.NotNull;
 import org.plovdev.keyer.Keychain;
 
 public class PVSecurityManager {
-    public static final String PORN_VIEWER_VIDEO_AILAS = "VIDEOS";
     private static final Keychain KEYCHAIN = Keychain.getKeychain(PVFileManager.PORN_VIEWER);
 
     private PVSecurityManager() {
     }
 
     public static char @NotNull [] getPassword() {
-        char[] password = KEYCHAIN.getPassword(PORN_VIEWER_VIDEO_AILAS);
+        char[] password = KEYCHAIN.getPassword(PVFileManager.PORN_VIEWER);
         if (password == null) {
             throw new IllegalStateException("Master password not found in Keychain!");
         }

@@ -1,13 +1,23 @@
 **/target/
+target/
+**/target/**
 
-### IntelliJ IDEA ###
+test/
+
+.idea/**
+.idea/*
 .idea/
 *.iws
 *.iml
 *.ipr
 
+**/.env
+
+.mvn/
+**/target
+
 ### VS Code ###
 .vscode/
 
-### Mac OS ###
 .DS_Store
+Thumbs.db

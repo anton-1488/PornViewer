@@ -1,14 +1,18 @@
 package com.plovdev.pornviewer.commons.models;
 
-import org.jetbrains.annotations.NotNull;
+import java.net.URI;
+import java.util.Objects;
 
-public record CategoryInfo(String name, String url) {
+public record CategoryInfo(String name, URI url) {
     @Override
-    @NotNull
-    public String toString() {
-        return "CategoryInfo{" +
-                "name='" + name + '\'' +
-                ", url='" + url + '\'' +
-                '}';
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        CategoryInfo that = (CategoryInfo) o;
+        return Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
     }
 }
