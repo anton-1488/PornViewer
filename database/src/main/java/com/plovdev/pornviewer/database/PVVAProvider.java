@@ -2,10 +2,16 @@ package com.plovdev.pornviewer.database;
 
 import com.plovdev.pornviewer.commons.adapter.AdapterInfo;
 import com.plovdev.pornviewer.exceptions.PVDataBaseException;
+import com.plovdev.pornviewer.exceptions.PornViewerException;
 import org.jspecify.annotations.NonNull;
+import org.plovdev.pvva.models.PVVAHeader;
+import org.plovdev.pvva.models.PVVAHost;
+import org.plovdev.pvva.models.PluginJson;
+import org.plovdev.pvva.read.PVVAReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,7 +89,7 @@ public class PVVAProvider {
 
     public static void addAdapter(@NonNull AdapterInfo info) {
         checkConnection();
-        String sql = "INSERT INTO PVVAdapters (" +
+        String sql = "INSERT OR REPLACE INTO PVVAdapters (" +
                 "pluginId, minAppVersion, maxAppVersion, name, version, description, " +
                 "updateUrl, signRequired, author, authorPage, licenseUrl, homePage, pathName" +
                 ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -146,6 +152,34 @@ public class PVVAProvider {
             log.error("Error to search adapter by id: ", e);
         }
         throw new NoSuchElementException("Adapter with id(" + pluginId + ") not found.");
+    }
+
+    public static @NonNull AdapterInfo loadAdapter(Path path) {
+        try (PVVAReader reader = new PVVAReader(path)) {
+            PVVAHost host = reader.parseVideoAdapter();
+            PVVAHeader header = host.header();
+            PluginJson pluginJson = host.pluginJson();
+
+            AdapterInfo info = new AdapterInfo(
+                    header.pluginId(),
+                    header.minAppVersion(),
+                    header.maxAppVersion(),
+                    pluginJson.title(),
+                    pluginJson.version(),
+                    pluginJson.description().orElse(null),
+                    pluginJson.autoUpdateUrl().orElse(null),
+                    pluginJson.signRequired(),
+                    pluginJson.author().orElse(null),
+                    pluginJson.authorPage().orElse(null),
+                    pluginJson.licenseUrl().orElse("https://unlicense.org"),
+                    pluginJson.homepage().orElse(null),
+                    path.toFile().getName()
+            );
+            addAdapter(info);
+            return info;
+        } catch (Exception e) {
+            throw new PornViewerException("Error to load adapter: ", e);
+        }
     }
 
     private static void checkConnection() {

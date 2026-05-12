@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.plovdev.pornviewer.utils.json.typeadapters.DurationTypeAdapter;
 
+import java.lang.reflect.Type;
 import java.time.Duration;
 
 public class JSONSerializer {
@@ -13,7 +14,7 @@ public class JSONSerializer {
         return GSON.toJson(o);
     }
 
-    public static <V> V deserialize(String json, Class<V> type) {
+    public static <V> V deserialize(String json, Type type) {
         return GSON.fromJson(json, type);
     }
 }

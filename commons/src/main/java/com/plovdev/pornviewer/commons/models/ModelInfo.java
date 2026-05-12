@@ -8,11 +8,11 @@ public record ModelInfo(String name, URI url, URI avatar, String country, int vi
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         ModelInfo modelInfo = (ModelInfo) o;
-        return Objects.equals(url, modelInfo.url) && Objects.equals(name, modelInfo.name);
+        return Objects.equals(name, modelInfo.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, url);
+        return Objects.hashCode(name);
     }
 }

@@ -9,7 +9,7 @@ public class PornViewer {
 
     static void main(String[] args) {
         try (PornHttpClient client = new PornHttpClient()) {
-            System.out.println(client.requestMainPage(0));
+            System.out.println(client.requestCategories());
         } catch (Exception e) {
             log.error("Error: ", e);
         }

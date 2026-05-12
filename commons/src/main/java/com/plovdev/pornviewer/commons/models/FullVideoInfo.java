@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public record FullVideoInfo(List<Comment> comments, int views, VideoRating rating, Map<VideoQuality, URI> qualityMap,
-                            List<Timecode> timecodes, Map<String, URI> tagLinks, Map<String, URI> modelLiks,
+                            List<Timecode> timecodes, Map<String, URI> tagLinks, Map<String, URI> modelsLinks,
                             List<CategoryInfo> categories, Duration videoDuration, String videoId, String description,
                             String title, URI videoUri, URI previewUrl) {
 

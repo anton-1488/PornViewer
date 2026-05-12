@@ -2,7 +2,7 @@
 target/
 **/target/**
 
-test/
+./test
 
 .idea/**
 .idea/*
