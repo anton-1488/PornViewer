@@ -25,16 +25,15 @@ public class DeepSearcher {
         Optional<VideoCard> mc = containsKeywordsInVideos(pornParser.getAllVideos(html), keywords);
         mc.ifPresent(onFound::onFound);
 
-        String nextLink;
-        int page = 0;
-        while ((nextLink = handler.getNextLink(html)) != null) {
+        int page = 1;
+        while (handler.getNextLink(html) != null) {
             try {
                 if (page >= maxPages) break;
                 if (page % 10 == 0) {
                     Toast.showToast("Обработано " + page + " страниц");
                 }
 
-                html = handler.requestPorn(nextLink);
+                html = handler.requestPorn(url + page);
                 Optional<VideoCard> maybeCard = containsKeywordsInVideos(pornParser.getAllVideos(html), keywords);
                 maybeCard.ifPresent(onFound::onFound);
                 Thread.sleep(500);

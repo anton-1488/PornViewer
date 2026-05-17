@@ -276,7 +276,7 @@ public class VideoCard extends PornCard {
         MenuItem item = new MenuItem(qual);
         item.setOnAction(e -> new Thread(() -> {
             String url = info.getUrls().get(qual);
-            handler.downloadPorn(url, info.getTitle(), info);
+            handler.downloadPorn(url, info.getTitle() + " - " + qual, info);
         }).start());
         return item;
     }

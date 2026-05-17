@@ -11,7 +11,6 @@ import com.plovdev.pornviewer.utility.files.FileUtils;
 import javafx.application.Application;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.plovdev.keyer.Keychain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,6 @@ import java.util.Objects;
 public class Launcher {
     private static final Logger log = LoggerFactory.getLogger(Launcher.class);
     private static final LauncherHelper launcherHelper = LauncherHelper.getInstance();
-    private static final Keychain KEYCHAIN = Keychain.getKeychain(FileUtils.PORN_VIEWER_SIGN);
 
     static {
         System.setProperty("sun.net.httpserver.maxReqTime", "600");

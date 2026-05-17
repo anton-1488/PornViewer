@@ -2,6 +2,8 @@ package com.plovdev.pornviewer.models;
 
 import javafx.scene.layout.Pane;
 
+import java.util.Objects;
+
 public abstract class PornCard extends Pane {
     protected int id;
     protected String title;
@@ -51,6 +53,18 @@ public abstract class PornCard extends Pane {
     }
 
     public abstract void render();
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        PornCard pornCard = (PornCard) o;
+        return id == pornCard.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 
     @Override
     public String toString() {

@@ -112,12 +112,16 @@ public class MainMenuPane extends AnchorPane {
             keywordsInput.showAndWait().ifPresent(string -> Thread.startVirtualThread(() -> {
                 try {
                     Platform.runLater(originNots::clear);
+                    Platform.runLater(pane.getChildren()::clear);
+
                     String[] keywords = string.toLowerCase().replace(" ", "").split(",");
                     String url = resourcer.baseUrl() + resourcer.searchUrl() + URLEncoder.encode(field.getText(), Charset.defaultCharset()) + "/popular/";
                     DeepSearcher.searchVideo(new DefPornParser(), url, Arrays.stream(keywords).toList(), MAX_PAGES.get(), card -> {
-                        card.render();
-                        originNots.add(card);
-                        Platform.runLater(() -> pane.getChildren().add(card));
+                        if (!originNots.contains(card)) {
+                            card.render();
+                            originNots.add(card);
+                            Platform.runLater(() -> pane.getChildren().add(card));
+                        }
                     });
                 } catch (Exception ex) {
                     log.error("Deep search error: ", ex);

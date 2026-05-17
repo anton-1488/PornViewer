@@ -75,7 +75,7 @@ public class CipherEngineUtils {
             try {
                 retrievedPassword = KEYCHAIN.getPassword(alias);
             } catch (KeyerException e) {
-                log.error("Error to get password: ", e);
+                log.error("Error to get password. Trying setup a new password. ", e);
             }
 
             if (retrievedPassword == null) {
@@ -84,10 +84,11 @@ public class CipherEngineUtils {
                 String newPassword = new String(password);
                 KEYCHAIN.setPassword(alias, newPassword.toCharArray());
                 log.info("New password generated and saved to keychain");
-                System.gc();
+            } else {
+                Arrays.fill(retrievedPassword, '\u0000');
             }
         } catch (Exception e) {
-            throw new RuntimeException("Keychain error", e);
+            throw new KeyerException("Keychain error", e);
         }
     }
 

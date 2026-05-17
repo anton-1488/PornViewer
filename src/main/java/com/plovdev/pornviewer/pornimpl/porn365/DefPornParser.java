@@ -44,20 +44,6 @@ public class DefPornParser implements PornParser {
         return cards;
     }
 
-    private @NotNull ModelCard parseModelBlock(@NotNull Element videoElement) {
-        ModelCard pornCard = new ModelCard();
-
-        pornCard.setCardId(Integer.parseInt(videoElement.id()));
-        Element link = videoElement.selectFirst("a.image");
-        pornCard.setUrl(link.attr("abs:href"));
-        Element img = link.selectFirst("img");
-        pornCard.setPic(img.attr("abs:src"));
-        Element title = link.selectFirst("p");
-        pornCard.setTitle(title.text());
-
-        return pornCard;
-    }
-
     private @NotNull VideoCard parseVideoBlock(@NotNull Element videoElement) {
         VideoCard pornCard = new VideoCard();
 

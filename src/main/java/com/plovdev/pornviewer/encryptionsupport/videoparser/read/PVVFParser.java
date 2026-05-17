@@ -218,7 +218,7 @@ public class PVVFParser implements AutoCloseable {
             ByteBuffer fileType = ByteBuffer.allocate(magicNumberLength);
             int bytesRead = channel.read(fileType);
             if (bytesRead != magicNumberLength) {
-                log.warn("Incorrect bytes was readed: {}/{}", bytesRead, magicNumberLength);
+                log.warn("Incorrect bytes was readed from {}: {}/{}", path, bytesRead, magicNumberLength);
                 return false;
             }
             String magic = new String(fileType.array(), IO_CHARSET);

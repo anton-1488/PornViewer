@@ -10,7 +10,6 @@ import com.plovdev.pornviewer.httpquering.PornVideoAdapter;
 import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
 import com.plovdev.pornviewer.models.FavoriteVideo;
 import com.plovdev.pornviewer.models.FavoriteVideoInfo;
-import com.plovdev.pornviewer.models.VideoCard;
 import com.plovdev.pornviewer.models.VideoInfo;
 import com.plovdev.pornviewer.utility.LauncherHelper;
 import com.plovdev.pornviewer.utility.deeplink.DeepLinker;
@@ -357,7 +356,7 @@ public class FavoritePane extends AnchorPane {
                         info = parser.parseVideo(video.getUrl());
                     }
                     String url = info.getUrls().get(qual);
-                    handler.downloadPorn(url, info.getTitle(), info);
+                    handler.downloadPorn(url, info.getTitle() + " - " + qual, info);
                 });
             }
         });

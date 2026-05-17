@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
+import java.util.Objects;
 
 import static com.plovdev.pornviewer.gui.utils.ShareUtils.getShareButton;
 
@@ -117,5 +118,18 @@ public class ModelCard extends PornCard {
         } catch (Exception e) {
             log.error("Model rendering error: ", e);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ModelCard modelCard = (ModelCard) o;
+        return Objects.equals(modelInfo, modelCard.modelInfo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), modelInfo);
     }
 }

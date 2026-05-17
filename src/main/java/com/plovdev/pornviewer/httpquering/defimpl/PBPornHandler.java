@@ -5,11 +5,8 @@ import com.plovdev.pornviewer.httpquering.PornRequest;
 import com.plovdev.pornviewer.httpquering.PornRequestProvider;
 import com.plovdev.pornviewer.httpquering.RequestProvider;
 import com.plovdev.pornviewer.models.VideoInfo;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,13 +21,15 @@ public class PBPornHandler {
     public PBPornHandler(RequestProvider provider) {
         if (provider == RequestProvider.OK_HTTP) {
             requestProvider = new OkHttpRequestProvider();
+        } else if (provider == RequestProvider.NETTY) {
+            requestProvider = new NettyHttpProvider();
         } else {
             requestProvider = new HttpClientRequstProvider();
         }
     }
 
     public PBPornHandler() {
-        requestProvider = new OkHttpRequestProvider();
+        requestProvider = new HttpClientRequstProvider();
     }
 
     public PornRequestProvider getRequestProvider() {
@@ -70,14 +69,6 @@ public class PBPornHandler {
         Document document = Jsoup.parse(html);
         Elements elements = document.select("div.navigation");
 
-
-        StringProperty link = new SimpleStringProperty();
-        elements.forEach(e -> {
-            Element a = e.selectFirst("a");
-            if (a != null) link.set(a.attr("abs:href"));
-            else link.set(null);
-        });
-
-        return link.get();
+        return elements.stream().findFirst().orElseThrow().attr("abs:href");
     }
 }

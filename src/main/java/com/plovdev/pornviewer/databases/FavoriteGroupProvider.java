@@ -1,5 +1,6 @@
 package com.plovdev.pornviewer.databases;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ public class FavoriteGroupProvider {
         }
     }
 
-    public static List<String> getAllGroups() {
+    public static @NonNull List<String> getAllGroups() {
         List<String> groups = new CopyOnWriteArrayList<>();
         try (Statement statement = con.createStatement();
              ResultSet set = statement.executeQuery("SELECT * FROM FavoriteGroups")) {

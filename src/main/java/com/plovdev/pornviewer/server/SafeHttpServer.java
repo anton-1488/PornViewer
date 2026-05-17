@@ -23,18 +23,18 @@ public class SafeHttpServer {
     public static final int PORT = 3535;
     private boolean isRunning;
     private HttpServer server;
-    private volatile static SafeHttpServer INSTANSE = null;
+    private volatile static SafeHttpServer INSTANCE = null;
     private ServerEventListener listener = new ServerEventListenerAdapter() {};
 
     public static SafeHttpServer getInstance() {
-        if (INSTANSE == null) {
+        if (INSTANCE == null) {
             synchronized (SafeHttpServer.class) {
-                if (INSTANSE == null) {
-                    INSTANSE = new SafeHttpServer();
+                if (INSTANCE == null) {
+                    INSTANCE = new SafeHttpServer();
                 }
             }
         }
-        return INSTANSE;
+        return INSTANCE;
     }
 
     private SafeHttpServer() {}

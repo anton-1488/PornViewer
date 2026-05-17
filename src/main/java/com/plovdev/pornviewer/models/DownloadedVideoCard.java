@@ -243,6 +243,19 @@ public class DownloadedVideoCard extends VideoCard {
         return delete;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        DownloadedVideoCard card = (DownloadedVideoCard) o;
+        return Objects.equals(path, card.path);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), path);
+    }
+
     private @NonNull Region getVRegion() {
         Region region = new Region();
         VBox.setVgrow(region, Priority.ALWAYS);

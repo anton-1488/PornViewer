@@ -15,6 +15,7 @@ import com.plovdev.pornviewer.httpquering.PornRequestProvider;
 import com.plovdev.pornviewer.models.VideoInfo;
 import com.plovdev.pornviewer.utility.files.FileUtils;
 import com.plovdev.pornviewer.utility.json.VideoInfoSerializer;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +86,7 @@ public class PornDownloader {
         }
     }
 
-    private VideoHeader prepareAndWriteHeader(PVVFWriter writer, long videSize) {
+    private @NonNull VideoHeader prepareAndWriteHeader(@NonNull PVVFWriter writer, long videSize) {
         long remainder = videSize % PLAIN_CHUNK_SIZE;
         int lastChunkPaddingSize = (remainder == 0) ? 0 : (int) (PLAIN_CHUNK_SIZE - remainder);
         String mimeType = LoadersUtils.guessMimeType(uri.toString());
@@ -97,12 +98,12 @@ public class PornDownloader {
 
     private void loadAndSaveVideoChunks(PVVFWriter writer, CryptoEngine engine) {
         try {
+            log.info("Start writing chunks, uri: {}", uri.toString());
             try (InputStream readStream = requestProvider.requestStream(PornRequest.get(uri.toString()))) {
                 byte[] chunkBuffer = new byte[PLAIN_CHUNK_SIZE];
                 long totalReaded = 0;
                 int readed;
                 long chunkIndex = 0;
-
                 while ((readed = readStream.readNBytes(chunkBuffer, 0, PLAIN_CHUNK_SIZE)) > 0) {
                     byte[] plainChunk = chunkBuffer;
                     if (readed < PLAIN_CHUNK_SIZE) {
