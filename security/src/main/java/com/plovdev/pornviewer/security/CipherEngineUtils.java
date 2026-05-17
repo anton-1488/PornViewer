@@ -1,6 +1,8 @@
 package com.plovdev.pornviewer.security;
 
 import com.plovdev.pornviewer.utils.NumberUtils;
+import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NonNull;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
@@ -23,7 +25,7 @@ public class CipherEngineUtils {
     public static final int BASE_NONCE_LENGTH = 8;
     public static final int COUNTER_NONCE_LENGTH = 4;
 
-    public static SecretKeySpec createSecretKeySpecFromPassword(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static @NonNull SecretKeySpec createSecretKeySpecFromPassword(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
         KeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_LENGTH);
         SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
         byte[] key = factory.generateSecret(spec).getEncoded();
@@ -33,7 +35,7 @@ public class CipherEngineUtils {
         return result;
     }
 
-    public static IvParameterSpec createParameterSpecFromBaseNonce(long counter, byte[] baseNonce) {
+    public static @NonNull IvParameterSpec createParameterSpecFromBaseNonce(long counter, byte @NonNull [] baseNonce) {
         if (baseNonce.length != BASE_NONCE_LENGTH) {
             throw new IllegalArgumentException("Illegal base nonce length! Make sure that nonce length is 8 byte!");
         }
@@ -46,7 +48,8 @@ public class CipherEngineUtils {
         return createParameterSpecFromNonce(fullNonce);
     }
 
-    public static IvParameterSpec createParameterSpecFromNonce(byte[] nonce) {
+    @Contract("_ -> new")
+    public static @NonNull IvParameterSpec createParameterSpecFromNonce(byte @NonNull [] nonce) {
         if (nonce.length != CHACHA20_NONCE_LENGTH) {
             throw new IllegalArgumentException("Illegal nonce length! Make sure that nonce length is 12 byte!");
         }

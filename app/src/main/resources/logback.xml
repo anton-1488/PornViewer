@@ -6,9 +6,19 @@
             <pattern>%cyan(%d{HH:mm:ss.SSS}) %green([%thread]) %highlight(%-5level) %red(%logger{0}) %yellow(-) %msg%n</pattern>
         </encoder>
     </appender>
+    <appender name="CONSOLE-CLEAR" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%yellow(%msg%n)</pattern>
+        </encoder>
+    </appender>
+
     <logger name="com.plovdev.pornviewer" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>
+    <logger name="CLEAR" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE-CLEAR"/>
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

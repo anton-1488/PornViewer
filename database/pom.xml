@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.plovdev.pornviewer</groupId>
-        <artifactId>PornViewer</artifactId>
-        <version>2.0</version>
+        <artifactId>pornviewer-root</artifactId>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>database</artifactId>
@@ -15,28 +15,30 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <willena.version>3.51.2.0</willena.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>io.github.willena</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-            <version>3.51.1.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.plovdev.pornviewer</groupId>
             <artifactId>commons</artifactId>
-            <version>2.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.plovdev.pornviewer</groupId>
             <artifactId>services</artifactId>
-            <version>2.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.plovdev.pornviewer</groupId>
             <artifactId>security</artifactId>
-            <version>2.0</version>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.willena</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>${willena.version}</version>
         </dependency>
     </dependencies>
 </project>

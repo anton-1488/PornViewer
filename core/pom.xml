@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.plovdev.pornviewer</groupId>
-        <artifactId>PornViewer</artifactId>
-        <version>2.0</version>
+        <artifactId>pornviewer-root</artifactId>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>core</artifactId>
@@ -15,6 +15,7 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <okhhtp.version>5.3.2</okhhtp.version>
     </properties>
 
     <dependencyManagement>
@@ -22,7 +23,7 @@
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp-bom</artifactId>
-                <version>5.3.2</version>
+                <version>${okhhtp.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -38,12 +39,12 @@
         <dependency>
             <groupId>com.plovdev.pornviewer</groupId>
             <artifactId>database</artifactId>
-            <version>2.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.plovdev.pornviewer</groupId>
             <artifactId>pvvasupport</artifactId>
-            <version>2.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>

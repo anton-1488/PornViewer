@@ -8,10 +8,9 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class CryptoEngine {
     public static final String ALGORITHM = "ChaCha20-Poly1305/None/NoPadding";
-    private int mode;
-    private byte[] baseNonce;
-
-    private SecretKeySpec keySpec;
+    private final int mode;
+    private final byte[] baseNonce;
+    private final SecretKeySpec keySpec;
 
     public CryptoEngine(int mode, char[] password, byte[] baseNonce) {
         try {
@@ -27,22 +26,8 @@ public class CryptoEngine {
         return mode;
     }
 
-    public synchronized void setMode(int mode) {
-        this.mode = mode;
-    }
-
     public byte[] getBaseNonce() {
         return baseNonce;
-    }
-
-    public synchronized void setBaseNonce(char[] password, byte[] baseNonce) {
-        try {
-            // set nonce and update keySpec:
-            this.baseNonce = baseNonce;
-            keySpec = CipherEngineUtils.createSecretKeySpecFromPassword(password, baseNonce);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public synchronized byte[] processChunk(long counter, byte[] block) {

@@ -2,8 +2,8 @@ package com.plovdev.pornviewer.utils.json;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.plovdev.pornviewer.commons.models.FullVideoInfo;
-import com.plovdev.pornviewer.commons.models.Timecode;
+import com.plovdev.pornviewer.commons.models.porn.FullVideoInfo;
+import com.plovdev.pornviewer.commons.models.porn.Timecode;
 
 import java.net.URI;
 import java.time.Duration;

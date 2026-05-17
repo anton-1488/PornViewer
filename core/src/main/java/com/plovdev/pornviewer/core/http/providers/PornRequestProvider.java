@@ -1,4 +1,4 @@
-package com.plovdev.pornviewer.core.http.requests;
+package com.plovdev.pornviewer.core.http.providers;
 
 import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.exceptions.RequestProviderException;

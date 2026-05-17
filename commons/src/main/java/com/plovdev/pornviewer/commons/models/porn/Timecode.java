@@ -1,4 +1,4 @@
-package com.plovdev.pornviewer.commons.models;
+package com.plovdev.pornviewer.commons.models.porn;
 
 import org.jetbrains.annotations.NotNull;
 

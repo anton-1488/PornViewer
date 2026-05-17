@@ -1,8 +1,8 @@
 package com.plovdev.pornviewer.core.http;
 
 import com.google.gson.Gson;
-import com.plovdev.pornviewer.commons.models.FullVideoInfo;
-import com.plovdev.pornviewer.core.http.requests.PornRequestProvider;
+import com.plovdev.pornviewer.commons.models.porn.FullVideoInfo;
+import com.plovdev.pornviewer.core.http.providers.PornRequestProvider;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoChunk;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoHeader;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoMetadata;
@@ -12,8 +12,8 @@ import com.plovdev.pornviewer.security.CipherEngineUtils;
 import com.plovdev.pornviewer.security.CryptoEngine;
 import com.plovdev.pornviewer.security.PVSecurityManager;
 import com.plovdev.pornviewer.utils.crypto.DigestUtils;
-import com.plovdev.pornviewer.utils.events.GlobalEventManager;
-import com.plovdev.pornviewer.utils.events.VideoDownloadingChannel;
+import com.plovdev.pornviewer.commons.events.GlobalEventManager;
+import com.plovdev.pornviewer.commons.events.VideoDownloadingChannel;
 import com.plovdev.pornviewer.utils.files.PVFileManager;
 import com.plovdev.pornviewer.utils.json.DownloadedVideoInfo;
 import com.plovdev.pornviewer.utils.json.VideoInfoSerializer;
@@ -58,11 +58,11 @@ public class PornDownloader {
                 loadAndSaveVideoChunks(writer, engine);
 
                 // step 4 - write pvvf metadata and close writer:
-                prepareAndWriteMetadata(writer, engine, info, videoPreview);
-                GlobalEventManager.broadcastEvent(new VideoDownloadingChannel("app.video.download", plainVideoSize, VideoDownloadingChannel.DownloadedType.END));
+                prepareAndWriteMetadata(writer, info, videoPreview);
+                GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(plainVideoSize, VideoDownloadingChannel.DownloadedType.END));
                 return new DownloadedVideoInfo(info.title(), info.description(), info.videoUri().toString(), info.timecodes(), info.tagLinks().keySet().stream().toList(), info.videoDuration());
             } catch (Exception e) {
-                GlobalEventManager.broadcastEvent(new VideoDownloadingChannel("app.video.download", e, VideoDownloadingChannel.DownloadedType.ERROR));
+                GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(e, VideoDownloadingChannel.DownloadedType.ERROR));
                 log.error("Error to download video: ", e);
                 throw new VideoDownloadingError("Error to download video: ", e);
             }
@@ -94,7 +94,7 @@ public class PornDownloader {
                     }
                     byte[] encryptedWithTag = engine.processChunk(chunkIndex, plainChunk);
                     writer.appendVideoChunk(VideoChunk.ofEncryptedWithTag(chunkIndex, encryptedWithTag));
-                    GlobalEventManager.broadcastEvent(new VideoDownloadingChannel("app.video.download", totalReaded, VideoDownloadingChannel.DownloadedType.PROCESS));
+                    GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(totalReaded, VideoDownloadingChannel.DownloadedType.PROCESS));
                     totalReaded += readed;
                     chunkIndex++;
                 }
@@ -105,10 +105,11 @@ public class PornDownloader {
         }
     }
 
-    private void prepareAndWriteMetadata(@NonNull PVVFWriter writer, @NonNull CryptoEngine engine, FullVideoInfo info, byte[] preview) {
+    private void prepareAndWriteMetadata(@NonNull PVVFWriter writer, FullVideoInfo info, byte[] preview) {
         byte[] nonce = new byte[VideoMetadata.BASE_NONCE_LENGTH];
         CipherEngineUtils.createRandomPassword(nonce);
-        engine.setBaseNonce(PVSecurityManager.getPassword(), nonce); // update nonce to encrypt metadata
+        CryptoEngine engine = new CryptoEngine(Cipher.ENCRYPT_MODE, PVSecurityManager.getPassword(), nonce); // update nonce to encrypt metadata
+
         String json = formJson(info);
         byte[] jsonNonce = VideoMetadata.getJsonFullNonce(nonce);
         byte[] jsonId = VideoMetadata.jsonId();

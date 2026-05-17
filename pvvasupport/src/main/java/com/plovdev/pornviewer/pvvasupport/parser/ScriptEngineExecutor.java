@@ -1,10 +1,10 @@
 package com.plovdev.pornviewer.pvvasupport.parser;
 
 import com.google.gson.reflect.TypeToken;
-import com.plovdev.pornviewer.commons.models.CategoryInfo;
-import com.plovdev.pornviewer.commons.models.FullVideoInfo;
-import com.plovdev.pornviewer.commons.models.ModelInfo;
-import com.plovdev.pornviewer.commons.models.ShortVideoInfo;
+import com.plovdev.pornviewer.commons.models.porn.CategoryInfo;
+import com.plovdev.pornviewer.commons.models.porn.FullVideoInfo;
+import com.plovdev.pornviewer.commons.models.porn.ModelInfo;
+import com.plovdev.pornviewer.commons.models.porn.ShortVideoInfo;
 import com.plovdev.pornviewer.exceptions.ScriptExecutionException;
 import com.plovdev.pornviewer.pvvasupport.parser.lualibs.HtmlLib;
 import com.plovdev.pornviewer.utils.json.JSONSerializer;

@@ -3,7 +3,7 @@ package com.plovdev.pornviewer.utils.json;
 import com.google.gson.annotations.SerializedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.plovdev.pornviewer.commons.models.Timecode;
+import com.plovdev.pornviewer.commons.models.porn.Timecode;
 
 import java.net.URI;
 import java.time.Duration;

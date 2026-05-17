@@ -1,4 +1,7 @@
-package com.plovdev.pornviewer.commons.models;
+package com.plovdev.pornviewer.commons.models.porn;
+
+import com.plovdev.pornviewer.commons.models.video.VideoQuality;
+import com.plovdev.pornviewer.commons.models.video.VideoRating;
 
 import java.net.URI;
 import java.time.Duration;

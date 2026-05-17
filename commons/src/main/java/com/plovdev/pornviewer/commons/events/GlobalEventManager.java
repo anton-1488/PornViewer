@@ -1,4 +1,4 @@
-package com.plovdev.pornviewer.utils.events;
+package com.plovdev.pornviewer.commons.events;
 
 import org.plovdev.eda.ChannelEvent;
 import org.plovdev.eda.EventManager;
@@ -10,7 +10,7 @@ public final class GlobalEventManager {
         throw new UnsupportedOperationException();
     }
 
-    public static <T> void broadcastEvent(ChannelEvent<T> event) {
+    public static void broadcastEvent(ChannelEvent event) {
         EVENT_MANAGER.broadcast(event);
     }
 

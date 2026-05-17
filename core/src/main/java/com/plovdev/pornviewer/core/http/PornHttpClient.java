@@ -1,18 +1,18 @@
 package com.plovdev.pornviewer.core.http;
 
-import com.plovdev.pornviewer.commons.models.CategoryInfo;
-import com.plovdev.pornviewer.commons.models.FullVideoInfo;
-import com.plovdev.pornviewer.commons.models.ModelInfo;
-import com.plovdev.pornviewer.commons.models.ShortVideoInfo;
-import com.plovdev.pornviewer.core.http.requests.HttpClientRequestProvider;
-import com.plovdev.pornviewer.core.http.requests.OkHttpRequestProvider;
-import com.plovdev.pornviewer.core.http.requests.PornRequestProvider;
+import com.plovdev.pornviewer.commons.models.porn.CategoryInfo;
+import com.plovdev.pornviewer.commons.models.porn.FullVideoInfo;
+import com.plovdev.pornviewer.commons.models.porn.ModelInfo;
+import com.plovdev.pornviewer.commons.models.porn.ShortVideoInfo;
+import com.plovdev.pornviewer.core.http.providers.HttpClientRequestProvider;
+import com.plovdev.pornviewer.core.http.providers.OkHttpRequestProvider;
+import com.plovdev.pornviewer.core.http.providers.PornRequestProvider;
 import com.plovdev.pornviewer.database.UserSettingsManager;
 import com.plovdev.pornviewer.exceptions.NoSuchRequestProviderException;
 import com.plovdev.pornviewer.pvvasupport.PVVASupportManager;
 import com.plovdev.pornviewer.pvvasupport.parser.ScriptEngineExecutor;
-import com.plovdev.pornviewer.utils.events.GlobalEventManager;
-import com.plovdev.pornviewer.utils.events.VideoDownloadingChannel;
+import com.plovdev.pornviewer.commons.events.GlobalEventManager;
+import com.plovdev.pornviewer.commons.events.VideoDownloadingChannel;
 import com.plovdev.pornviewer.utils.http.UriBuilder;
 import com.plovdev.pornviewer.utils.json.DownloadedVideoInfo;
 import org.jetbrains.annotations.Contract;
@@ -188,7 +188,7 @@ public final class PornHttpClient implements AutoCloseable {
     public @Nullable CompletableFuture<DownloadedVideoInfo> startDownload(PornRequest request, FullVideoInfo info, @NonNull String output) {
         log.info("Start loading to file: {}", output);
         long videoSize = requestProvider.checkContentLength(request);
-        GlobalEventManager.broadcastEvent(new VideoDownloadingChannel("app.video.download", videoSize, VideoDownloadingChannel.DownloadedType.START));
+        GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(videoSize, VideoDownloadingChannel.DownloadedType.START));
 
         PornDownloader downloader = new PornDownloader(requestProvider, request, output);
         return downloader.startDownload(videoSize, info, requestProvider.executeRaw(PornRequest.get(info.previewUrl())));

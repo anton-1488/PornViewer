@@ -1,14 +1,14 @@
-package com.plovdev.pornviewer.commons.models;
+package com.plovdev.pornviewer.commons.models.porn;
 
 import java.net.URI;
 import java.util.Objects;
 
-public record ModelInfo(String name, URI url, URI avatar, String country, int videoCount) {
+public record CategoryInfo(String name, URI url) {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        ModelInfo modelInfo = (ModelInfo) o;
-        return Objects.equals(name, modelInfo.name);
+        CategoryInfo that = (CategoryInfo) o;
+        return Objects.equals(name, that.name);
     }
 
     @Override

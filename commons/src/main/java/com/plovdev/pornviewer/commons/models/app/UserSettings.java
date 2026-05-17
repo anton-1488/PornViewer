@@ -1,4 +1,4 @@
-package com.plovdev.pornviewer.commons.models;
+package com.plovdev.pornviewer.commons.models.app;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

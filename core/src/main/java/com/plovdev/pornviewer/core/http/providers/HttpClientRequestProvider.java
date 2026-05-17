@@ -1,5 +1,6 @@
-package com.plovdev.pornviewer.core.http.requests;
+package com.plovdev.pornviewer.core.http.providers;
 
+import com.plovdev.pornviewer.core.http.HttpMethod;
 import com.plovdev.pornviewer.core.http.PornRequest;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -78,10 +79,6 @@ public class HttpClientRequestProvider implements PornRequestProvider {
 
     @Override
     public long checkContentLength(@NonNull PornRequest request) {
-        if (!request.method().equals("HEAD")) {
-            request = PornRequest.head(request.path());
-        }
-
         try {
             HttpResponse<Void> response = client.send(cofigureRequest(request), HttpResponse.BodyHandlers.discarding());
             if (response.statusCode() == 200) {
@@ -96,14 +93,14 @@ public class HttpClientRequestProvider implements PornRequestProvider {
     private HttpRequest cofigureRequest(@NotNull PornRequest request) {
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(request.path());
 
-        Map<String, String> headers = request.headers();
+        Map<String, String> headers = PornRequest.getDefaultHeaders();
         for (String header : headers.keySet()) {
             requestBuilder.header(header, headers.get(header));
         }
 
-        if (request.method().equals("POST")) {
+        if (request.method() == HttpMethod.POST) {
             throw new UnsupportedOperationException("POST method is not available in request provider!");
-        } else if (request.method().equals("HEAD")) {
+        } else if (request.method() == HttpMethod.HEAD) {
             requestBuilder.HEAD();
         } else {
             requestBuilder.GET();
@@ -114,6 +111,7 @@ public class HttpClientRequestProvider implements PornRequestProvider {
 
     @Override
     public void close() {
+        client.shutdownNow();
         client.close();
     }
 }

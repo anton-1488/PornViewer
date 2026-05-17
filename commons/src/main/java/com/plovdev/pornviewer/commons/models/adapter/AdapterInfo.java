@@ -1,4 +1,4 @@
-package com.plovdev.pornviewer.commons.adapter;
+package com.plovdev.pornviewer.commons.models.adapter;
 
 public record AdapterInfo(String pluginId,
                           int minVers,

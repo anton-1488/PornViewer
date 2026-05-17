@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.plovdev.pornviewer</groupId>
-        <artifactId>PornViewer</artifactId>
-        <version>2.0</version>
+        <artifactId>pornviewer-root</artifactId>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>services</artifactId>

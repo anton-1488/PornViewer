@@ -1,6 +1,6 @@
 package com.plovdev.pornviewer.database;
 
-import com.plovdev.pornviewer.commons.adapter.AdapterInfo;
+import com.plovdev.pornviewer.commons.models.adapter.AdapterInfo;
 import com.plovdev.pornviewer.exceptions.PVDataBaseException;
 import com.plovdev.pornviewer.exceptions.PornViewerException;
 import org.jspecify.annotations.NonNull;

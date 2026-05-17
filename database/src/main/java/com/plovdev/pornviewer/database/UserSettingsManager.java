@@ -1,6 +1,6 @@
 package com.plovdev.pornviewer.database;
 
-import com.plovdev.pornviewer.commons.models.UserSettings;
+import com.plovdev.pornviewer.commons.models.app.UserSettings;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 
@@ -17,6 +17,6 @@ public final class UserSettingsManager {
 
     @Contract(" -> new")
     public static @NonNull UserSettings getUserSettings() {
-        return new UserSettings("0000", "porn365", com.plovdev.pornviewer.commons.models.UserSettings.AppUITheme.WHITE, null, false);
+        return new UserSettings("0000", "porn365", UserSettings.AppUITheme.WHITE, null, false);
     }
 }

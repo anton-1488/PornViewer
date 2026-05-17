@@ -1,5 +1,6 @@
-package com.plovdev.pornviewer.core.http.requests;
+package com.plovdev.pornviewer.core.http.providers;
 
+import com.plovdev.pornviewer.core.http.HttpMethod;
 import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.exceptions.NoInternetException;
 import com.plovdev.pornviewer.exceptions.RequestProviderException;
@@ -110,14 +111,14 @@ public class OkHttpRequestProvider implements PornRequestProvider {
         if (optionalHttpConfig.isPresent()) {
             HeadersConfig headersConfig = optionalHttpConfig.get();
             Optional<Map<String, String>> optHeaders = headersConfig.headerSet();
-            putHeaders(builder, optHeaders.orElse(request.headers()));
+            putHeaders(builder, optHeaders.orElse(PornRequest.getDefaultHeaders()));
         } else {
-            putHeaders(builder, request.headers());
+            putHeaders(builder, PornRequest.getDefaultHeaders());
         }
 
-        if (request.method().equals("POST")) {
+        if (request.method() == HttpMethod.POST) {
             throw new UnsupportedOperationException("POST method is not available in request provider!");
-        } else if (request.method().equals("HEAD")) {
+        } else if (request.method() == HttpMethod.HEAD) {
             builder.head();
         } else {
             builder.get();

@@ -2,7 +2,7 @@ package com.plovdev.pornviewer.pvvasupport;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.plovdev.pornviewer.commons.adapter.AdapterInfo;
+import com.plovdev.pornviewer.commons.models.adapter.AdapterInfo;
 import com.plovdev.pornviewer.database.PVVAProvider;
 import com.plovdev.pornviewer.exceptions.AdapterLoadingException;
 import com.plovdev.pornviewer.utils.files.PVFileManager;
