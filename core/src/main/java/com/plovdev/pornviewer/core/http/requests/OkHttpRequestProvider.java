@@ -1,6 +1,9 @@
 package com.plovdev.pornviewer.core.http.requests;
 
 import com.plovdev.pornviewer.core.http.PornRequest;
+import com.plovdev.pornviewer.exceptions.NoInternetException;
+import com.plovdev.pornviewer.exceptions.RequestProviderException;
+import com.plovdev.pornviewer.exceptions.UnsuccessResponseException;
 import okhttp3.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -11,12 +14,16 @@ import org.plovdev.pvva.models.configs.httpconfig.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.Proxy;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static com.plovdev.pornviewer.exceptions.NoInternetException.ERR_MESSAGE;
 
 public class OkHttpRequestProvider implements PornRequestProvider {
     private static final Logger log = LoggerFactory.getLogger(OkHttpRequestProvider.class);
@@ -29,61 +36,70 @@ public class OkHttpRequestProvider implements PornRequestProvider {
     }
 
     @Override
-    public String executeGet(PornRequest request) {
+    public String executeGet(PornRequest request) throws RequestProviderException {
         try (Response response = client.newCall(configurateRequest(request)).execute()) {
+            String responseBody = Objects.requireNonNull(response.body()).string();
             if (response.isSuccessful()) {
-                return Objects.requireNonNull(response.body()).string();
+                return responseBody;
             } else {
-                log.warn("Non success get response: {}", response);
+                throw new UnsuccessResponseException("Non success 'get' response", responseBody);
             }
-        } catch (Exception e) {
-            log.error("Error execute get: ", e);
+        } catch (UnknownHostException e) {
+            throw new NoInternetException(ERR_MESSAGE, e);
+        } catch (IOException e) {
+            throw new RequestProviderException(e);
         }
-        return "";
     }
 
     @Override
-    public byte[] executeRaw(PornRequest request) {
+    public byte[] executeRaw(PornRequest request) throws RequestProviderException {
         try (Response response = client.newCall(configurateRequest(request)).execute()) {
+            ResponseBody body = Objects.requireNonNull(response.body());
             if (response.isSuccessful()) {
-                return Objects.requireNonNull(response.body()).bytes();
+                return body.bytes();
             } else {
-                log.warn("Non success raw response: {}", response);
+                throw new UnsuccessResponseException("Non success 'raw' response", body.string());
             }
-        } catch (Exception e) {
-            log.error("Error execute raw: ", e);
+        } catch (UnknownHostException e) {
+            throw new NoInternetException(ERR_MESSAGE, e);
+        } catch (IOException e) {
+            throw new RequestProviderException(e);
         }
-        return new byte[0];
     }
 
     @Override
-    public InputStream requestStream(PornRequest request) {
+    public InputStream requestStream(PornRequest request) throws RequestProviderException {
         try {
             Response response = client.newCall(configurateRequest(request)).execute();
+            ResponseBody body = Objects.requireNonNull(response.body());
             if (response.isSuccessful()) {
-                return response.body().byteStream();
+                return body.byteStream();
+            } else {
+                response.close();
+                throw new UnsuccessResponseException("Non success 'stream' response", body.string());
             }
-            response.close();
-        } catch (Exception e) {
-            log.error("Error execute stream: ", e);
+        } catch (UnknownHostException e) {
+            throw new NoInternetException(ERR_MESSAGE, e);
+        } catch (IOException e) {
+            throw new RequestProviderException(e);
         }
-        return InputStream.nullInputStream();
     }
 
 
     @Override
-    public long checkContentLength(@NonNull PornRequest request) {
+    public long checkContentLength(@NonNull PornRequest request) throws RequestProviderException {
         try (Response response = client.newCall(configurateRequest(request)).execute()) {
+            ResponseBody body = Objects.requireNonNull(response.body());
             if (response.isSuccessful()) {
                 return Long.parseLong(Objects.requireNonNull(response.header("Content-Length")));
             } else {
-                log.warn("Non success check response: {}", response);
+                throw new UnsuccessResponseException("Non success 'check' response", body.string());
             }
-        } catch (Exception e) {
-            log.error("Error execute checking: ", e);
+        } catch (UnknownHostException e) {
+            throw new NoInternetException(ERR_MESSAGE, e);
+        } catch (IOException e) {
+            throw new RequestProviderException(e);
         }
-
-        return 0;
     }
 
     private @NotNull Request configurateRequest(@NotNull PornRequest request) {

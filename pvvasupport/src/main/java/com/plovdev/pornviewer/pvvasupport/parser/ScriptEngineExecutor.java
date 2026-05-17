@@ -6,6 +6,7 @@ import com.plovdev.pornviewer.commons.models.FullVideoInfo;
 import com.plovdev.pornviewer.commons.models.ModelInfo;
 import com.plovdev.pornviewer.commons.models.ShortVideoInfo;
 import com.plovdev.pornviewer.exceptions.ScriptExecutionException;
+import com.plovdev.pornviewer.pvvasupport.parser.lualibs.HtmlLib;
 import com.plovdev.pornviewer.utils.json.JSONSerializer;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
@@ -34,6 +35,7 @@ public final class ScriptEngineExecutor {
         GLOBALS.load(new PackageLib());
         GLOBALS.load(new StringLib());
         GLOBALS.load(new TableLib());
+        GLOBALS.load(new HtmlLib());
 
         LoadState.install(GLOBALS);
         LuaC.install(GLOBALS);
@@ -74,7 +76,7 @@ public final class ScriptEngineExecutor {
      * @param inputData input page (HTML, JSON, XML, raw string) to parsing
      * @return serialized JSON of required object dto.
      */
-    private @Nullable String execute(String method, String inputData) throws NoSuchMethodException {
+    public @Nullable String execute(String method, String inputData) throws NoSuchMethodException {
         LuaValue func = this.scriptFunctions.get(method);
         if (func.isnil()) {
             throw new NoSuchMethodException("Function '" + method + "' not found in Lua script");

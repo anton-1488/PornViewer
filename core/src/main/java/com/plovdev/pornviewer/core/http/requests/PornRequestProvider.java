@@ -1,6 +1,7 @@
 package com.plovdev.pornviewer.core.http.requests;
 
 import com.plovdev.pornviewer.core.http.PornRequest;
+import com.plovdev.pornviewer.exceptions.RequestProviderException;
 
 import java.io.InputStream;
 import java.net.Proxy;
@@ -9,11 +10,15 @@ import java.net.Proxy;
  * Интерфейс для реализации провайдера сетевого клиента.
  */
 public interface PornRequestProvider extends AutoCloseable {
-    String executeGet(PornRequest request);
-    byte[] executeRaw(PornRequest request);
-    InputStream requestStream(PornRequest request);
+    String executeGet(PornRequest request) throws RequestProviderException;
+
+    byte[] executeRaw(PornRequest request) throws RequestProviderException;
+
+    InputStream requestStream(PornRequest request) throws RequestProviderException;
+
+    long checkContentLength(PornRequest request) throws RequestProviderException;
+
     void setProxy(Proxy proxy);
-    long checkContentLength(PornRequest request);
 
     @Override
     void close();
