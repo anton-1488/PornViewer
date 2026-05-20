@@ -4,10 +4,15 @@ import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.EncryptedVideo;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoChunk;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoHeader;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoMetadata;
+import com.plovdev.pornviewer.exceptions.PVVFException;
+import com.plovdev.pornviewer.exceptions.PVVFOpenException;
+import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -40,8 +45,8 @@ public class PVVFParser implements AutoCloseable {
     /**
      * Source, from parser will read data.
      */
-    private File file;
-    private RandomAccessFile RAF;
+    private final File file;
+    private final RandomAccessFile RAF;
 
     /**
      * Создает экземпляр парсера для указанного файла.
@@ -50,7 +55,11 @@ public class PVVFParser implements AutoCloseable {
      */
     public PVVFParser(File file) {
         this.file = file;
-        updateRaf(file);
+        try {
+            RAF = new RandomAccessFile(file, "r");
+        } catch (FileNotFoundException e) {
+            throw new PVVFOpenException("PVVF not found", e);
+        }
     }
 
     public File getFile() {
@@ -58,20 +67,10 @@ public class PVVFParser implements AutoCloseable {
     }
 
     /**
-     * Обновляет целевой файл и переоткрывает поток чтения.
-     *
-     * @param file Новый файл для парсинга.
-     */
-    public synchronized void setFile(File file) {
-        this.file = file;
-        updateRaf(file);
-    }
-
-    /**
      * Выполняет чтение и парсинг заголовка видеофайла (первые 42 байта).
      *
      * @return Объект {@link VideoHeader} с техническими параметрами видео.
-     * @throws RuntimeException если структура заголовка нарушена или файл поврежден.
+     * @throws PVVFException если структура заголовка нарушена или файл поврежден.
      */
     public synchronized VideoHeader parseVideoHeader() {
         final byte[] FOUR_BYTE_ARRAY = new byte[4];
@@ -102,7 +101,6 @@ public class PVVFParser implements AutoCloseable {
             // step 6 - read nonce and crc:
             byte[] baseNonce = new byte[BASE_NONCE_LENGTH];
             readToByteArray(baseNonce);
-            int crc32 = RAF.readInt();
 
             // step 7 - check if file pointer is equal header size:
             if (RAF.getFilePointer() != HEADER_SIZE) {
@@ -110,17 +108,9 @@ public class PVVFParser implements AutoCloseable {
             }
 
             // collecting results and return VideoHeader class
-            VideoHeader header = new VideoHeader(fileVersion, flag, mimeType, lastChunkPaddingSize, plainVideoSize, encryptedVideoSize, baseNonce, crc32);
-
-            // check the checksum
-            if (crc32 != (int) header.calculateCRC32()) {
-                log.warn("Getted crc: {}, calculated crc: {}", crc32, header.calculateCRC32());
-                log.warn("Header CRC32 суммы не совпадают! RED FLAG, PORN ACCESS DENIED... System.exit(9)...");
-            }
-
-            return header;
+            return new VideoHeader(fileVersion, flag, mimeType, lastChunkPaddingSize, plainVideoSize, encryptedVideoSize, baseNonce);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new PVVFException("Error to read pvvf header", e);
         }
     }
 
@@ -128,15 +118,12 @@ public class PVVFParser implements AutoCloseable {
      * Выполняет чтение метаданных, расположенных после зашифрованного тела видео.
      * Использует переданный заголовок для вычисления смещения блока метаданных.
      *
-     * @param encVideoSize размер зашифрованного контента
      * @return Объект {@link VideoMetadata} или null, если заголовок отсутствует.
      */
-    public synchronized VideoMetadata parseVideoMetadata(long encVideoSize) {
-        if (encVideoSize < 0) {
-            throw new IllegalArgumentException("Enc video size must be a greather then 0");
-        }
-
+    public synchronized VideoMetadata parseVideoMetadata() {
         try {
+            RAF.seek(ENC_VIDEO_SIZE_OFFSET);
+            long encVideoSize = RAF.readLong();
             // calculate real metadata position(42 + enc video size):
             long metadataOffset = HEADER_SIZE + encVideoSize;
             RAF.seek(metadataOffset); // seek to metadata block
@@ -146,7 +133,6 @@ public class PVVFParser implements AutoCloseable {
             1 - размеры данных в метадате
             2 - metadata nonce
             3 - данные с их ChaCha20-tag'ами
-            4 - crc32 и собрать данные в VideoMetadata
              */
 
             // sizes block
@@ -170,25 +156,10 @@ public class PVVFParser implements AutoCloseable {
             byte[] previewTag = new byte[TAG_SIZE];
             readToByteArray(previewTag);
 
-            int crc32 = RAF.readInt();
-
-            // check if file pointer at end:
-            if (RAF.getFilePointer() != file.length()) {
-                throw new IOException("Error parse video metadata: invalid pointer: " + RAF.getFilePointer());
-            }
-
             // collecting results and create VideoMetadata class
-            VideoMetadata metadata = new VideoMetadata(totalMetadataSize, encryptedJsonSize, encryptedPreviewSize, baseNonce, ecryptedJson, jsonTag, ecryptedPreview, previewTag, crc32);
-
-            // check the checksum
-            if (crc32 != (int) metadata.calculateCRC32()) {
-                log.warn("Getted heaser crc: {}, calculated crc: {}", crc32, metadata.calculateCRC32());
-                log.warn("Metadata CRC32 суммы не совпадают! RED FLAG, PORN ACCESS DENIED... System.exit(9)...");
-            }
-
-            return metadata;
+            return new VideoMetadata(totalMetadataSize, encryptedJsonSize, encryptedPreviewSize, baseNonce, ecryptedJson, jsonTag, ecryptedPreview, previewTag);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new PVVFException("Error to read pvvf metadata", e);
         }
     }
 
@@ -200,7 +171,7 @@ public class PVVFParser implements AutoCloseable {
      */
     public EncryptedVideo collectEncryptedVideo() {
         VideoHeader header = parseVideoHeader();
-        return new EncryptedVideo(header, parseVideoMetadata(header.encVideoSize()));
+        return new EncryptedVideo(header, parseVideoMetadata());
     }
 
     /**
@@ -234,7 +205,7 @@ public class PVVFParser implements AutoCloseable {
             // collecting results:
             return new VideoChunk(chunkIndex, chunkContent, chunkTag);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new PVVFException("Error to read pvvf chunk", e);
         }
     }
 
@@ -258,7 +229,8 @@ public class PVVFParser implements AutoCloseable {
     /**
      * Вспомогательный метод для чтения строки фиксированной длины.
      */
-    private String readString(byte[] array) throws IOException {
+    @Contract("_ -> new")
+    private @NonNull String readString(byte[] array) throws IOException {
         readToByteArray(array);
         return new String(array, IO_CHARSET);
     }
@@ -275,28 +247,15 @@ public class PVVFParser implements AutoCloseable {
     }
 
     /**
-     * Инициализирует или переоткрывает {@link RandomAccessFile} в режиме чтения.
-     *
-     * @param file Файл для открытия.
-     * @throws RuntimeException если файл не найден или доступ запрещен.
-     */
-    private void updateRaf(File file) {
-        try {
-            if (RAF != null) {
-                RAF.close();
-            }
-            RAF = new RandomAccessFile(file, "r");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
      * Закрывает {@link RandomAccessFile}.
      * Вызывается автоматически при использовании в try-with-resources.
      */
     @Override
-    public void close() throws Exception {
-        RAF.close();
+    public void close() {
+        try {
+            RAF.close();
+        } catch (IOException e) {
+            throw new PVVFException("Error to close pvvf read stream", e);
+        }
     }
 }

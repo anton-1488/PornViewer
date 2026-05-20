@@ -3,6 +3,9 @@ package com.plovdev.pornviewer.encryptionsupport.pvvf.write;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoChunk;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoHeader;
 import com.plovdev.pornviewer.encryptionsupport.pvvf.videomodel.VideoMetadata;
+import com.plovdev.pornviewer.exceptions.PVVFException;
+import com.plovdev.pornviewer.exceptions.PVVFOpenException;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +29,7 @@ public class PVVFWriter implements AutoCloseable {
      * Sources to write data.
      */
     private File file;
-    private DataOutputStream writeStream;
+    private final DataOutputStream writeStream;
 
     /**
      * Создает экземпляр писателя для указанного файла.
@@ -35,30 +38,20 @@ public class PVVFWriter implements AutoCloseable {
      */
     public PVVFWriter(File file) {
         this.file = file;
-        updateStream(file);
+        try {
+            writeStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+        } catch (FileNotFoundException e) {
+            throw new PVVFOpenException("Error to open pvvf write stream", e);
+        }
     }
 
     public PVVFWriter(OutputStream stream) {
         writeStream = new DataOutputStream(new BufferedOutputStream(stream));
     }
-    public PVVFWriter(BufferedOutputStream stream) {
-        writeStream = new DataOutputStream(stream);
-    }
 
     public File getFile() {
         return file;
     }
-
-    /**
-     * Обновляет целевой файл и переоткрывает поток записи.
-     *
-     * @param file Новый файл для записи.
-     */
-    public synchronized void setFile(File file) {
-        this.file = file;
-        updateStream(file);
-    }
-
 
     public synchronized void writeVideoHeader(VideoHeader videoHeader) {
         Objects.requireNonNull(videoHeader);
@@ -83,9 +76,8 @@ public class PVVFWriter implements AutoCloseable {
 
             // step 6 - write nonce and crc:
             writeStream.write(videoHeader.baseNonce());
-            writeStream.writeInt((int) videoHeader.calculateCRC32());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new PVVFException("Error to write video header", e);
         }
     }
 
@@ -98,7 +90,6 @@ public class PVVFWriter implements AutoCloseable {
             1 - размеры данных в метадате
             2 - metadata nonce
             3 - данные с их ChaCha20-tag'ами
-            4 - crc32
              */
 
             // sizes block
@@ -117,11 +108,9 @@ public class PVVFWriter implements AutoCloseable {
             writeStream.write(toWrite.encryptedPreview());
             writeStream.write(toWrite.previewTag());
 
-            writeStream.writeInt((int) toWrite.calculateCRC32());
-
             writeStream.flush();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new PVVFException("Error towrite video metadata", e);
         }
     }
 
@@ -133,7 +122,6 @@ public class PVVFWriter implements AutoCloseable {
         }
 
         try (RandomAccessFile RAF = new RandomAccessFile(file, "rw")) {
-            // calculate real metadata position(42 + enc video size):
             long metadataOffset = HEADER_SIZE + encVideoSize;
             RAF.seek(metadataOffset); // seek to metadata block
 
@@ -142,7 +130,6 @@ public class PVVFWriter implements AutoCloseable {
             1 - размеры данных в метадате
             2 - metadata nonce
             3 - данные с их ChaCha20-tag'ами
-            4 - crc32
              */
 
             // sizes block
@@ -161,11 +148,9 @@ public class PVVFWriter implements AutoCloseable {
             RAF.write(toWrite.encryptedPreview());
             RAF.write(toWrite.previewTag());
 
-            RAF.writeInt((int) toWrite.calculateCRC32());
-
             RAF.getChannel().truncate(RAF.getFilePointer()).force(true);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new PVVFException("Error to update metadata", e);
         }
     }
 
@@ -174,15 +159,15 @@ public class PVVFWriter implements AutoCloseable {
 
         try {
             writeStream.write(videoChunk.prepareChunk());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new PVVFException("Error to append video chunk", e);
         }
     }
 
     /**
      * Вспомогательный метод для записи строки.
      */
-    private void writeString(String str) throws IOException {
+    private void writeString(@NonNull String str) throws IOException {
         byte[] bytes = str.getBytes(IO_CHARSET);
         if (bytes.length != 4) {
             byte[] fixed = new byte[4];
@@ -193,30 +178,16 @@ public class PVVFWriter implements AutoCloseable {
         }
     }
 
-
-    /**
-     * Инициализирует или переоткрывает поток для записи.
-     *
-     * @param file Файл для открытия.
-     * @throws RuntimeException если файл не найден или доступ запрещен.
-     */
-    private void updateStream(File file) {
-        try {
-            if (writeStream != null) {
-                writeStream.close();
-            }
-            writeStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * Закрывает {@link RandomAccessFile}.
      * Вызывается автоматически при использовании в try-with-resources.
      */
     @Override
-    public void close() throws Exception {
-        writeStream.close();
+    public void close() {
+        try {
+            writeStream.close();
+        } catch (IOException e) {
+            throw new PVVFException("Error to close pvvf write stream", e);
+        }
     }
 }

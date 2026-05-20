@@ -17,24 +17,18 @@ public class PVVFVideoReader {
     public static VideoHeader readHeader(File file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             return pvvfParser.parseVideoHeader();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
     public static VideoMetadata readMetadata(File file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
-            return pvvfParser.collectEncryptedVideo().getVideoMetadata();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            return pvvfParser.parseVideoMetadata();
         }
     }
 
     public static EncryptedVideo readVideo(File file) {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             return pvvfParser.collectEncryptedVideo();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -53,8 +47,6 @@ public class PVVFVideoReader {
             info.setPreviewBytes(decryptedPreview);
 
             return info;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 }

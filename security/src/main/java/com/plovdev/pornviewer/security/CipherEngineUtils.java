@@ -16,11 +16,10 @@ import java.util.Arrays;
 
 public class CipherEngineUtils {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-
-    private static final int ITERATIONS = 300000;
-    private static final int KEY_LENGTH = 256;
     private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
 
+    private static final int ITERATIONS = 310_000;
+    private static final int KEY_LENGTH = 256;
     public static final int CHACHA20_NONCE_LENGTH = 12;
     public static final int BASE_NONCE_LENGTH = 8;
     public static final int COUNTER_NONCE_LENGTH = 4;
@@ -32,6 +31,7 @@ public class CipherEngineUtils {
         SecretKeySpec result = new SecretKeySpec(key, "ChaCha20");
         Arrays.fill(key, (byte) 0);
         Arrays.fill(password, ' ');
+
         return result;
     }
 

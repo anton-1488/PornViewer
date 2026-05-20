@@ -1,5 +1,6 @@
 package com.plovdev.pornviewer.security;
 
+import com.plovdev.pornviewer.exceptions.PornViewerSecurityException;
 import com.plovdev.pornviewer.utils.NumberUtils;
 
 import javax.crypto.Cipher;
@@ -8,6 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class CryptoEngine {
     public static final String ALGORITHM = "ChaCha20-Poly1305/None/NoPadding";
+
     private final int mode;
     private final byte[] baseNonce;
     private final SecretKeySpec keySpec;
@@ -18,7 +20,7 @@ public class CryptoEngine {
             this.baseNonce = baseNonce;
             keySpec = CipherEngineUtils.createSecretKeySpecFromPassword(password, baseNonce);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new PornViewerSecurityException(e);
         }
     }
 
@@ -39,7 +41,7 @@ public class CryptoEngine {
 
             return cipher.doFinal(block);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new PornViewerSecurityException(e);
         }
     }
 
@@ -52,7 +54,7 @@ public class CryptoEngine {
 
             return cipher.doFinal(data);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new PornViewerSecurityException(e);
         }
     }
 }

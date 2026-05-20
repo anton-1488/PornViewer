@@ -27,7 +27,7 @@ public class VideoChunkReader implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         pvvfParser.close();
     }
 }
