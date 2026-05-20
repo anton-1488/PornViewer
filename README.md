@@ -1,5 +1,5 @@
-![Java Version](https://img.shields.io/badge/Java-25%2B-blue)
-![License](https://img.shields.io/badge/License-Public%20Domain-blue)
+![Java Version](https://img.shields.io/badge/Java-green)
+![License](https://img.shields.io/badge/Public%20Domain-blue)
 ![PornViewer](https://img.shields.io/badge/PornViewer-orange)
 
 # PornViewer 2.0
