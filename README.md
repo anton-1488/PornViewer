@@ -1,4 +1,4 @@
-![Java Version](https://img.shields.io/badge/Java-green)
+![Java Version](https://img.shields.io/badge/Java%2025-green)
 ![License](https://img.shields.io/badge/Public%20Domain-blue)
 ![PornViewer](https://img.shields.io/badge/PornViewer-orange)
 
