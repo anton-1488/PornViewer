@@ -85,7 +85,9 @@ public final class PornHttpClient implements AutoCloseable {
         if (checker.supportMain()) {
             String endpoint = VariableHandler.processVariables(resources.endpoint().get(), Map.of(Variable.PAGE, String.valueOf(page)));
             builder.appendUriPart(endpoint);
-            return scriptEngine.parseVideos(requestProvider.executeGet(PornRequest.get(builder.build())));
+            String response = requestProvider.executeGet(PornRequest.get(builder.build()));
+            System.out.println(response);
+            return scriptEngine.parseVideos(response);
         } else {
             throw new UnsupportedOperationException("This adapter not support main page");
         }

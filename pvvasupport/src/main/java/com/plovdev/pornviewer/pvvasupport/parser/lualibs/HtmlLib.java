@@ -3,6 +3,7 @@ package com.plovdev.pornviewer.pvvasupport.parser.lualibs;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.jspecify.annotations.NonNull;
 import org.luaj.vm2.LuaTable;
@@ -15,16 +16,31 @@ public class HtmlLib extends TwoArgFunction {
     @Override
     public LuaValue call(@NonNull LuaValue luaValue, @NonNull LuaValue env) {
         LuaValue library = new LuaTable();
-        library.set("parse", new parse());
+        library.set("parse", new parse(true));
+        library.set("parseXml", new parse(false));
 
         env.set("html", library);
         return library;
     }
 
     private class parse extends OneArgFunction {
+        private final boolean isHtml;
+
+        public parse(boolean isHtml) {
+            this.isHtml = isHtml;
+        }
+
         @Override
         public @NonNull LuaValue call(@NonNull LuaValue luaValue) {
-            Document document = Jsoup.parse(luaValue.checkjstring());
+            String content = luaValue.checkjstring();
+            Document document;
+
+            if (isHtml) {
+                document = Jsoup.parse(content);
+            } else {
+                document = Jsoup.parse(content, "", Parser.xmlParser());
+            }
+
             LuaValue luaDoc = new LuaTable();
 
             luaDoc.set("body", new ZeroArgFunction() {
@@ -63,23 +79,18 @@ public class HtmlLib extends TwoArgFunction {
                 }
             });
 
-            luaDoc.set("text", new OneArgFunction() {
+            luaDoc.set("text", new ZeroArgFunction() {
                 @Override
-                public LuaValue call(LuaValue arg) {
+                public LuaValue call() {
                     return LuaValue.valueOf(document.text());
                 }
             });
 
-            luaDoc.set("title", new OneArgFunction() {
+            luaDoc.set("title", new ZeroArgFunction() {
                 @Override
-                public LuaValue call(LuaValue arg) {
-                    if (arg.isnil()) {
-                        String title = document.title();
-                        return LuaValue.valueOf(title);
-                    } else {
-                        document.title(arg.checkjstring());
-                        return LuaValue.NIL;
-                    }
+                public LuaValue call() {
+                    String title = document.title();
+                    return LuaValue.valueOf(title);
                 }
             });
 
@@ -126,15 +137,10 @@ public class HtmlLib extends TwoArgFunction {
         el.set("nodeName", LuaValue.valueOf(element.nodeName()));
         el.set("id", LuaValue.valueOf(element.id()));
         el.set("className", LuaValue.valueOf(element.className()));
-        el.set("html", new OneArgFunction() {
+        el.set("html", new ZeroArgFunction() {
             @Override
-            public LuaValue call(LuaValue arg) {
-                if (arg.isnil()) {
-                    return LuaValue.valueOf(element.html());
-                } else {
-                    element.html(arg.checkjstring());
-                    return LuaValue.NIL;
-                }
+            public LuaValue call() {
+                return LuaValue.valueOf(element.html());
             }
         });
 
@@ -145,15 +151,10 @@ public class HtmlLib extends TwoArgFunction {
             }
         });
 
-        el.set("text", new OneArgFunction() {
+        el.set("text", new ZeroArgFunction() {
             @Override
-            public LuaValue call(LuaValue arg) {
-                if (arg.isnil()) {
-                    return LuaValue.valueOf(element.text());
-                } else {
-                    element.text(arg.checkjstring());
-                    return LuaValue.NIL;
-                }
+            public LuaValue call() {
+                return LuaValue.valueOf(element.text());
             }
         });
 
