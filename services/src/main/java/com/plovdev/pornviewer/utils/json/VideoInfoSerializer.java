@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.plovdev.pornviewer.commons.models.porn.FullVideoInfo;
 import com.plovdev.pornviewer.commons.models.porn.Timecode;
+import org.jspecify.annotations.NonNull;
 
 import java.net.URI;
 import java.time.Duration;
@@ -11,15 +12,15 @@ import java.util.List;
 import java.util.Map;
 
 public class VideoInfoSerializer {
-    public static String serializeInfo(FullVideoInfo info) {
+    public static @NonNull String serializeInfo(@NonNull FullVideoInfo info) {
         return serializeInfo(info.title(), info.description(), info.videoUri(), info.videoDuration(), info.tagLinks(), info.timecodes());
     }
 
-    public static String serializeInfo(String title, String description, URI url, Duration duration, Map<String, URI> tags, List<Timecode> timecodes) {
+    public static @NonNull String serializeInfo(String title, String description, URI url, Duration duration, @NonNull Map<String, URI> tags, List<Timecode> timecodes) {
         return serializeInfo(title, description, url, duration, tags.keySet().stream().toList(), timecodes);
     }
 
-    public static String serializeInfo(String title, String description, URI url, Duration duration, List<String> tags, List<Timecode> timecodes) {
+    public static @NonNull String serializeInfo(String title, String description, @NonNull URI url, @NonNull Duration duration, @NonNull List<String> tags, List<Timecode> timecodes) {
         JsonObject infoObject = new JsonObject();
         infoObject.addProperty("title", title);
         infoObject.addProperty("description", description);

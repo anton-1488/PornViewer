@@ -2,10 +2,9 @@
 target/
 **/target/**
 
-./test
+testdata/
 
 .idea/**
-.idea/*
 .idea/
 *.iws
 *.iml

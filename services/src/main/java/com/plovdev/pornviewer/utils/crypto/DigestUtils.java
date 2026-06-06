@@ -1,5 +1,7 @@
 package com.plovdev.pornviewer.utils.crypto;
 
+import org.jspecify.annotations.NonNull;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -16,7 +18,7 @@ public class DigestUtils {
         return processAlgorithm("SHA-256", plain);
     }
 
-    public static String processAlgorithm(String algorithm, String plain) {
+    public static String processAlgorithm(String algorithm, @NonNull String plain) {
         try {
             MessageDigest digest = MessageDigest.getInstance(algorithm);
             digest.update(plain.getBytes(StandardCharsets.UTF_8));

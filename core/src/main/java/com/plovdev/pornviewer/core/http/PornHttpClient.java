@@ -45,7 +45,7 @@ import java.util.concurrent.CompletableFuture;
 
 public final class PornHttpClient implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(PornHttpClient.class);
-    private static final HttpConfig DEFAULT_HTTP_CONFIG = new HttpConfig(HttpClientType.OK_HTTP_CLIENT, new HeadersConfig(false, List.of(PornRequest.getDefaultHeaders())), RetryPolicy.ON_FAILED, 0, 0, 0, 3, 1000);
+    private static final HttpConfig DEFAULT_HTTP_CONFIG = new HttpConfig(HttpClientType.OK_HTTP_CLIENT, new HeadersConfig(false, List.of(PornRequest.getDefaultHeaders())), RetryPolicy.ON_FAILED, 1000, 1000, 1000, 1000, 3);
     private static final Charset DEFAULT = StandardCharsets.UTF_8;
     private final PornRequestProvider requestProvider;
     private final PVVAHost host;

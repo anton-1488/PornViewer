@@ -1,33 +1,35 @@
 package com.plovdev.pornviewer.utils;
 
+import org.jspecify.annotations.NonNull;
+
 import java.nio.ByteBuffer;
 
 public class NumberUtils {
     /**
      * Преобразует short в массив из 2 байт (Big-Endian).
      */
-    public static byte[] shortToBytes(short value) {
+    public static byte @NonNull [] shortToBytes(short value) {
         return ByteBuffer.allocate(2).putShort(value).array();
     }
 
     /**
      * Преобразует int в массив из 4 байт (Big-Endian).
      */
-    public static byte[] intToBytes(int value) {
+    public static byte @NonNull [] intToBytes(int value) {
         return ByteBuffer.allocate(4).putInt(value).array();
     }
 
     /**
      * Преобразует long в массив из 8 байт (Big-Endian).
      */
-    public static byte[] longToBytes(long value) {
+    public static byte @NonNull [] longToBytes(long value) {
         return ByteBuffer.allocate(8).putLong(value).array();
     }
 
     /**
      * Преобразует float в массив из 4 байт (Big-Endian).
      */
-    public static byte[] floatToBytes(float value) {
+    public static byte @NonNull [] floatToBytes(float value) {
         return ByteBuffer.allocate(4).putFloat(value).array();
     }
 
