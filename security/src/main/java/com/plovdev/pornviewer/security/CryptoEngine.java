@@ -1,7 +1,7 @@
 package com.plovdev.pornviewer.security;
 
 import com.plovdev.pornviewer.exceptions.PornViewerSecurityException;
-import com.plovdev.pornviewer.utils.NumberUtils;
+import com.plovdev.pornviewer.services.NumberUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -14,7 +14,7 @@ public class CryptoEngine {
     private final byte[] baseNonce;
     private final SecretKeySpec keySpec;
 
-    public CryptoEngine(int mode, char[] password, byte[] baseNonce) {
+    public CryptoEngine(int mode, byte[] password, byte[] baseNonce) {
         try {
             this.mode = mode;
             this.baseNonce = baseNonce;

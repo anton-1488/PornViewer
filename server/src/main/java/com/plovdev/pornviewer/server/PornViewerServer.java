@@ -1,10 +1,10 @@
 package com.plovdev.pornviewer.server;
 
-import com.plovdev.pornviewer.commons.events.GlobalEventManager;
-import com.plovdev.pornviewer.commons.events.ServerChannelEvent;
-import com.plovdev.pornviewer.commons.utils.Globals;
+import com.plovdev.pornviewer.core.events.GlobalEventManager;
+import com.plovdev.pornviewer.core.events.ServerChannelEvent;
+import com.plovdev.pornviewer.core.utils.Globals;
 import com.plovdev.pornviewer.exceptions.PornViewerServerException;
-import com.plovdev.pornviewer.utils.files.EnvReader;
+import com.plovdev.pornviewer.services.files.EnvReader;
 import com.sun.net.httpserver.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

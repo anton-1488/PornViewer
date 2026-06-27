@@ -26,6 +26,11 @@
         </dependency>
         <dependency>
             <groupId>com.plovdev.pornviewer</groupId>
+            <artifactId>database</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.plovdev.pornviewer</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
         </dependency>

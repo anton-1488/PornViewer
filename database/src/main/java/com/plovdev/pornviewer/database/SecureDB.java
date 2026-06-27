@@ -1,9 +1,9 @@
 package com.plovdev.pornviewer.database;
 
-import com.plovdev.pornviewer.exceptions.PVDataBaseException;
-import com.plovdev.pornviewer.exceptions.PornViewerException;
+import com.plovdev.pornviewer.core.exceptions.NotFoundException;
+import com.plovdev.pornviewer.database.exceptions.PVDataBaseException;
 import com.plovdev.pornviewer.security.PVSecurityManager;
-import com.plovdev.pornviewer.utils.files.PVFileManager;
+import com.plovdev.pornviewer.services.files.PVFileManager;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,11 +28,11 @@ public class SecureDB {
     }
 
     public static synchronized @NonNull Connection initCipherer() {
-        char[] password = PVSecurityManager.getPassword();
+        byte[] password = PVSecurityManager.getPassword();
+        Properties props = new Properties();
         try {
             Class.forName("org.sqlite.JDBC");
             String url = PVFileManager.getPVJDBCPathProtocol();
-            Properties props = new Properties();
             props.setProperty("cipher", "chacha20");
             props.setProperty("key", new String(password));
             props.setProperty("temp_store", "MEMORY");
@@ -44,12 +44,13 @@ public class SecureDB {
             }
             return connection;
         } catch (ClassNotFoundException e) {
-            throw new PornViewerException("org.sqlite.JDBC not found.", e);
+            throw new NotFoundException("org.sqlite.JDBC not found.", e);
         } catch (SQLException e) {
             log.error("Failed to initialize encrypted database", e);
             throw new PVDataBaseException("Error init encrypted db connection: " + e.getMessage(), e, e.getErrorCode());
         } finally {
-            Arrays.fill(password, '\0');
+            Arrays.fill(password, (byte) 0);
+            props.remove("key");
         }
     }
 }

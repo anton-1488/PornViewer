@@ -1,9 +1,9 @@
 package com.plovdev.pornviewer.core.http;
 
-import com.plovdev.pornviewer.commons.utils.Globals;
-import com.plovdev.pornviewer.exceptions.PornViewerException;
-import com.plovdev.pornviewer.exceptions.RequestProviderException;
-import com.plovdev.pornviewer.exceptions.UnsuccessResponseException;
+import com.plovdev.pornviewer.core.utils.Globals;
+import com.plovdev.pornviewer.core.exceptions.PornViewerException;
+import com.plovdev.pornviewer.core.exceptions.RequestProviderException;
+import com.plovdev.pornviewer.core.exceptions.UnsuccessResponseException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

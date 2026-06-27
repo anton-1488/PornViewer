@@ -1,8 +1,9 @@
 package com.plovdev.pornviewer.security;
 
-import com.plovdev.pornviewer.utils.NumberUtils;
+import com.plovdev.pornviewer.services.NumberUtils;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
+import org.plovdev.keyer.utils.NativeUtils;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
@@ -24,15 +25,20 @@ public class CipherEngineUtils {
     public static final int BASE_NONCE_LENGTH = 8;
     public static final int COUNTER_NONCE_LENGTH = 4;
 
-    public static @NonNull SecretKeySpec createSecretKeySpecFromPassword(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        KeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_LENGTH);
-        SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
-        byte[] key = factory.generateSecret(spec).getEncoded();
-        SecretKeySpec result = new SecretKeySpec(key, "ChaCha20");
-        Arrays.fill(key, (byte) 0);
-        Arrays.fill(password, ' ');
+    public static @NonNull SecretKeySpec createSecretKeySpecFromPassword(byte[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        char[] passwordChars = NativeUtils.bytesToCharsUTF_8(password);
+        try {
+            KeySpec spec = new PBEKeySpec(passwordChars, salt, ITERATIONS, KEY_LENGTH);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(ALGORITHM);
+            byte[] key = factory.generateSecret(spec).getEncoded();
+            SecretKeySpec result = new SecretKeySpec(key, "ChaCha20");
+            Arrays.fill(key, (byte) 0);
 
-        return result;
+            return result;
+        } finally {
+            Arrays.fill(password, (byte) 0);
+            Arrays.fill(passwordChars, '\u0000');
+        }
     }
 
     public static @NonNull IvParameterSpec createParameterSpecFromBaseNonce(long counter, byte @NonNull [] baseNonce) {

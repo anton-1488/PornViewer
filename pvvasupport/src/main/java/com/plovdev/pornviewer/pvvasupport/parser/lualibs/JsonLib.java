@@ -25,8 +25,6 @@ public class JsonLib extends TwoArgFunction {
         library.set("toJson", new ToJsonFunction());
         library.set("newJson", new NewJsonFunction());
         library.set("mapJson", new MapJsonFunction());
-        library.set("parse", new ParseJsonFunction());
-        library.set("stringify", new StringifyJsonFunction());
 
         env.set("json", library);
         return library;
@@ -87,26 +85,6 @@ public class JsonLib extends TwoArgFunction {
             Object obj = luaTableToObject(arg.checktable());
             String json = gson.toJson(obj);
             return LuaValue.valueOf(json);
-        }
-    }
-
-    /**
-     * Парсит JSON строку
-     */
-    private static class ParseJsonFunction extends OneArgFunction {
-        @Override
-        public LuaValue call(LuaValue arg) {
-            return new FromJsonFunction().call(arg);
-        }
-    }
-
-    /**
-     * Преобразует Lua значение в JSON строку
-     */
-    private static class StringifyJsonFunction extends OneArgFunction {
-        @Override
-        public LuaValue call(LuaValue arg) {
-            return new ToJsonFunction().call(arg);
         }
     }
 

@@ -21,7 +21,7 @@
     <dependencies>
         <dependency>
             <groupId>com.plovdev.pornviewer</groupId>
-            <artifactId>commons</artifactId>
+            <artifactId>core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

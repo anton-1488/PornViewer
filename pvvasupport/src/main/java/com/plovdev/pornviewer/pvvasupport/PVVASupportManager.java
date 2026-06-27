@@ -2,10 +2,10 @@ package com.plovdev.pornviewer.pvvasupport;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.plovdev.pornviewer.commons.models.adapter.AdapterInfo;
-import com.plovdev.pornviewer.database.PVVAProvider;
-import com.plovdev.pornviewer.exceptions.AdapterLoadingException;
-import com.plovdev.pornviewer.utils.files.PVFileManager;
+import com.plovdev.pornviewer.core.models.adapter.AdapterInfo;
+import com.plovdev.pornviewer.database.tables.PVVAProvider;
+import com.plovdev.pornviewer.pvvasupport.exceptions.AdapterLoadingException;
+import com.plovdev.pornviewer.services.files.PVFileManager;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -14,11 +14,10 @@ import org.plovdev.pvva.read.PVVAReader;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
 
+//TODO check plugin hash when load
 public final class PVVASupportManager {
     private static final Cache<String, PVVAHost> CACHED_ADAPTERS = Caffeine.newBuilder()
-            .expireAfterWrite(1, TimeUnit.HOURS)
             .maximumSize(10)
             .build();
 
@@ -57,7 +56,7 @@ public final class PVVASupportManager {
 
     @Contract("_ -> param1")
     public static @NonNull PVVAHost forceAdapter(@NonNull PVVAHost host) {
-        String pluginId = host.header().pluginId();
+        String pluginId = host.header().getPluginId();
         CACHED_ADAPTERS.invalidate(pluginId);
         CACHED_ADAPTERS.put(pluginId, host);
         return host;

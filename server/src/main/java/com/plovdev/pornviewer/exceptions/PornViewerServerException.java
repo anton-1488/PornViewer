@@ -1,5 +1,7 @@
 package com.plovdev.pornviewer.exceptions;
 
+import com.plovdev.pornviewer.core.exceptions.PornViewerException;
+
 public class PornViewerServerException extends PornViewerException {
     public PornViewerServerException(String message) {
         super(message);

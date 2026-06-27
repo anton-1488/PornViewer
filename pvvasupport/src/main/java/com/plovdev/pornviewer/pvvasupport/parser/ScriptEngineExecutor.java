@@ -1,14 +1,15 @@
 package com.plovdev.pornviewer.pvvasupport.parser;
 
 import com.google.gson.reflect.TypeToken;
-import com.plovdev.pornviewer.commons.models.porn.CategoryInfo;
-import com.plovdev.pornviewer.commons.models.porn.FullVideoInfo;
-import com.plovdev.pornviewer.commons.models.porn.ModelInfo;
-import com.plovdev.pornviewer.commons.models.porn.ShortVideoInfo;
-import com.plovdev.pornviewer.exceptions.ScriptExecutionException;
+import com.plovdev.pornviewer.core.models.porn.CategoryInfo;
+import com.plovdev.pornviewer.core.models.porn.FullVideoInfo;
+import com.plovdev.pornviewer.core.models.porn.ModelInfo;
+import com.plovdev.pornviewer.core.models.porn.ShortVideoInfo;
+import com.plovdev.pornviewer.pvvasupport.exceptions.ScriptExecutionException;
+import com.plovdev.pornviewer.pvvasupport.parser.lualibs.HashLib;
 import com.plovdev.pornviewer.pvvasupport.parser.lualibs.HtmlLib;
 import com.plovdev.pornviewer.pvvasupport.parser.lualibs.JsonLib;
-import com.plovdev.pornviewer.utils.json.JSONSerializer;
+import com.plovdev.pornviewer.services.json.JSONSerializer;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -38,6 +39,7 @@ public final class ScriptEngineExecutor {
         GLOBALS.load(new TableLib());
         GLOBALS.load(new HtmlLib());
         GLOBALS.load(new JsonLib());
+        GLOBALS.load(new HashLib());
 
         LoadState.install(GLOBALS);
         LuaC.install(GLOBALS);
