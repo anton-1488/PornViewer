@@ -31,7 +31,6 @@ import java.util.List;
 public final class ScriptEngineExecutor {
     private static final Globals GLOBALS = new Globals();
     private static final Logger log = LoggerFactory.getLogger(ScriptEngineExecutor.class);
-    private final LuaValue scriptFunctions;
 
     static {
         GLOBALS.load(new JseBaseLib());
@@ -49,17 +48,12 @@ public final class ScriptEngineExecutor {
 
     @Contract(pure = true)
     public ScriptEngineExecutor(@NonNull MainParser parser) {
-        LuaValue sandboxEnv = LuaValue.tableOf();
-        sandboxEnv.setmetatable(GLOBALS);
-
         String scriptCode = parser.rawScript();
         LuaValue chunk = GLOBALS.load(scriptCode, "script");
         if (chunk.isnil() || !chunk.isfunction()) {
             throw new RuntimeException("Failed to load Lua script");
         }
-
         chunk.call();
-        this.scriptFunctions = GLOBALS;
     }
 
     private <V> V executeAndDeserialize(MethodName methodName, String input, TypeToken<V> type) {
@@ -83,7 +77,7 @@ public final class ScriptEngineExecutor {
      * @return serialized JSON of required object dto.
      */
     public @Nullable String execute(String method, String inputData) throws NoSuchMethodException {
-        LuaValue func = this.scriptFunctions.get(method);
+        LuaValue func = GLOBALS.get(method);
         if (func.isnil()) {
             throw new NoSuchMethodException("Function '" + method + "' not found in Lua script");
         }

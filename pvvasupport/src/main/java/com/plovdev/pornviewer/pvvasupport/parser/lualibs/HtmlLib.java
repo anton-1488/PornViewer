@@ -133,31 +133,48 @@ public class HtmlLib extends TwoArgFunction {
         }
         LuaValue el = new LuaTable();
 
-        el.set("tag", LuaValue.valueOf(element.tagName()));
-        el.set("nodeName", LuaValue.valueOf(element.nodeName()));
-        el.set("id", LuaValue.valueOf(element.id()));
-        el.set("className", LuaValue.valueOf(element.className()));
+        el.set("tag", new ZeroArgFunction() {
+            @Override
+            public LuaValue call() {
+                return LuaValue.valueOf(element.tagName());
+            }
+        });
+        el.set("nodeName", new ZeroArgFunction() {
+            @Override
+            public LuaValue call() {
+                return LuaValue.valueOf(element.nodeName());
+            }
+        });
+        el.set("id", new ZeroArgFunction() {
+            @Override
+            public LuaValue call() {
+                return LuaValue.valueOf(element.id());
+            }
+        });
+        el.set("className", new ZeroArgFunction() {
+            @Override
+            public LuaValue call() {
+                return LuaValue.valueOf(element.className());
+            }
+        });
         el.set("html", new ZeroArgFunction() {
             @Override
             public LuaValue call() {
                 return LuaValue.valueOf(element.html());
             }
         });
-
         el.set("outerHtml", new ZeroArgFunction() {
             @Override
             public LuaValue call() {
                 return LuaValue.valueOf(element.outerHtml());
             }
         });
-
         el.set("text", new ZeroArgFunction() {
             @Override
             public LuaValue call() {
                 return LuaValue.valueOf(element.text());
             }
         });
-
         el.set("ownText", new ZeroArgFunction() {
             @Override
             public LuaValue call() {

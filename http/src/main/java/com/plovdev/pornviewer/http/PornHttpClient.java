@@ -1,19 +1,19 @@
 package com.plovdev.pornviewer.http;
 
+import com.plovdev.pornviewer.core.events.GlobalEventManager;
+import com.plovdev.pornviewer.core.events.VideoDownloadingChannel;
 import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.core.models.porn.CategoryInfo;
 import com.plovdev.pornviewer.core.models.porn.FullVideoInfo;
 import com.plovdev.pornviewer.core.models.porn.ModelInfo;
 import com.plovdev.pornviewer.core.models.porn.ShortVideoInfo;
+import com.plovdev.pornviewer.database.tables.UserSettingsManager;
 import com.plovdev.pornviewer.http.providers.HttpClientRequestProvider;
 import com.plovdev.pornviewer.http.providers.OkHttpRequestProvider;
 import com.plovdev.pornviewer.http.providers.PornRequestProvider;
-import com.plovdev.pornviewer.database.tables.UserSettingsManager;
-import com.plovdev.pornviewer.pvvasupport.exceptions.NoSuchRequestProviderException;
 import com.plovdev.pornviewer.pvvasupport.PVVASupportManager;
+import com.plovdev.pornviewer.pvvasupport.exceptions.NoSuchRequestProviderException;
 import com.plovdev.pornviewer.pvvasupport.parser.ScriptEngineExecutor;
-import com.plovdev.pornviewer.core.events.GlobalEventManager;
-import com.plovdev.pornviewer.core.events.VideoDownloadingChannel;
 import com.plovdev.pornviewer.services.http.UriBuilder;
 import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
 import org.jetbrains.annotations.Contract;
@@ -84,10 +84,9 @@ public final class PornHttpClient implements AutoCloseable {
         UriBuilder builder = new UriBuilder(baseUrl);
         MainResources resources = resourceConfig.mainResources();
         if (checker.supportMain()) {
-            String endpoint = VariableHandler.processVariables(resources.endpoint().get(), Map.of(Variable.PAGE, String.valueOf(page)));
+            String endpoint = VariableHandler.processVariables(resources.endpoint().orElseThrow(), Map.of(Variable.PAGE, String.valueOf(page)));
             builder.appendUriPart(endpoint);
             String response = requestProvider.executeGet(PornRequest.get(builder.build()));
-            System.out.println(response);
             return scriptEngine.parseVideos(response);
         } else {
             throw new UnsupportedOperationException("This adapter not support main page");
@@ -99,7 +98,7 @@ public final class PornHttpClient implements AutoCloseable {
         MainResources resources = resourceConfig.mainResources();
         if (checker.supportMainSearch()) {
             String preparedSearch = URLEncoder.encode(rawSearch, DEFAULT);
-            String searchUrl = VariableHandler.processVariables(resources.searchUrl().get(), Map.of(Variable.USER_INPUT, preparedSearch, Variable.PAGE, String.valueOf(page)));
+            String searchUrl = VariableHandler.processVariables(resources.searchUrl().orElseThrow(), Map.of(Variable.USER_INPUT, preparedSearch, Variable.PAGE, String.valueOf(page)));
             builder.appendUriPart(searchUrl);
             return scriptEngine.parseVideos(requestProvider.executeGet(PornRequest.get(builder.build())));
         } else {
@@ -111,7 +110,7 @@ public final class PornHttpClient implements AutoCloseable {
         UriBuilder builder = new UriBuilder(baseUrl);
         ModelsResources resources = resourceConfig.modelsResources().orElseThrow(() -> new UnsupportedOperationException("This adapter not support models page"));
         if (checker.supportModels()) {
-            String endpoint = VariableHandler.processVariables(resources.endpoint().get(), Map.of(Variable.PAGE, String.valueOf(page)));
+            String endpoint = VariableHandler.processVariables(resources.endpoint().orElseThrow(), Map.of(Variable.PAGE, String.valueOf(page)));
             builder.appendUriPart(endpoint);
             return scriptEngine.parseModels(requestProvider.executeGet(PornRequest.get(builder.build())));
         } else {
@@ -123,7 +122,7 @@ public final class PornHttpClient implements AutoCloseable {
         UriBuilder builder = new UriBuilder(baseUrl);
         ModelsResources resources = resourceConfig.modelsResources().orElseThrow(() -> new UnsupportedOperationException("This adapter not support model page"));
         if (checker.supportModel()) {
-            String modelUrl = VariableHandler.processVariables(resources.modelEndpoint().get(), Map.of(Variable.MODEL_NAME, modelName));
+            String modelUrl = VariableHandler.processVariables(resources.modelEndpoint().orElseThrow(), Map.of(Variable.MODEL_NAME, modelName));
             builder.appendUriPart(modelUrl);
             return scriptEngine.parseVideos(requestProvider.executeGet(PornRequest.get(builder.build())));
         } else {
@@ -136,7 +135,7 @@ public final class PornHttpClient implements AutoCloseable {
         ModelsResources resources = resourceConfig.modelsResources().orElseThrow(() -> new UnsupportedOperationException("This adapter not support search models page"));
         if (checker.supportModelsSearch()) {
             String preparedSearch = URLEncoder.encode(rawSearch, DEFAULT);
-            String searchUrl = VariableHandler.processVariables(resources.modelSearchEndpoint().get(), Map.of(Variable.USER_INPUT, preparedSearch));
+            String searchUrl = VariableHandler.processVariables(resources.modelSearchEndpoint().orElseThrow(), Map.of(Variable.USER_INPUT, preparedSearch));
             builder.appendUriPart(searchUrl);
             return scriptEngine.parseModels(requestProvider.executeGet(PornRequest.get(builder.build())));
         } else {
@@ -148,7 +147,7 @@ public final class PornHttpClient implements AutoCloseable {
         UriBuilder builder = new UriBuilder(baseUrl);
         CategoriesResources resources = resourceConfig.categoriesResources().orElseThrow(() -> new UnsupportedOperationException("This adapter not support categories page"));
         if (checker.supportCategories()) {
-            String endpoint = resources.endpoint().get();
+            String endpoint = resources.endpoint().orElseThrow();
             builder.appendUriPart(endpoint);
             return scriptEngine.parseCategories(requestProvider.executeGet(PornRequest.get(builder.build())));
         } else {
@@ -161,7 +160,7 @@ public final class PornHttpClient implements AutoCloseable {
         CategoriesResources resources = resourceConfig.categoriesResources().orElseThrow(() -> new UnsupportedOperationException("This adapter not support category page"));
         if (resources.supports() && resources.endpoint().isPresent()) {
             if (checker.supportCategory()) {
-                String categoryUrl = VariableHandler.processVariables(resources.categoryEndpoint().get(), Map.of(Variable.CATEGORY, categoryName));
+                String categoryUrl = VariableHandler.processVariables(resources.categoryEndpoint().orElseThrow(), Map.of(Variable.CATEGORY, categoryName));
                 builder.appendUriPart(categoryUrl);
                 return scriptEngine.parseVideos(requestProvider.executeGet(PornRequest.get(builder.build())));
             } else {
@@ -205,7 +204,7 @@ public final class PornHttpClient implements AutoCloseable {
 
     public synchronized void setMirror(int index) {
         if (checker.supportMirrors()) {
-            List<String> mirrors = resourceConfig.mirrors().get();
+            List<String> mirrors = resourceConfig.mirrors().orElseThrow();
             if (!mirrors.isEmpty()) {
                 this.baseUrl = mirrors.get(index); // Thorws index exception if index is outside
             }

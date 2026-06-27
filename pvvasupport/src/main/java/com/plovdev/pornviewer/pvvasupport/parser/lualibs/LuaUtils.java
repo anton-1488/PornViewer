@@ -53,12 +53,18 @@ public final class LuaUtils {
             return null;
         }
 
-        if (value.isboolean()) {
-            return value.toboolean();
+        if (value.isnumber()) {
+            if (value.isint()) {
+                return value.toint();
+            } else if (value.islong()) {
+                return value.tolong();
+            } else {
+                return value.todouble();
+            }
         }
 
-        if (value.isnumber()) {
-            return value.todouble();
+        if (value.isboolean()) {
+            return value.toboolean();
         }
 
         if (value.isstring()) {
