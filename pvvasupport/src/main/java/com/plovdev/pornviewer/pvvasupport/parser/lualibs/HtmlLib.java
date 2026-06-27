@@ -16,7 +16,7 @@ public class HtmlLib extends TwoArgFunction {
     @Override
     public LuaValue call(@NonNull LuaValue luaValue, @NonNull LuaValue env) {
         LuaValue library = new LuaTable();
-        library.set("parse", new parse(true));
+        library.set("parseHtml", new parse(true));
         library.set("parseXml", new parse(false));
 
         env.set("html", library);

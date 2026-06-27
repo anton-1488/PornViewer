@@ -8,7 +8,7 @@ import org.luaj.vm2.LuaValue;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class LusUtils {
+public final class LuaUtils {
     /**
      * Конвертирует Lua таблицу в Java Object.
      */

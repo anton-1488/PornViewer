@@ -9,6 +9,7 @@ import com.plovdev.pornviewer.pvvasupport.exceptions.ScriptExecutionException;
 import com.plovdev.pornviewer.pvvasupport.parser.lualibs.HashLib;
 import com.plovdev.pornviewer.pvvasupport.parser.lualibs.HtmlLib;
 import com.plovdev.pornviewer.pvvasupport.parser.lualibs.JsonLib;
+import com.plovdev.pornviewer.pvvasupport.parser.lualibs.PornViewerLib;
 import com.plovdev.pornviewer.services.json.JSONSerializer;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
@@ -40,6 +41,7 @@ public final class ScriptEngineExecutor {
         GLOBALS.load(new HtmlLib());
         GLOBALS.load(new JsonLib());
         GLOBALS.load(new HashLib());
+        GLOBALS.load(new PornViewerLib());
 
         LoadState.install(GLOBALS);
         LuaC.install(GLOBALS);

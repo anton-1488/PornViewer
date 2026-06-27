@@ -13,8 +13,8 @@ import org.luaj.vm2.lib.ZeroArgFunction;
 
 import java.util.Map;
 
-import static com.plovdev.pornviewer.pvvasupport.parser.lualibs.LusUtils.luaTableToObject;
-import static com.plovdev.pornviewer.pvvasupport.parser.lualibs.LusUtils.luaValueToObject;
+import static com.plovdev.pornviewer.pvvasupport.parser.lualibs.LuaUtils.luaTableToObject;
+import static com.plovdev.pornviewer.pvvasupport.parser.lualibs.LuaUtils.luaValueToObject;
 
 public class JsonLib extends TwoArgFunction {
     private static final Gson gson = new Gson();
