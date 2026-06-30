@@ -7,9 +7,11 @@ import org.jspecify.annotations.NonNull;
 
 public class HashPluginVerifier implements PluginVerifier {
     private final String hashId;
+    private final boolean hasSignature;
 
-    public HashPluginVerifier(String hashId) {
+    public HashPluginVerifier(String hashId, boolean hasSignature) {
         this.hashId = hashId;
+        this.hasSignature = hasSignature;
     }
 
     @Override
@@ -18,7 +20,7 @@ public class HashPluginVerifier implements PluginVerifier {
             throw new IllegalArgumentException("Plugin data too short: " + pluginData.length);
         }
 
-        if (pluginData.length > 64) {
+        if (pluginData.length > 64 && hasSignature) {
             int pluginDataLength = pluginData.length - 64;
             byte[] rawPluginData = new byte[pluginDataLength];
             System.arraycopy(pluginData, 0, rawPluginData, 0, pluginDataLength);

@@ -11,7 +11,7 @@ import com.plovdev.pornviewer.database.tables.UserSettingsManager;
 import com.plovdev.pornviewer.http.providers.HttpClientRequestProvider;
 import com.plovdev.pornviewer.http.providers.OkHttpRequestProvider;
 import com.plovdev.pornviewer.http.providers.PornRequestProvider;
-import com.plovdev.pornviewer.pvvasupport.PVVASupportManager;
+import com.plovdev.pornviewer.pvvasupport.loading.PVVALoaderManager;
 import com.plovdev.pornviewer.pvvasupport.exceptions.NoSuchRequestProviderException;
 import com.plovdev.pornviewer.pvvasupport.parser.ScriptEngineExecutor;
 import com.plovdev.pornviewer.services.http.UriBuilder;
@@ -58,7 +58,7 @@ public final class PornClientImpl implements PornClient {
     private final AtomicReference<String> baseUrl;
 
     public PornClientImpl() {
-        PVVAHost host = Objects.requireNonNull(PVVASupportManager.loadPvvaById(UserSettingsManager.getUserSettings().adapter()));
+        PVVAHost host = Objects.requireNonNull(PVVALoaderManager.loadPvvaById(UserSettingsManager.getUserSettings().adapter()));
         this(host);
     }
 

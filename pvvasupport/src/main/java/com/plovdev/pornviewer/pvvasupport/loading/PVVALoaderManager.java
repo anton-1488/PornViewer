@@ -1,28 +1,21 @@
-package com.plovdev.pornviewer.pvvasupport;
+package com.plovdev.pornviewer.pvvasupport.loading;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.plovdev.pornviewer.core.models.adapter.AdapterInfo;
 import com.plovdev.pornviewer.database.tables.PVVAProvider;
-import com.plovdev.pornviewer.pvvasupport.exceptions.AdapterLoadingException;
-import com.plovdev.pornviewer.services.files.PVFileManager;
-import org.jetbrains.annotations.Contract;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.plovdev.pvva.models.PVVAHost;
-import org.plovdev.pvva.read.DefaultPVVAReader;
-import org.plovdev.pvva.read.PVVAReader;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
-//TODO check plugin hash when load
-public final class PVVASupportManager {
+public final class PVVALoaderManager {
     private static final Cache<String, PVVAHost> CACHED_ADAPTERS = Caffeine.newBuilder()
             .maximumSize(10)
             .build();
+    private static final PluginLoader PLUGIN_LOADER = new PluginLoaderImpl();
 
-    private PVVASupportManager() {
+    private PVVALoaderManager() {
         throw new UnsupportedOperationException();
     }
 
@@ -34,18 +27,13 @@ public final class PVVASupportManager {
         if (isDirect) {
             return direclyLoadHost(pluginId);
         } else {
-            return CACHED_ADAPTERS.get(pluginId, PVVASupportManager::direclyLoadHost);
+            return CACHED_ADAPTERS.get(pluginId, PVVALoaderManager::direclyLoadHost);
         }
     }
 
     private static PVVAHost direclyLoadHost(String pluginId) {
         AdapterInfo info = PVVAProvider.getAdapterById(pluginId);
-        Path adapterPath = PVFileManager.getPvAdapterPath(info.pathName());
-        try (PVVAReader reader = new DefaultPVVAReader(adapterPath)) {
-            return reader.readVideoAdapter();
-        } catch (IOException e) {
-            throw new AdapterLoadingException("Error load pvva plugin", e);
-        }
+        return PLUGIN_LOADER.loadFromDisk(Path.of(info.pathName()));
     }
 
     public static PVVAHost forceAdapter(String pluginId) {
@@ -53,14 +41,6 @@ public final class PVVASupportManager {
         PVVAHost freshHost = direclyLoadHost(pluginId);
         CACHED_ADAPTERS.put(pluginId, freshHost);
         return freshHost;
-    }
-
-    @Contract("_ -> param1")
-    public static @NonNull PVVAHost forceAdapter(@NonNull PVVAHost host) {
-        String pluginId = host.header().getPluginId();
-        CACHED_ADAPTERS.invalidate(pluginId);
-        CACHED_ADAPTERS.put(pluginId, host);
-        return host;
     }
 
     public static void clearCache() {
