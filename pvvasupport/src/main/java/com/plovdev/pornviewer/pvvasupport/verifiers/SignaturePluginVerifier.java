@@ -25,7 +25,7 @@ public class SignaturePluginVerifier implements PluginVerifier {
         }
 
         EnvReader reader = new EnvReader(HTTP_PATHS_CONFIG);
-        String baseUrl = "https://" + reader.getEnv("base.url");
+        String baseUrl = reader.getEnv("base.url");
         String endpoint = reader.getEnv("get-public-key.url") + "?developerId=" + developerId;
 
         URI queryUri = URI.create(baseUrl + endpoint);
