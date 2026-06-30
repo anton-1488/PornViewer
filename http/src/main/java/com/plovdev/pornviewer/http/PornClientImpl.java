@@ -16,7 +16,6 @@ import com.plovdev.pornviewer.pvvasupport.exceptions.NoSuchRequestProviderExcept
 import com.plovdev.pornviewer.pvvasupport.parser.ScriptEngineExecutor;
 import com.plovdev.pornviewer.services.http.UriBuilder;
 import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
-import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.plovdev.pvva.models.PVVAHost;
@@ -34,135 +33,156 @@ import org.plovdev.pvva.utils.vars.VariableHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.net.Proxy;
+import java.net.URI;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
-public final class PornHttpClient implements AutoCloseable {
-    private static final Logger log = LoggerFactory.getLogger(PornHttpClient.class);
+import static com.plovdev.pornviewer.core.http.PornRequest.get;
+import static com.plovdev.pornviewer.core.http.PornRequest.head;
+import static com.plovdev.pornviewer.core.utils.Globals.DEFAULT_CHARSET;
+
+public final class PornClientImpl implements PornClient {
+    private static final Logger log = LoggerFactory.getLogger(PornClientImpl.class);
     private static final HttpConfig DEFAULT_HTTP_CONFIG = new HttpConfig(HttpClientType.OK_HTTP_CLIENT, new HeadersConfig(false, List.of(PornRequest.getDefaultHeaders())), RetryPolicy.ON_FAILED, 1000, 1000, 1000, 1000, 3);
-    private static final Charset DEFAULT = StandardCharsets.UTF_8;
+
     private final PornRequestProvider requestProvider;
     private final PVVAHost host;
     private final ResourceConfig resourceConfig;
     private final PVVAResourceChecker checker;
     private final ScriptEngineExecutor scriptEngine;
-    private volatile String baseUrl;
+    private final AtomicReference<String> baseUrl;
 
-    public PornHttpClient() {
+    public PornClientImpl() {
         PVVAHost host = Objects.requireNonNull(PVVASupportManager.loadPvvaById(UserSettingsManager.getUserSettings().adapter()));
         this(host);
     }
 
-    public PornHttpClient(@NonNull PVVAHost host) {
+    public PornClientImpl(@NonNull PVVAHost host) {
         requestProvider = createProvider(host.optHttpConfig().orElse(DEFAULT_HTTP_CONFIG));
         this.host = host;
         this.resourceConfig = host.resourceConfig();
         this.checker = new PVVAResourceChecker(resourceConfig);
-        this.baseUrl = resourceConfig.baseUrl();
+        this.baseUrl = new AtomicReference<>(resourceConfig.baseUrl());
         this.scriptEngine = new ScriptEngineExecutor(host.mainParser());
     }
 
-    private @Nullable PornRequestProvider createProvider(@NonNull HttpConfig config) {
+    private @NonNull PornRequestProvider createProvider(@NonNull HttpConfig config) {
         HttpClientType type = config.httpClient();
         return switch (type) {
             case JAVA_HTTP_CLIENT -> new HttpClientRequestProvider(config);
-            case APACHE_HTTP_CLIENT -> null; // TODO: Add Apache http request provider
+            case APACHE_HTTP_CLIENT ->
+                    throw new UnsupportedOperationException("Apache http request provider do not suppoerted yet"); // TODO: Add Apache http request provider
             case OK_HTTP_CLIENT -> new OkHttpRequestProvider(config);
-            case NETTY -> null; // TODO: Add Netty http request provider
+            case NETTY ->
+                    throw new UnsupportedOperationException("Netty request provider do not suppoerted yet"); // TODO: Add Netty http request provider
             default -> throw new NoSuchRequestProviderException("No request provider: " + type.name(), type);
         };
     }
 
+    @Override
     public List<ShortVideoInfo> requestMainPage(int page) {
-        UriBuilder builder = new UriBuilder(baseUrl);
+        checkPage(page);
+
+        UriBuilder builder = new UriBuilder(baseUrl.get());
         MainResources resources = resourceConfig.mainResources();
         if (checker.supportMain()) {
             String endpoint = VariableHandler.processVariables(resources.endpoint().orElseThrow(), Map.of(Variable.PAGE, String.valueOf(page)));
             builder.appendUriPart(endpoint);
-            String response = requestProvider.executeGet(PornRequest.get(builder.build()));
+            String response = requestProvider.executeGet(get(builder.build()));
             return scriptEngine.parseVideos(response);
         } else {
             throw new UnsupportedOperationException("This adapter not support main page");
         }
     }
 
+    @Override
     public List<ShortVideoInfo> searchMainPage(String rawSearch, int page) {
-        UriBuilder builder = new UriBuilder(baseUrl);
+        checkPage(page);
+
+        UriBuilder builder = new UriBuilder(baseUrl.get());
         MainResources resources = resourceConfig.mainResources();
         if (checker.supportMainSearch()) {
-            String preparedSearch = URLEncoder.encode(rawSearch, DEFAULT);
+            String preparedSearch = URLEncoder.encode(rawSearch, DEFAULT_CHARSET);
             String searchUrl = VariableHandler.processVariables(resources.searchUrl().orElseThrow(), Map.of(Variable.USER_INPUT, preparedSearch, Variable.PAGE, String.valueOf(page)));
             builder.appendUriPart(searchUrl);
-            return scriptEngine.parseVideos(requestProvider.executeGet(PornRequest.get(builder.build())));
+            return scriptEngine.parseVideos(requestProvider.executeGet(get(builder.build())));
         } else {
             throw new UnsupportedOperationException("This adapter not support search main page");
         }
     }
 
+    @Override
     public List<ModelInfo> requestModelsPage(int page) {
-        UriBuilder builder = new UriBuilder(baseUrl);
+        checkPage(page);
+
+        UriBuilder builder = new UriBuilder(baseUrl.get());
         ModelsResources resources = resourceConfig.modelsResources().orElseThrow(() -> new UnsupportedOperationException("This adapter not support models page"));
         if (checker.supportModels()) {
             String endpoint = VariableHandler.processVariables(resources.endpoint().orElseThrow(), Map.of(Variable.PAGE, String.valueOf(page)));
             builder.appendUriPart(endpoint);
-            return scriptEngine.parseModels(requestProvider.executeGet(PornRequest.get(builder.build())));
+            return scriptEngine.parseModels(requestProvider.executeGet(get(builder.build())));
         } else {
             throw new UnsupportedOperationException("This adapter not support models page");
         }
     }
 
+    @Override
     public List<ShortVideoInfo> requestModelPage(String modelName) {
-        UriBuilder builder = new UriBuilder(baseUrl);
+        UriBuilder builder = new UriBuilder(baseUrl.get());
         ModelsResources resources = resourceConfig.modelsResources().orElseThrow(() -> new UnsupportedOperationException("This adapter not support model page"));
         if (checker.supportModel()) {
-            String modelUrl = VariableHandler.processVariables(resources.modelEndpoint().orElseThrow(), Map.of(Variable.MODEL_NAME, modelName));
+            String preparedModel = URLEncoder.encode(modelName, DEFAULT_CHARSET);
+            String modelUrl = VariableHandler.processVariables(resources.modelEndpoint().orElseThrow(), Map.of(Variable.MODEL_NAME, preparedModel));
             builder.appendUriPart(modelUrl);
-            return scriptEngine.parseVideos(requestProvider.executeGet(PornRequest.get(builder.build())));
+            return scriptEngine.parseVideos(requestProvider.executeGet(get(builder.build())));
         } else {
             throw new UnsupportedOperationException("This adapter not support model page");
         }
     }
 
+    @Override
     public List<ModelInfo> searchModelsPage(String rawSearch) {
-        UriBuilder builder = new UriBuilder(baseUrl);
+        UriBuilder builder = new UriBuilder(baseUrl.get());
         ModelsResources resources = resourceConfig.modelsResources().orElseThrow(() -> new UnsupportedOperationException("This adapter not support search models page"));
         if (checker.supportModelsSearch()) {
-            String preparedSearch = URLEncoder.encode(rawSearch, DEFAULT);
+            String preparedSearch = URLEncoder.encode(rawSearch, DEFAULT_CHARSET);
             String searchUrl = VariableHandler.processVariables(resources.modelSearchEndpoint().orElseThrow(), Map.of(Variable.USER_INPUT, preparedSearch));
             builder.appendUriPart(searchUrl);
-            return scriptEngine.parseModels(requestProvider.executeGet(PornRequest.get(builder.build())));
+            return scriptEngine.parseModels(requestProvider.executeGet(get(builder.build())));
         } else {
             throw new UnsupportedOperationException("This adapter not support search models page");
         }
     }
 
+    @Override
     public List<CategoryInfo> requestCategories() {
-        UriBuilder builder = new UriBuilder(baseUrl);
+        UriBuilder builder = new UriBuilder(baseUrl.get());
         CategoriesResources resources = resourceConfig.categoriesResources().orElseThrow(() -> new UnsupportedOperationException("This adapter not support categories page"));
         if (checker.supportCategories()) {
             String endpoint = resources.endpoint().orElseThrow();
             builder.appendUriPart(endpoint);
-            return scriptEngine.parseCategories(requestProvider.executeGet(PornRequest.get(builder.build())));
+            return scriptEngine.parseCategories(requestProvider.executeGet(get(builder.build())));
         } else {
             throw new UnsupportedOperationException("This adapter not support categories page");
         }
     }
 
-    public List<ShortVideoInfo> requestCategoryPage(String categoryName) {
-        UriBuilder builder = new UriBuilder(baseUrl);
+    @Override
+    public List<ShortVideoInfo> requestCategoryPage(String categoryName, int page) {
+        checkPage(page);
+
+        UriBuilder builder = new UriBuilder(baseUrl.get());
         CategoriesResources resources = resourceConfig.categoriesResources().orElseThrow(() -> new UnsupportedOperationException("This adapter not support category page"));
         if (resources.supports() && resources.endpoint().isPresent()) {
             if (checker.supportCategory()) {
-                String categoryUrl = VariableHandler.processVariables(resources.categoryEndpoint().orElseThrow(), Map.of(Variable.CATEGORY, categoryName));
+                String categoryUrl = VariableHandler.processVariables(resources.categoryEndpoint().orElseThrow(), Map.of(Variable.CATEGORY, categoryName, Variable.PAGE, String.valueOf(page)));
                 builder.appendUriPart(categoryUrl);
-                return scriptEngine.parseVideos(requestProvider.executeGet(PornRequest.get(builder.build())));
+                return scriptEngine.parseVideos(requestProvider.executeGet(get(builder.build())));
             } else {
                 throw new UnsupportedOperationException("This adapter not support category page");
             }
@@ -171,45 +191,50 @@ public final class PornHttpClient implements AutoCloseable {
         }
     }
 
+    @Override
     public FullVideoInfo requestVideoPage(String videoId) {
-        UriBuilder builder = new UriBuilder(baseUrl);
+        UriBuilder builder = new UriBuilder(baseUrl.get());
         if (checker.supportVideo()) {
             String videoUrl = VariableHandler.processVariables(resourceConfig.videoEndpoint(), Map.of(Variable.VIDEO_ID, videoId));
             builder.appendUriPart(videoUrl);
-            return scriptEngine.parseFullVideoInfo(requestProvider.executeGet(PornRequest.get(builder.build())));
+            return scriptEngine.parseFullVideoInfo(requestProvider.executeGet(get(builder.build())));
         } else {
             throw new UnsupportedOperationException("This adapter not support video page");
         }
     }
 
-    @Contract("_ -> new")
-    public @NonNull ByteArrayInputStream requestBytesData(PornRequest request) {
-        return new ByteArrayInputStream(requestProvider.executeRaw(request));
-    }
-
-    public @Nullable CompletableFuture<DownloadedVideoInfo> startDownload(PornRequest request, FullVideoInfo info, @NonNull String output) {
-        log.info("Start loading to file: {}", output);
-        long videoSize = requestProvider.checkContentLength(request);
+    @Override
+    public @Nullable CompletableFuture<DownloadedVideoInfo> startDownload(URI videoUri, FullVideoInfo info) {
+        log.info("Start loading to file.");
+        long videoSize = requestProvider.checkContentLength(head(videoUri));
         GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(videoSize, VideoDownloadingChannel.DownloadedType.START));
 
-        PornDownloader downloader = new PornDownloader(requestProvider, request, output);
-        return downloader.startDownload(videoSize, info, requestProvider.executeRaw(PornRequest.get(info.previewUrl())));
+        PornDownloader downloader = new PornDownloader(requestProvider, get(videoUri));
+        return downloader.startDownload(videoSize, info, requestProvider.executeRaw(get(info.previewUrl())));
     }
 
     //======================================\\
 
+    @Override
     public synchronized void setProxy(Proxy proxy) {
         requestProvider.setProxy(proxy);
     }
 
-    public synchronized void setMirror(int index) {
+    @Override
+    public void setMirror(int index) {
         if (checker.supportMirrors()) {
             List<String> mirrors = resourceConfig.mirrors().orElseThrow();
             if (!mirrors.isEmpty()) {
-                this.baseUrl = mirrors.get(index); // Thorws index exception if index is outside
+                this.baseUrl.set(mirrors.get(index)); // Thorws index exception if index is outside
             }
         } else {
             throw new UnsupportedOperationException("This adapter not support mirrors");
+        }
+    }
+
+    private void checkPage(int page) {
+        if (page < 0) {
+            throw new IllegalArgumentException("Page must be >= 0");
         }
     }
 
@@ -222,7 +247,7 @@ public final class PornHttpClient implements AutoCloseable {
     }
 
     @Override
-    public synchronized void close() {
+    public void close() {
         requestProvider.close();
     }
 }

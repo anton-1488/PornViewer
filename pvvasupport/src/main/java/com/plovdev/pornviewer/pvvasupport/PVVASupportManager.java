@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.plovdev.pvva.models.PVVAHost;
+import org.plovdev.pvva.read.DefaultPVVAReader;
 import org.plovdev.pvva.read.PVVAReader;
 
 import java.io.IOException;
@@ -40,8 +41,8 @@ public final class PVVASupportManager {
     private static PVVAHost direclyLoadHost(String pluginId) {
         AdapterInfo info = PVVAProvider.getAdapterById(pluginId);
         Path adapterPath = PVFileManager.getPvAdapterPath(info.pathName());
-        try (PVVAReader reader = new PVVAReader(adapterPath)) {
-            return reader.parseVideoAdapter();
+        try (PVVAReader reader = new DefaultPVVAReader(adapterPath)) {
+            return reader.readVideoAdapter();
         } catch (IOException e) {
             throw new AdapterLoadingException("Error load pvva plugin", e);
         }

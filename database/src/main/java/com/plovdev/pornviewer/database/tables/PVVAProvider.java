@@ -8,6 +8,7 @@ import org.jspecify.annotations.NonNull;
 import org.plovdev.pvva.models.PVVAHeader;
 import org.plovdev.pvva.models.PVVAHost;
 import org.plovdev.pvva.models.PluginJson;
+import org.plovdev.pvva.read.DefaultPVVAReader;
 import org.plovdev.pvva.read.PVVAReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ public class PVVAProvider {
     public static void dropTable() {
         checkConnection();
         try (Statement stt = con.createStatement()) {
-            stt.executeUpdate("DROP TABLE PVVAdapters");
+            stt.executeUpdate("DROP TABLE pvva_adapters");
         } catch (SQLException e) {
             log.error("Error to drop adapters table: ", e);
         }
@@ -64,7 +65,7 @@ public class PVVAProvider {
 
         List<AdapterInfo> adapters = new ArrayList<>();
         try (Statement statement = con.createStatement();
-             ResultSet set = statement.executeQuery("SELECT * FROM PVVAdapters")) {
+             ResultSet set = statement.executeQuery("SELECT * FROM pvva_adapters")) {
             while (set.next()) {
                 adapters.add(new AdapterInfo(
                         set.getString("pluginId"),
@@ -90,7 +91,7 @@ public class PVVAProvider {
 
     public synchronized static void addAdapter(@NonNull AdapterInfo info) {
         checkConnection();
-        String sql = "INSERT OR REPLACE INTO PVVAdapters (" +
+        String sql = "INSERT OR REPLACE INTO pvva_adapters (" +
                 "pluginId, minAppVersion, maxAppVersion, name, version, description, " +
                 "updateUrl, signRequired, author, authorPage, licenseUrl, homePage, pathName" +
                 ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -117,7 +118,7 @@ public class PVVAProvider {
     public synchronized static void removeAdapter(String pluginId) {
         checkConnection();
 
-        try (PreparedStatement stt = con.prepareStatement("DELETE FROM PVVAdapters WHERE pluginId = ?")) {
+        try (PreparedStatement stt = con.prepareStatement("DELETE FROM pvva_adapters WHERE pluginId = ?")) {
             stt.setString(1, pluginId);
             stt.executeUpdate();
         } catch (Exception e) {
@@ -128,7 +129,7 @@ public class PVVAProvider {
     public static @NonNull AdapterInfo getAdapterById(String pluginId) {
         checkConnection();
 
-        try (PreparedStatement stt = con.prepareStatement("SELECT * FROM PVVAdapters WHERE pluginId = ?")) {
+        try (PreparedStatement stt = con.prepareStatement("SELECT * FROM pvva_adapters WHERE pluginId = ?")) {
             stt.setString(1, pluginId);
             try (ResultSet set = stt.executeQuery()) {
                 if (set.next()) {
@@ -156,8 +157,8 @@ public class PVVAProvider {
     }
 
     public static @NonNull AdapterInfo loadAdapter(Path path) {
-        try (PVVAReader reader = new PVVAReader(path)) {
-            PVVAHost host = reader.parseVideoAdapter();
+        try (PVVAReader reader = new DefaultPVVAReader(path)) {
+            PVVAHost host = reader.readVideoAdapter();
             PVVAHeader header = host.header();
             PluginJson pluginJson = host.pluginJson();
 

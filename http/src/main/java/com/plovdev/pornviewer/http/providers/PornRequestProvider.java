@@ -1,7 +1,7 @@
 package com.plovdev.pornviewer.http.providers;
 
-import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.core.exceptions.RequestProviderException;
+import com.plovdev.pornviewer.core.http.PornRequest;
 
 import java.io.InputStream;
 import java.net.Proxy;

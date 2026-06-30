@@ -1,10 +1,10 @@
 package com.plovdev.pornviewer.pvvfsupport.write;
 
+import com.plovdev.pornviewer.pvvfsupport.exceptions.PVVFException;
+import com.plovdev.pornviewer.pvvfsupport.exceptions.PVVFOpenException;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoChunk;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoHeader;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoMetadata;
-import com.plovdev.pornviewer.pvvfsupport.exceptions.PVVFException;
-import com.plovdev.pornviewer.pvvfsupport.exceptions.PVVFOpenException;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Objects;
 
 import static com.plovdev.pornviewer.pvvfsupport.videomodel.VideoHeader.HEADER_SIZE;
@@ -28,29 +29,30 @@ public class PVVFWriter implements AutoCloseable {
     /**
      * Sources to write data.
      */
-    private File file;
+    private final Path path;
     private final DataOutputStream writeStream;
 
     /**
      * Создает экземпляр писателя для указанного файла.
      *
-     * @param file Файл для записи.
+     * @param path Файл для записи.
      */
-    public PVVFWriter(File file) {
-        this.file = file;
+    public PVVFWriter(@NonNull Path path) {
+        this.path = path;
         try {
-            writeStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+            writeStream = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path.toFile())));
         } catch (FileNotFoundException e) {
             throw new PVVFOpenException("Error to open pvvf write stream", e);
         }
     }
 
     public PVVFWriter(OutputStream stream) {
+        path = null;
         writeStream = new DataOutputStream(new BufferedOutputStream(stream));
     }
 
-    public File getFile() {
-        return file;
+    public Path getPath() {
+        return path;
     }
 
     public synchronized void writeVideoHeader(VideoHeader videoHeader) {
@@ -114,14 +116,14 @@ public class PVVFWriter implements AutoCloseable {
         }
     }
 
-    @SuppressWarnings("resources")
+    @SuppressWarnings({"resource"})
     public synchronized void updateVideoMetadata(long encVideoSize, VideoMetadata toWrite) {
         Objects.requireNonNull(toWrite);
         if (encVideoSize < 0) {
             throw new IllegalArgumentException("Enc video size must be a greather then 0");
         }
 
-        try (RandomAccessFile RAF = new RandomAccessFile(file, "rw")) {
+        try (RandomAccessFile RAF = new RandomAccessFile(path.toFile(), "rw")) {
             long metadataOffset = HEADER_SIZE + encVideoSize;
             RAF.seek(metadataOffset); // seek to metadata block
 

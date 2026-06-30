@@ -1,10 +1,12 @@
 package com.plovdev.pornviewer.http;
 
 import com.google.gson.Gson;
+import com.plovdev.pornviewer.core.events.GlobalEventManager;
+import com.plovdev.pornviewer.core.events.VideoDownloadingChannel;
+import com.plovdev.pornviewer.core.exceptions.VideoDownloadingError;
 import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.core.models.porn.FullVideoInfo;
 import com.plovdev.pornviewer.http.providers.PornRequestProvider;
-import com.plovdev.pornviewer.core.exceptions.VideoDownloadingError;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoChunk;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoHeader;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoMetadata;
@@ -13,8 +15,6 @@ import com.plovdev.pornviewer.security.CipherEngineUtils;
 import com.plovdev.pornviewer.security.CryptoEngine;
 import com.plovdev.pornviewer.security.DigestUtils;
 import com.plovdev.pornviewer.security.PVSecurityManager;
-import com.plovdev.pornviewer.core.events.GlobalEventManager;
-import com.plovdev.pornviewer.core.events.VideoDownloadingChannel;
 import com.plovdev.pornviewer.services.files.PVFileManager;
 import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
 import com.plovdev.pornviewer.services.json.VideoInfoSerializer;
@@ -23,9 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.Cipher;
-import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 import static com.plovdev.pornviewer.pvvfsupport.videomodel.VideoChunk.PLAIN_CHUNK_SIZE;
@@ -33,19 +33,21 @@ import static com.plovdev.pornviewer.pvvfsupport.videomodel.VideoChunk.PLAIN_CHU
 public class PornDownloader {
     private static final Logger log = LoggerFactory.getLogger(PornDownloader.class);
     private static final Gson GSON = new Gson();
+
     private final PornRequest request;
-    private final File output;
     private final PornRequestProvider requestProvider;
 
-    public PornDownloader(PornRequestProvider provider, PornRequest request, String filename) {
+    public PornDownloader(PornRequestProvider provider, PornRequest request) {
         this.request = request;
         this.requestProvider = provider;
-        String encryptedFileName = DigestUtils.sha256(filename);
-        this.output = new File(PVFileManager.getPvDownloadsPath() + (File.separatorChar + encryptedFileName));
     }
 
     public synchronized CompletableFuture<DownloadedVideoInfo> startDownload(long plainVideoSize, FullVideoInfo info, byte[] videoPreview) {
         return CompletableFuture.supplyAsync(() -> {
+            // hashing file name
+            String hashedName = DigestUtils.sha256(info.videoUri().toString());
+            Path output = PVFileManager.getPvDownloadsPath().resolve(Path.of(hashedName));
+
             // open pvvf writer to write data
             try (PVVFWriter writer = new PVVFWriter(output)) {
                 // step 1 - write pvvf header:
@@ -123,19 +125,7 @@ public class PornDownloader {
         writer.writeVideoMetadata(metadata);
     }
 
-    private String formJson(FullVideoInfo info) {
+    private @NonNull String formJson(FullVideoInfo info) {
         return VideoInfoSerializer.serializeInfo(info);
-    }
-
-    public PornRequestProvider getRequestProvider() {
-        return requestProvider;
-    }
-
-    public PornRequest getRequest() {
-        return request;
-    }
-
-    public File getOutput() {
-        return output;
     }
 }

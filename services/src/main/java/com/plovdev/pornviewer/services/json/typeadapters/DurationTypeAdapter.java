@@ -6,8 +6,7 @@ import org.jspecify.annotations.NonNull;
 import java.lang.reflect.Type;
 import java.time.Duration;
 
-public class DurationTypeAdapter implements JsonSerializer<Duration>, JsonDeserializer<Duration> {
-
+public class DurationTypeAdapter implements JsonTypeAdapter<Duration> {
     @Override
     public JsonElement serialize(@NonNull Duration duration, Type type, JsonSerializationContext jsonSerializationContext) {
         return new JsonPrimitive(duration.toString());

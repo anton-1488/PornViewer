@@ -36,7 +36,7 @@ public final class DigestUtils {
         return processAlgorithm(MD2, plain);
     }
 
-    public static String md2(byte[] plain) {
+    public static byte[] md2(byte[] plain) {
         return processAlgorithm(MD2, plain);
     }
 
@@ -44,7 +44,7 @@ public final class DigestUtils {
         return processAlgorithm(MD5, plain);
     }
 
-    public static String md5(byte[] plain) {
+    public static byte[] md5(byte[] plain) {
         return processAlgorithm(MD5, plain);
     }
 
@@ -52,7 +52,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA1, plain);
     }
 
-    public static String sha1(byte[] plain) {
+    public static byte[] sha1(byte[] plain) {
         return processAlgorithm(SHA1, plain);
     }
 
@@ -60,7 +60,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA_224, plain);
     }
 
-    public static String sha224(byte[] plain) {
+    public static byte[] sha224(byte[] plain) {
         return processAlgorithm(SHA_224, plain);
     }
 
@@ -68,7 +68,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA_256, plain);
     }
 
-    public static String sha256(byte[] plain) {
+    public static byte[] sha256(byte[] plain) {
         return processAlgorithm(SHA_256, plain);
     }
 
@@ -76,7 +76,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA_384, plain);
     }
 
-    public static String sha384(byte[] plain) {
+    public static byte[] sha384(byte[] plain) {
         return processAlgorithm(SHA_384, plain);
     }
 
@@ -84,7 +84,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA_512, plain);
     }
 
-    public static String sha512(byte[] plain) {
+    public static byte[] sha512(byte[] plain) {
         return processAlgorithm(SHA_512, plain);
     }
 
@@ -92,7 +92,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA3_224, plain);
     }
 
-    public static String sha3_224(byte[] plain) {
+    public static byte[] sha3_224(byte[] plain) {
         return processAlgorithm(SHA3_224, plain);
     }
 
@@ -100,7 +100,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA3_256, plain);
     }
 
-    public static String sha3_256(byte[] plain) {
+    public static byte[] sha3_256(byte[] plain) {
         return processAlgorithm(SHA3_256, plain);
     }
 
@@ -108,7 +108,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA3_384, plain);
     }
 
-    public static String sha3_384(byte[] plain) {
+    public static byte[] sha3_384(byte[] plain) {
         return processAlgorithm(SHA3_384, plain);
     }
 
@@ -116,7 +116,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA3_512, plain);
     }
 
-    public static String sha3_512(byte[] plain) {
+    public static byte[] sha3_512(byte[] plain) {
         return processAlgorithm(SHA3_512, plain);
     }
 
@@ -124,7 +124,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA512_224, plain);
     }
 
-    public static String sha512_224(byte[] plain) {
+    public static byte[] sha512_224(byte[] plain) {
         return processAlgorithm(SHA512_224, plain);
     }
 
@@ -132,7 +132,7 @@ public final class DigestUtils {
         return processAlgorithm(SHA512_256, plain);
     }
 
-    public static String sha512_256(byte[] plain) {
+    public static byte[] sha512_256(byte[] plain) {
         return processAlgorithm(SHA512_256, plain);
     }
 
@@ -140,7 +140,7 @@ public final class DigestUtils {
         return processAlgorithm(SHAKE128_256, plain);
     }
 
-    public static String shake128_256(byte[] plain) {
+    public static byte[] shake128_256(byte[] plain) {
         return processAlgorithm(SHAKE128_256, plain);
     }
 
@@ -148,12 +148,8 @@ public final class DigestUtils {
         return processAlgorithm(SHAKE256_512, plain);
     }
 
-    public static String shake256_512(byte[] plain) {
+    public static byte[] shake256_512(byte[] plain) {
         return processAlgorithm(SHAKE256_512, plain);
-    }
-
-    public static String processAlgorithm(@NonNull String algorithm, @NonNull String plain) {
-        return processAlgorithm(algorithm, plain.getBytes(StandardCharsets.UTF_8));
     }
 
     public static @NonNull List<String> getSupportedAlgorithms() {
@@ -179,11 +175,15 @@ public final class DigestUtils {
         }
     }
 
-    public static String processAlgorithm(@NonNull String algorithm, byte @NonNull [] plainBytes) {
+    public static String processAlgorithm(@NonNull String algorithm, @NonNull String plain) {
+        return HexUtils.ofHex(processAlgorithm(algorithm, plain.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    public static byte[] processAlgorithm(@NonNull String algorithm, byte @NonNull [] plainBytes) {
         try {
             MessageDigest digest = MessageDigest.getInstance(algorithm);
             digest.update(plainBytes);
-            return HexUtils.ofHex(digest.digest());
+            return digest.digest();
         } catch (NoSuchAlgorithmException e) {
             throw new NoSuchElementException("Algorithm " + algorithm + " not found.", e);
         }

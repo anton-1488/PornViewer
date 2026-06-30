@@ -1,10 +1,10 @@
 package com.plovdev.pornviewer.http.providers;
 
-import com.plovdev.pornviewer.core.http.HttpMethod;
-import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.core.exceptions.NoInternetException;
 import com.plovdev.pornviewer.core.exceptions.RequestProviderException;
 import com.plovdev.pornviewer.core.exceptions.UnsuccessResponseException;
+import com.plovdev.pornviewer.core.http.HttpMethod;
+import com.plovdev.pornviewer.core.http.PornRequest;
 import okhttp3.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -43,7 +43,7 @@ public class OkHttpRequestProvider implements PornRequestProvider {
             if (response.isSuccessful()) {
                 return responseBody;
             } else {
-                throw new UnsuccessResponseException("Non success 'get' response", responseBody);
+                throw new UnsuccessResponseException("Non success 'get' response", responseBody, response.code());
             }
         } catch (UnknownHostException e) {
             throw new NoInternetException(ERR_MESSAGE, e);

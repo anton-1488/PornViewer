@@ -28,7 +28,7 @@
     <licenses>
         <license>
             <name>The Unlicense</name>
-            <url>http://unlicense.org</url>
+            <url>https://unlicense.org</url>
         </license>
     </licenses>
 
@@ -52,7 +52,7 @@
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <pvva.version>1.4</pvva.version>
+        <pvva.version>1.7</pvva.version>
         <eda.version>1.1</eda.version>
 
         <caffeine.version>3.2.4</caffeine.version>
@@ -126,6 +126,31 @@
                 <configuration>
                     <release>25</release>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>oss</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

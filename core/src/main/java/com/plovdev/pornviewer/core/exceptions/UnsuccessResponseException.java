@@ -2,6 +2,7 @@ package com.plovdev.pornviewer.core.exceptions;
 
 public class UnsuccessResponseException extends RequestProviderException {
     private String response;
+    private int code;
 
     public UnsuccessResponseException() {
     }
@@ -15,6 +16,12 @@ public class UnsuccessResponseException extends RequestProviderException {
         this.response = response;
     }
 
+    public UnsuccessResponseException(String s, String response, int code) {
+        super(s);
+        this.response = response;
+        this.code = code;
+    }
+
     public UnsuccessResponseException(String message, Throwable cause) {
         super(message, cause);
     }
@@ -25,5 +32,9 @@ public class UnsuccessResponseException extends RequestProviderException {
 
     public String getResponse() {
         return response;
+    }
+
+    public int getCode() {
+        return code;
     }
 }

@@ -10,6 +10,9 @@ testdata/
 *.iml
 *.ipr
 
+**/dependency-reduced-pom.xml
+**/.flattened-pom.xml
+
 **/.env
 
 .mvn/
