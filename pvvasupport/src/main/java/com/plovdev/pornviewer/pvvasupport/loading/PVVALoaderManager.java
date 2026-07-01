@@ -2,8 +2,9 @@ package com.plovdev.pornviewer.pvvasupport.loading;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.plovdev.pornviewer.core.models.adapter.PluginInfo;
 import com.plovdev.pornviewer.core.models.adapter.PluginsListItem;
-import com.plovdev.pornviewer.database.tables.PVVAProvider;
+import com.plovdev.pornviewer.database.tables.PluginsProvider;
 import com.plovdev.pornviewer.services.files.PVFileManager;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -31,7 +32,7 @@ public final class PVVALoaderManager {
     }
 
     private static PVVAHost directlyLoadHost(String pluginId) {
-        PluginsListItem info = PVVAProvider.getAdapterById(pluginId);
+        PluginInfo info = PluginsProvider.getAdapterById(pluginId);
         return PLUGIN_LOADER.loadFromDisk(pluginId, PVFileManager.getPvAdapterPath(info.systemPluginId()));
     }
 

@@ -16,33 +16,35 @@ public class VerifiedHashes {
     private static final Logger log = LoggerFactory.getLogger(VerifiedHashes.class);
     private static Connection con;
 
+    private static final String CREATE_IF_NOT_EXISTS = "CREATE TABLE IF NOT EXISTS verified_hashes (hash_id TEXT NOT NULL, file_type TEXT NOT NULL, file_path TEXT NOT NULL, file_hash TEXT NOT NULL, UNIQUE(hash_id, file_path))";
+    private static final String DROP_TABLE = "DROP TABLE verified_hashes";
+    private static final String SELECT_ALL = "SELECT * FROM verified_hashes";
+    private static final String SELECT_WHERE_FILE_TYPE = "SELECT * FROM verified_hashes WHERE file_type = ?";
+    private static final String INSERT_OR_REPLACE = "INSERT OR REPLACE INTO verified_hashes (hash_id, file_type, file_path, file_hash) VALUES (?,?,?,?)";
+    private static final String DELETE_WHERE_HASH_ID = "DELETE FROM verified_hashes WHERE hash_id = ?";
+    private static final String SELECT_WHERE_HASH_ID = "SELECT * FROM verified_hashes WHERE hash_id = ?";
+
     static {
         con = SecureDB.initCipherer();
         createTable();
     }
 
     public static void createTable() {
-        String sql = """
-                CREATE TABLE IF NOT EXISTS verified_hashes (
-                hash_id TEXT NOT NULL,
-                file_type TEXT NOT NULL,
-                file_path TEXT NOT NULL,
-                file_hash TEXT NOT NULL,
-                UNIQUE(hash_id, file_path)
-                )""";
         try (Statement statement = con.createStatement()) {
-            statement.executeUpdate(sql);
+            statement.executeUpdate(CREATE_IF_NOT_EXISTS);
         } catch (SQLException e) {
             log.error("Error to create verified hashes table: ", e);
+            throw new PVDataBaseException("Error to create verified hashes table");
         }
     }
 
     public static void dropTable() {
         checkConnection();
         try (Statement stt = con.createStatement()) {
-            stt.executeUpdate("DROP TABLE verified_hashes");
+            stt.executeUpdate(DROP_TABLE);
         } catch (SQLException e) {
             log.error("Error to drop verified hashes table: ", e);
+            throw new PVDataBaseException("Error to drop verified hashes table");
         }
     }
 
@@ -51,7 +53,7 @@ public class VerifiedHashes {
         List<VerifiedHash> verifiedHashes = new ArrayList<>();
 
         try (Statement selectAll = con.createStatement();
-             ResultSet verifiedHashesSet = selectAll.executeQuery("SELECT * FROM verified_hashes")) {
+             ResultSet verifiedHashesSet = selectAll.executeQuery(SELECT_ALL)) {
             while (verifiedHashesSet.next()) {
                 verifiedHashes.add(new VerifiedHash(
                         verifiedHashesSet.getString("hash_id"),
@@ -70,7 +72,7 @@ public class VerifiedHashes {
         checkConnection();
         List<VerifiedHash> verifiedHashes = new ArrayList<>();
 
-        try (PreparedStatement select = con.prepareStatement("SELECT * FROM verified_hashes WHERE file_type = ?")) {
+        try (PreparedStatement select = con.prepareStatement(SELECT_WHERE_FILE_TYPE)) {
             select.setString(1, type.name());
             try (ResultSet verifiedHashesSet = select.executeQuery()) {
                 while (verifiedHashesSet.next()) {
@@ -91,7 +93,7 @@ public class VerifiedHashes {
     public synchronized static void addVerifiedHash(@NonNull VerifiedHash hash) {
         checkConnection();
 
-        try (PreparedStatement insert = con.prepareStatement("INSERT OR REPLACE INTO verified_hashes (hash_id, file_type, file_path, file_hash) VALUES (?,?,?,?)")) {
+        try (PreparedStatement insert = con.prepareStatement(INSERT_OR_REPLACE)) {
             insert.setString(1, hash.hashId());
             insert.setString(2, hash.fileType().name());
             insert.setString(3, hash.filePath().toString());
@@ -106,7 +108,7 @@ public class VerifiedHashes {
     public synchronized static void removeVerifiedHash(String hashId) {
         checkConnection();
 
-        try (PreparedStatement insert = con.prepareStatement("DELETE FROM verified_hashes WHERE hash_id = ?")) {
+        try (PreparedStatement insert = con.prepareStatement(DELETE_WHERE_HASH_ID)) {
             insert.setString(1, hashId);
             insert.executeUpdate();
         } catch (SQLException e) {
@@ -117,7 +119,7 @@ public class VerifiedHashes {
     public static @NonNull VerifiedHash getVerifiedHash(String hashId) {
         checkConnection();
 
-        try (PreparedStatement select = con.prepareStatement("SELECT * FROM verified_hashes WHERE hash_id = ?")) {
+        try (PreparedStatement select = con.prepareStatement(SELECT_WHERE_HASH_ID)) {
             select.setString(1, hashId);
             try (ResultSet verifiedHashesSet = select.executeQuery()) {
                 if (verifiedHashesSet.next()) {
