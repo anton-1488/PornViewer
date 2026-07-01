@@ -2,23 +2,30 @@ package com.plovdev.pornviewer.pvvasupport;
 
 import com.plovdev.pornviewer.core.models.app.VerifiedHash;
 import com.plovdev.pornviewer.database.tables.VerifiedHashes;
+import com.plovdev.pornviewer.pvvasupport.exceptions.PluginSavingException;
 import com.plovdev.pornviewer.security.DigestUtils;
+import com.plovdev.pornviewer.services.files.PVFileManager;
+import org.jspecify.annotations.NonNull;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class PluginsUtils {
     private PluginsUtils() {
     }
 
-    public static void saveDownloadedPlugin(String pluginId, boolean hasSign, byte[] pluginData) {
-        if (hasSign) {
-            int pluginWithoutSignLength = pluginData.length - 64;
-            byte[] pluginWithoutSign = new byte[pluginWithoutSignLength];
-            System.arraycopy(pluginData, 0, pluginWithoutSign, 0, pluginWithoutSignLength);
-            pluginData = pluginWithoutSign;
+    public static void saveDownloadedPlugin(String pluginId, byte @NonNull [] pluginData) {
+        if (pluginData.length < 24) {
+            throw new IllegalArgumentException("Plugin data too short: " + pluginData.length);
         }
 
-        String pluginPath
-        VerifiedHashes.addVerifiedHash(new VerifiedHash(pluginId, VerifiedHash.HashedFileType.PLUGIN, Path.of(""), DigestUtils.sha256(pluginData)));
+        try {
+            Path pluginPath = PVFileManager.getPvAdapterPath(pluginId);
+            Files.write(pluginPath, pluginData);
+            VerifiedHashes.addVerifiedHash(new VerifiedHash(pluginId, VerifiedHash.HashedFileType.PLUGIN, pluginPath, DigestUtils.sha256(pluginData)));
+        } catch (IOException e) {
+            throw new PluginSavingException(e);
+        }
     }
 }

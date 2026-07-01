@@ -34,7 +34,7 @@ public class PluginLoaderImpl implements PluginLoader {
                 PluginJson pluginJson = host.pluginJson();
                 checkLoadedHost(new SignaturePluginVerifier(pluginJson.developerId()), host, pluginData);
 
-                PluginsUtils.saveDownloadedPlugin(pluginId, host.header().isHasSign(), pluginData);
+                PluginsUtils.saveDownloadedPlugin(pluginId, pluginData);
                 return host;
             }
         } catch (Exception e) {
@@ -49,7 +49,7 @@ public class PluginLoaderImpl implements PluginLoader {
     public PVVAHost loadFromDisk(String pluginId, Path path) {
         try (PVVAReader reader = new DefaultPVVAReader(path)) {
             PVVAHost host = reader.readVideoAdapter();
-            PluginVerifier verifier = new HashPluginVerifier(host.getSystemPluginId(), host.header().isHasSign());
+            PluginVerifier verifier = new HashPluginVerifier(host.getSystemPluginId());
             return checkLoadedHost(verifier, host, reader.getReadData().array());
         } catch (IOException e) {
             throw new PluginLoadingException("Error to load pvva plugin", e);
