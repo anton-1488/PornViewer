@@ -1,6 +1,6 @@
 package com.plovdev.pornviewer.http;
 
-import com.google.gson.Gson;
+import com.plovdev.pornviewer.core.events.DownloadingType;
 import com.plovdev.pornviewer.core.events.GlobalEventManager;
 import com.plovdev.pornviewer.core.events.VideoDownloadingChannel;
 import com.plovdev.pornviewer.core.exceptions.VideoDownloadingError;
@@ -32,7 +32,6 @@ import static com.plovdev.pornviewer.pvvfsupport.videomodel.VideoChunk.PLAIN_CHU
 
 public class PornDownloader {
     private static final Logger log = LoggerFactory.getLogger(PornDownloader.class);
-    private static final Gson GSON = new Gson();
 
     private final PornRequest request;
     private final PornRequestProvider requestProvider;
@@ -46,6 +45,7 @@ public class PornDownloader {
         return CompletableFuture.supplyAsync(() -> {
             // hashing file name
             String hashedName = DigestUtils.sha256(info.videoUri().toString());
+            String videoId = info.videoId();
             Path output = PVFileManager.getPvDownloadsPath().resolve(Path.of(hashedName));
 
             // open pvvf writer to write data
@@ -58,14 +58,14 @@ public class PornDownloader {
                 CryptoEngine engine = new CryptoEngine(Cipher.ENCRYPT_MODE, PVSecurityManager.getPassword(), header.baseNonce());
 
                 // step 3 - load, encrypt and save video chunks:
-                loadAndSaveVideoChunks(writer, engine);
+                loadAndSaveVideoChunks(writer, videoId, engine);
 
                 // step 4 - write pvvf metadata and close writer:
                 prepareAndWriteMetadata(writer, info, videoPreview);
-                GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(plainVideoSize, VideoDownloadingChannel.DownloadedType.END));
+                GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(videoId, plainVideoSize, DownloadingType.END));
                 return new DownloadedVideoInfo(info.title(), info.description(), info.videoUri().toString(), info.timecodes(), info.tagLinks().keySet().stream().toList(), info.videoDuration());
             } catch (Exception e) {
-                GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(e, VideoDownloadingChannel.DownloadedType.ERROR));
+                GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(videoId, e, DownloadingType.ERROR));
                 log.error("Error to download video: ", e);
                 throw new VideoDownloadingError("Error to download video: ", e);
             }
@@ -81,7 +81,7 @@ public class PornDownloader {
         return header;
     }
 
-    private void loadAndSaveVideoChunks(PVVFWriter writer, CryptoEngine engine) {
+    private void loadAndSaveVideoChunks(PVVFWriter writer, String videoId, CryptoEngine engine) {
         try {
             try (InputStream readStream = requestProvider.requestStream(request)) {
                 byte[] chunkBuffer = new byte[PLAIN_CHUNK_SIZE];
@@ -97,7 +97,7 @@ public class PornDownloader {
                     }
                     byte[] encryptedWithTag = engine.processChunk(chunkIndex, plainChunk);
                     writer.appendVideoChunk(VideoChunk.ofEncryptedWithTag(chunkIndex, encryptedWithTag));
-                    GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(totalReaded, VideoDownloadingChannel.DownloadedType.PROCESS));
+                    GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(videoId, totalReaded, DownloadingType.PROCESS));
                     totalReaded += readed;
                     chunkIndex++;
                 }

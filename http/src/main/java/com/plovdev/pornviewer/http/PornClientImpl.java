@@ -1,5 +1,6 @@
 package com.plovdev.pornviewer.http;
 
+import com.plovdev.pornviewer.core.events.DownloadingType;
 import com.plovdev.pornviewer.core.events.GlobalEventManager;
 import com.plovdev.pornviewer.core.events.VideoDownloadingChannel;
 import com.plovdev.pornviewer.core.http.PornRequest;
@@ -11,8 +12,8 @@ import com.plovdev.pornviewer.database.tables.UserSettingsManager;
 import com.plovdev.pornviewer.http.providers.HttpClientRequestProvider;
 import com.plovdev.pornviewer.http.providers.OkHttpRequestProvider;
 import com.plovdev.pornviewer.http.providers.PornRequestProvider;
-import com.plovdev.pornviewer.pvvasupport.loading.PVVALoaderManager;
 import com.plovdev.pornviewer.pvvasupport.exceptions.NoSuchRequestProviderException;
+import com.plovdev.pornviewer.pvvasupport.loading.PVVALoaderManager;
 import com.plovdev.pornviewer.pvvasupport.parser.ScriptEngineExecutor;
 import com.plovdev.pornviewer.services.http.UriBuilder;
 import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
@@ -204,10 +205,10 @@ public final class PornClientImpl implements PornClient {
     }
 
     @Override
-    public @Nullable CompletableFuture<DownloadedVideoInfo> startDownload(URI videoUri, FullVideoInfo info) {
+    public @Nullable CompletableFuture<DownloadedVideoInfo> startDownload(URI videoUri, @NonNull FullVideoInfo info) {
         log.info("Start loading to file.");
         long videoSize = requestProvider.checkContentLength(head(videoUri));
-        GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(videoSize, VideoDownloadingChannel.DownloadedType.START));
+        GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(info.videoId(), videoSize, DownloadingType.START));
 
         PornDownloader downloader = new PornDownloader(requestProvider, get(videoUri));
         return downloader.startDownload(videoSize, info, requestProvider.executeRaw(get(info.previewUrl())));

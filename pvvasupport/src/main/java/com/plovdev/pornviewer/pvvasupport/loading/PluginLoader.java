@@ -1,6 +1,6 @@
 package com.plovdev.pornviewer.pvvasupport.loading;
 
-import com.plovdev.pornviewer.pvvasupport.exceptions.AdapterLoadingException;
+import com.plovdev.pornviewer.pvvasupport.exceptions.PluginLoadingException;
 import com.plovdev.pornviewer.pvvasupport.exceptions.PluginNotVerifiedException;
 import org.plovdev.pvva.models.PVVAHost;
 
@@ -19,19 +19,21 @@ public interface PluginLoader {
      * Загружает плагин с сервера. Верифицирует плагин по подписи.
      *
      * @param pluginUri путь для загрузки плагина.
+     * @param pluginId  уникальный id плагина которое может пригодится при загрузке.
      * @return загруженный из интернета плагин.
      * @throws PluginNotVerifiedException если плагин не был успешно верифицирован.
-     * @throws AdapterLoadingException    если произошла какая то ошибка при загрузке.
+     * @throws PluginLoadingException     если произошла какая то ошибка при загрузке.
      */
-    PVVAHost loadFromServer(URI pluginUri);
+    PVVAHost loadFromServer(String pluginId, URI pluginUri);
 
     /**
      * Загружает плагин с локального диска. Верифицирует плагин по его хешу.
      *
-     * @param path путь для загрузки плагина.
+     * @param path     путь для загрузки плагина.
+     * @param pluginId уникальный id плагина которое может пригодится при загрузке.
      * @return загруженный с диска плагин.
      * @throws PluginNotVerifiedException если плагин не был успешно верифицирован.
-     * @throws AdapterLoadingException    если произошла какая то ошибка при загрузке.
+     * @throws PluginLoadingException     если произошла какая то ошибка при загрузке.
      */
-    PVVAHost loadFromDisk(Path path);
+    PVVAHost loadFromDisk(String pluginId, Path path);
 }

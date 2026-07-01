@@ -2,25 +2,25 @@ package com.plovdev.pornviewer.core.events;
 
 import org.plovdev.eda.ChannelEvent;
 
-public class VideoDownloadingChannel extends ChannelEvent {
-    public static final String CHANNEL = "video.download";
+public class PluginDownloadingChannel extends ChannelEvent {
+    public static final String CHANNEL = "pvva.download";
 
-    private final String videoId;
+    private final String pluginId;
     private final DownloadingType type;
     private final long bytes;
     private final Exception error;
 
-    public VideoDownloadingChannel(String videoId, long bytes, DownloadingType type) {
+    public PluginDownloadingChannel(String pluginId, long bytes, DownloadingType type) {
         super(CHANNEL);
-        this.videoId = videoId;
+        this.pluginId = pluginId;
         this.type = type;
         this.bytes = bytes;
         error = null;
     }
 
-    public VideoDownloadingChannel(String videoId, Exception e, DownloadingType type) {
+    public PluginDownloadingChannel(String pluginId, Exception e, DownloadingType type) {
         super(CHANNEL);
-        this.videoId = videoId;
+        this.pluginId = pluginId;
         this.type = type;
         this.error = e;
         bytes = -1L;
@@ -40,6 +40,6 @@ public class VideoDownloadingChannel extends ChannelEvent {
 
     @Override
     public String toString() {
-        return String.format("VIDEO DOWNLOADING EVENT: [channel: %s, bytes: %d, type: %s]", getChannel(), bytes, type.name());
+        return String.format("PLUGIN DOWNLOADING EVENT: [channel: %s, bytes: %d, type: %s]", getChannel(), bytes, type.name());
     }
 }

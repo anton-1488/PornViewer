@@ -1,12 +1,13 @@
 package com.plovdev.pornviewer.core.http;
 
-import com.plovdev.pornviewer.core.utils.Globals;
 import com.plovdev.pornviewer.core.exceptions.PornViewerException;
 import com.plovdev.pornviewer.core.exceptions.RequestProviderException;
 import com.plovdev.pornviewer.core.exceptions.UnsuccessResponseException;
+import com.plovdev.pornviewer.core.utils.Globals;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -39,9 +40,25 @@ public final class InternalHttpClient {
             int code = response.statusCode();
             String body = response.body();
             if (code == 200) {
-                return response.body();
+                return body;
             } else {
                 throw new UnsuccessResponseException(String.format("Internal server return unsuccess response(code: %d): %s", code, body));
+            }
+        } catch (IOException e) {
+            throw new RequestProviderException("IO error to communicate with server", e);
+        } catch (IllegalArgumentException | InterruptedException e) {
+            throw new PornViewerException("Can't execute to internal server", e);
+        }
+    }
+
+    public static InputStream executeStream(PornRequest request) {
+        try {
+            HttpResponse<InputStream> response = client.send(cofigureRequest(request), HttpResponse.BodyHandlers.ofInputStream());
+            int code = response.statusCode();
+            if (code == 200) {
+                return response.body();
+            } else {
+                throw new UnsuccessResponseException(String.format("Internal server return unsuccess response for raw request(code: %d)", code));
             }
         } catch (IOException e) {
             throw new RequestProviderException("IO error to communicate with server", e);
