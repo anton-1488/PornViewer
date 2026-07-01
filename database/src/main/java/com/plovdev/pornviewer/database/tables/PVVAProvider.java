@@ -1,6 +1,7 @@
 package com.plovdev.pornviewer.database.tables;
 
-import com.plovdev.pornviewer.core.models.adapter.AdapterInfo;
+import com.plovdev.pornviewer.core.models.adapter.PluginInfo;
+import com.plovdev.pornviewer.core.models.adapter.PluginsListItem;
 import com.plovdev.pornviewer.database.SecureDB;
 import com.plovdev.pornviewer.database.exceptions.PVDataBaseException;
 import com.plovdev.pornviewer.core.exceptions.PornViewerException;
@@ -60,28 +61,14 @@ public class PVVAProvider {
         }
     }
 
-    public static @NonNull List<AdapterInfo> getAllAdapters() {
+    public static @NonNull List<PluginsListItem> getAllAdapters() {
         checkConnection();
 
-        List<AdapterInfo> adapters = new ArrayList<>();
+        List<PluginsListItem> adapters = new ArrayList<>();
         try (Statement statement = con.createStatement();
              ResultSet set = statement.executeQuery("SELECT * FROM pvva_adapters")) {
             while (set.next()) {
-                adapters.add(new AdapterInfo(
-                        set.getString("pluginId"),
-                        set.getInt("minAppVersion"),
-                        set.getInt("maxAppVersion"),
-                        set.getString("name"),
-                        set.getString("version"),
-                        set.getString("description"),
-                        set.getString("updateUrl"),
-                        set.getBoolean("signRequired"),
-                        set.getString("author"),
-                        set.getString("authorPage"),
-                        set.getString("licenseUrl"),
-                        set.getString("homePage"),
-                        set.getString("pathName")
-                ));
+                adapters.add(null);
             }
         } catch (SQLException e) {
             log.error("Error to select all adapters: ", e);
@@ -89,26 +76,26 @@ public class PVVAProvider {
         return adapters;
     }
 
-    public synchronized static void addAdapter(@NonNull AdapterInfo info) {
+    public synchronized static void addAdapter(@NonNull PluginsListItem info) {
         checkConnection();
         String sql = "INSERT OR REPLACE INTO pvva_adapters (" +
                 "pluginId, minAppVersion, maxAppVersion, name, version, description, " +
                 "updateUrl, signRequired, author, authorPage, licenseUrl, homePage, pathName" +
                 ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stt = con.prepareStatement(sql)) {
-            stt.setString(1, info.pluginId());
-            stt.setInt(2, info.minVers());
-            stt.setInt(3, info.maxVers());
-            stt.setString(4, info.name());
-            stt.setString(5, info.version());
-            stt.setString(6, info.descr());
-            stt.setString(7, info.updateUrl());
-            stt.setBoolean(8, info.signRequeired());
-            stt.setString(9, info.author());
-            stt.setString(10, info.authorPage());
-            stt.setString(11, info.licenseUrl());
-            stt.setString(12, info.homepage());
-            stt.setString(13, info.pathName());
+//            stt.setString(1, info.pluginId());
+//            stt.setInt(2, info.minVers());
+//            stt.setInt(3, info.maxVers());
+//            stt.setString(4, info.name());
+//            stt.setString(5, info.version());
+//            stt.setString(6, info.descr());
+//            stt.setString(7, info.updateUrl());
+//            stt.setBoolean(8, info.signRequeired());
+//            stt.setString(9, info.author());
+//            stt.setString(10, info.authorPage());
+//            stt.setString(11, info.licenseUrl());
+//            stt.setString(12, info.homepage());
+//            stt.setString(13, info.pathName());
             stt.executeUpdate();
         } catch (SQLException e) {
             log.error("Error to add adapter: {} - {}", info.pluginId(), e.getMessage());
@@ -126,28 +113,14 @@ public class PVVAProvider {
         }
     }
 
-    public static @NonNull AdapterInfo getAdapterById(String pluginId) {
+    public static @NonNull PluginsListItem getAdapterById(String pluginId) {
         checkConnection();
 
         try (PreparedStatement stt = con.prepareStatement("SELECT * FROM pvva_adapters WHERE pluginId = ?")) {
             stt.setString(1, pluginId);
             try (ResultSet set = stt.executeQuery()) {
                 if (set.next()) {
-                    return new AdapterInfo(
-                            set.getString("pluginId"),
-                            set.getInt("minAppVersion"),
-                            set.getInt("maxAppVersion"),
-                            set.getString("name"),
-                            set.getString("version"),
-                            set.getString("description"),
-                            set.getString("updateUrl"),
-                            set.getBoolean("signRequired"),
-                            set.getString("author"),
-                            set.getString("authorPage"),
-                            set.getString("licenseUrl"),
-                            set.getString("homePage"),
-                            set.getString("pathName")
-                    );
+                    return null;
                 }
             }
         } catch (SQLException e) {
@@ -156,27 +129,13 @@ public class PVVAProvider {
         throw new NoSuchElementException("Adapter with id(" + pluginId + ") not found.");
     }
 
-    public static @NonNull AdapterInfo loadAdapter(Path path) {
+    public static @NonNull PluginsListItem loadAdapter(Path path) {
         try (PVVAReader reader = new DefaultPVVAReader(path)) {
             PVVAHost host = reader.readVideoAdapter();
             PVVAHeader header = host.header();
             PluginJson pluginJson = host.pluginJson();
 
-            AdapterInfo info = new AdapterInfo(
-                    header.getPluginId(),
-                    header.getMinAppVersion(),
-                    header.getMaxAppVersion(),
-                    pluginJson.title(),
-                    pluginJson.version(),
-                    pluginJson.description().orElse(null),
-                    pluginJson.autoUpdateUrl().orElse(null),
-                    true,
-                    pluginJson.author().orElse(null),
-                    pluginJson.authorPage().orElse(null),
-                    pluginJson.licenseUrl().orElse("https://unlicense.org"),
-                    pluginJson.homepage().orElse(null),
-                    path.toFile().getName()
-            );
+            PluginsListItem info = null;
             addAdapter(info);
             return info;
         } catch (Exception e) {

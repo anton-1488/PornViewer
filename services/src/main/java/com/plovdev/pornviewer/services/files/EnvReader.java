@@ -1,6 +1,6 @@
 package com.plovdev.pornviewer.services.files;
 
-import com.plovdev.pornviewer.core.models.app .AppInfo;
+import com.plovdev.pornviewer.core.models.app.AppInfo;
 import com.plovdev.pornviewer.exceptions.EnvLoadException;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
@@ -32,14 +32,16 @@ public class EnvReader {
     }
 
     @Contract(" -> new")
-    public @NonNull AppInfo loadAppInfo() {
-        String appName = getEnv("APP_NAME");
-        String version = getEnv("VERSION");
-        String pvId = getEnv("PV_ID");
-        String buildId = getEnv("BUILD_ID");
-        LocalDate buildDate = LocalDate.parse(getEnv("BUILD_DATE"), AppInfo.BUILD_DATE_FORMATTER_FROMSTR);
-        String vendor = getEnv("VEDNOR");
-        String copyright = getEnv("COPYRIGHT");
+    public static @NonNull AppInfo loadAppInfo() {
+        EnvReader reader = new EnvReader();
+
+        String appName = reader.getEnv("APP_NAME");
+        String version = reader.getEnv("VERSION");
+        String pvId = reader.getEnv("PV_ID");
+        String buildId = reader.getEnv("BUILD_ID");
+        LocalDate buildDate = LocalDate.parse(reader.getEnv("BUILD_DATE"), AppInfo.BUILD_DATE_FORMATTER_FROMSTR);
+        String vendor = reader.getEnv("VEDNOR");
+        String copyright = reader.getEnv("COPYRIGHT");
 
         return new AppInfo(appName, version, pvId, buildId, buildDate, vendor, copyright);
     }

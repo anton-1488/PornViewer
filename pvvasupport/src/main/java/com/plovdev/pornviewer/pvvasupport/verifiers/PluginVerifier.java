@@ -10,7 +10,7 @@ public interface PluginVerifier {
      * @param pluginData входные данные самого плагина.
      * @return валиден ли плагин или нет. Всегда возвращает true если проверка отключена.
      */
-    default boolean checkPluginIdNeed(byte[] pluginData) {
+    default boolean checkPluginIfNeed(byte[] pluginData) {
         // TODO: request from settings if need check plugins.
         boolean needCheck = true;
         //noinspection ConstantValue

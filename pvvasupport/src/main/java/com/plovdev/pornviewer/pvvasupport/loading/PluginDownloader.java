@@ -6,15 +6,19 @@ import com.plovdev.pornviewer.core.events.PluginDownloadingChannel;
 import com.plovdev.pornviewer.core.http.InternalHttpClient;
 import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.pvvasupport.exceptions.PluginLoadingException;
+import org.jspecify.annotations.NonNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 
-public class PluginDownloader {
+public final class PluginDownloader {
     private static final int PLUGIN_READ_CHUNK = 1024;
 
-    public byte[] downloadPlugin(String pluginId, URI pluginUri) {
+    private PluginDownloader() {
+    }
+
+    public static byte @NonNull [] downloadPlugin(String pluginId, URI pluginUri) {
         try (InputStream pluginStream = InternalHttpClient.executeStream(PornRequest.get(pluginUri));
              ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             byte[] chunkBuffer = new byte[PLUGIN_READ_CHUNK];

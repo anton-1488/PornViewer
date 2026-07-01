@@ -10,20 +10,20 @@ import java.nio.file.Path;
 public record PVFileManager() {
     private static final FileNameMap MIME_MAP = URLConnection.getFileNameMap();
     public static final String PORN_VIEWER = "PornViewer";
-    private static final String PV_PLUGINS_PATH = "plugins";
+
     private static final Path PV_BASE_PATH = Path.of(System.getProperty("user.home"), ".PornViewer");
-    private static final Path PV_DOWNLOADS = Path.of("downloads");
-    private static final Path PV_SYSTEM = Path.of("system");
-    private static final Path PV_DB_PATH = Path.of("pornviewer.db");
+    private static final Path PV_PLUGINS_PATH = PV_BASE_PATH.resolve("plugins");
+    private static final Path PV_DOWNLOADS = PV_BASE_PATH.resolve("downloads");
+    private static final Path PV_SYSTEM = PV_BASE_PATH.resolve("system");
+    private static final Path PV_DB_PATH = PV_SYSTEM.resolve("f9dea68a12f99af0c613e4fdb59756d8f28dd78a608459a775fde1c576bfcfde");
 
     @NotNull
     public static Path getPVBasePath() {
         return PV_BASE_PATH;
     }
 
-    public static @NonNull Path getPvAdapterPath(String pathName) {
-        String basePath = getPVBasePath().toString();
-        return Path.of(basePath, PV_PLUGINS_PATH, pathName);
+    public static @NonNull Path getPvAdapterPath(String systemPluginId) {
+        return PV_PLUGINS_PATH.resolve(systemPluginId + ".pvva");
     }
 
     @NotNull
