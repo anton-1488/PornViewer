@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 public final class ScriptEngineExecutor {
-    private static final Globals GLOBALS = new Globals();
     private static final Logger log = LoggerFactory.getLogger(ScriptEngineExecutor.class);
+    private static final Globals GLOBALS = new Globals();
 
     static {
         GLOBALS.load(new JseBaseLib());

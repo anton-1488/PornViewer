@@ -63,7 +63,7 @@ public class PornDownloader {
                 // step 4 - write pvvf metadata and close writer:
                 prepareAndWriteMetadata(writer, info, videoPreview);
                 GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(videoId, plainVideoSize, DownloadingType.END));
-                return new DownloadedVideoInfo(info.title(), info.description(), info.videoUri().toString(), info.timecodes(), info.tagLinks().keySet().stream().toList(), info.videoDuration());
+                return new DownloadedVideoInfo(videoPreview, info.title(), info.description(), info.videoUri().toString(), info.timecodes(), info.tagLinks().keySet().stream().toList(), info.videoDuration());
             } catch (Exception e) {
                 GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(videoId, e, DownloadingType.ERROR));
                 log.error("Error to download video: ", e);

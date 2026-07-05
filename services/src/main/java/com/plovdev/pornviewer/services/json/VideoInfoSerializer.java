@@ -34,11 +34,13 @@ public class VideoInfoSerializer {
         infoObject.add("tags", tagsArray);
 
         JsonArray timecodesArray = new JsonArray();
-        for (Timecode timecode : timecodes) {
-            JsonObject timecodeObj = new JsonObject();
-            timecodeObj.addProperty("time", timecode.time().toString());
-            timecodeObj.addProperty("text", timecode.text());
-            timecodesArray.add(timecodeObj);
+        if (timecodes != null) {
+            for (Timecode timecode : timecodes) {
+                JsonObject timecodeObj = new JsonObject();
+                timecodeObj.addProperty("time", timecode.time().toString());
+                timecodeObj.addProperty("text", timecode.text());
+                timecodesArray.add(timecodeObj);
+            }
         }
         infoObject.add("timecodes", timecodesArray);
 

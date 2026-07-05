@@ -28,17 +28,17 @@ public record PVFileManager() {
 
     @NotNull
     public static Path getPvDownloadsPath() {
-        return Path.of(getPVBasePath().toString(), PV_DOWNLOADS.toString());
+        return PV_DOWNLOADS;
     }
 
     @NotNull
     public static Path getPvSystemPath() {
-        return Path.of(getPVBasePath().toString(), PV_SYSTEM.toString());
+        return PV_SYSTEM;
     }
 
     @NotNull
     public static Path getPvDbPath() {
-        return Path.of(getPvSystemPath().toString(), PV_DB_PATH.toString());
+        return PV_DB_PATH;
     }
 
     @NotNull
