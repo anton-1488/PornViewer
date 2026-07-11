@@ -4,7 +4,7 @@ import com.plovdev.pornviewer.core.models.porn.CategoryInfo;
 import com.plovdev.pornviewer.core.models.porn.FullVideoInfo;
 import com.plovdev.pornviewer.core.models.porn.ModelInfo;
 import com.plovdev.pornviewer.core.models.porn.ShortVideoInfo;
-import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
+import com.plovdev.pornviewer.core.models.video.DownloadedVideoInfo;
 
 import java.net.Proxy;
 import java.net.URI;

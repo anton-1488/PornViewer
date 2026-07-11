@@ -47,7 +47,7 @@ public class VideoInfoSerializer {
         return JSONSerializer.GSON.toJson(infoObject);
     }
 
-    public static DownloadedVideoInfo deserializeInfo(String json) {
-        return JSONSerializer.GSON.fromJson(json, DownloadedVideoInfo.class);
+    public static com.plovdev.pornviewer.core.models.video.DownloadedVideoInfo deserializeInfo(String json) {
+        return JSONSerializer.GSON.fromJson(json, com.plovdev.pornviewer.core.models.video.DownloadedVideoInfo.class);
     }
 }

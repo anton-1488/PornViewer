@@ -8,7 +8,7 @@ import com.plovdev.pornviewer.core.models.porn.FullVideoInfo;
 import com.plovdev.pornviewer.core.models.video.VideoQuality;
 import com.plovdev.pornviewer.http.PornClient;
 import com.plovdev.pornviewer.http.PornClientImpl;
-import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
+import com.plovdev.pornviewer.core.models.video.DownloadedVideoInfo;
 import org.jspecify.annotations.NonNull;
 import org.plovdev.eda.reflect.Subscribe;
 import org.plovdev.pvva.read.DefaultPVVAReader;

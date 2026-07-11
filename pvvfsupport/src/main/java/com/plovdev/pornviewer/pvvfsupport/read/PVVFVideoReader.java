@@ -6,7 +6,7 @@ import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoMetadata;
 import com.plovdev.pornviewer.security.CryptoEngine;
 import com.plovdev.pornviewer.security.PVSecurityManager;
 import com.plovdev.pornviewer.security.RegisteredSecurityModule;
-import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
+import com.plovdev.pornviewer.core.models.video.DownloadedVideoInfo;
 import com.plovdev.pornviewer.services.json.VideoInfoSerializer;
 import org.jetbrains.annotations.NotNull;
 

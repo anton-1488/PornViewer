@@ -9,9 +9,8 @@ import java.nio.file.Path;
 
 public record PVFileManager() {
     private static final FileNameMap MIME_MAP = URLConnection.getFileNameMap();
-    public static final String PORN_VIEWER = "PornViewer";
 
-    private static final Path PV_BASE_PATH = Path.of(System.getProperty("user.home"), ".PornViewer");
+    private static final Path PV_BASE_PATH = Path.of(System.getProperty("pv.home", System.getProperty("user.home")), ".PornViewer");
     private static final Path PV_PLUGINS_PATH = PV_BASE_PATH.resolve("plugins");
     private static final Path PV_DOWNLOADS = PV_BASE_PATH.resolve("downloads");
     private static final Path PV_SYSTEM = PV_BASE_PATH.resolve("system");

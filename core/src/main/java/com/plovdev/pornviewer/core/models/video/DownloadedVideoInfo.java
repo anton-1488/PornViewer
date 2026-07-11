@@ -1,11 +1,10 @@
-package com.plovdev.pornviewer.services.json;
+package com.plovdev.pornviewer.core.models.video;
 
 import com.google.gson.annotations.SerializedName;
 import com.plovdev.pornviewer.core.models.porn.Timecode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 
@@ -52,10 +51,6 @@ public class DownloadedVideoInfo {
     }
 
     public DownloadedVideoInfo() {
-    }
-
-    public static DownloadedVideoInfo ofInfo(String json) {
-        return VideoInfoSerializer.deserializeInfo(json);
     }
 
     public byte[] getPreviewBytes() {
@@ -112,10 +107,6 @@ public class DownloadedVideoInfo {
 
     public void setTotalDuration(Duration totalDuration) {
         this.totalDuration = totalDuration;
-    }
-
-    public String formJson() {
-        return VideoInfoSerializer.serializeInfo(title, description, URI.create(url), totalDuration, tags, timecodes);
     }
 
     @Override

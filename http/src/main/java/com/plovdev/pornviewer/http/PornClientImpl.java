@@ -16,7 +16,7 @@ import com.plovdev.pornviewer.pvvasupport.exceptions.NoSuchRequestProviderExcept
 import com.plovdev.pornviewer.pvvasupport.loading.PVVALoaderManager;
 import com.plovdev.pornviewer.pvvasupport.parser.ScriptEngineExecutor;
 import com.plovdev.pornviewer.services.http.UriBuilder;
-import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
+import com.plovdev.pornviewer.core.models.video.DownloadedVideoInfo;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.plovdev.pvva.models.PVVAHost;

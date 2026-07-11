@@ -13,7 +13,7 @@ import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoMetadata;
 import com.plovdev.pornviewer.pvvfsupport.write.PVVFWriter;
 import com.plovdev.pornviewer.security.*;
 import com.plovdev.pornviewer.services.files.PVFileManager;
-import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
+import com.plovdev.pornviewer.core.models.video.DownloadedVideoInfo;
 import com.plovdev.pornviewer.services.json.VideoInfoSerializer;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
