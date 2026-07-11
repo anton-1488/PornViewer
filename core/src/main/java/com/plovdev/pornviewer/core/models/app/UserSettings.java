@@ -13,7 +13,7 @@ public record UserSettings(
         boolean loadTrailers) {
 
     public enum AppUITheme {
-        BLACK, WHITE, MIDDLE
+        BLACK, WHITE, SYSTEM
     }
 
     public UserSettings {

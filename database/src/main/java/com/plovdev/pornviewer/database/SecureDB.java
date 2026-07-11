@@ -3,6 +3,8 @@ package com.plovdev.pornviewer.database;
 import com.plovdev.pornviewer.core.exceptions.NotFoundException;
 import com.plovdev.pornviewer.database.exceptions.PVDataBaseException;
 import com.plovdev.pornviewer.security.PVSecurityManager;
+import com.plovdev.pornviewer.security.RegisteredSecurityModule;
+import com.plovdev.pornviewer.services.crypto.HexUtils;
 import com.plovdev.pornviewer.services.files.PVFileManager;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
@@ -28,13 +30,13 @@ public class SecureDB {
     }
 
     public static synchronized @NonNull Connection initCipherer() {
-        byte[] password = PVSecurityManager.getPassword();
+        byte[] password = PVSecurityManager.getPassword(RegisteredSecurityModule.DATABASE);
         Properties props = new Properties();
         try {
             Class.forName("org.sqlite.JDBC");
             String url = PVFileManager.getPVJDBCPathProtocol();
             props.setProperty("cipher", "chacha20");
-            props.setProperty("key", new String(password));
+            props.setProperty("key", HexUtils.ofHex(password));
             props.setProperty("temp_store", "MEMORY");
 
             Connection connection = DriverManager.getConnection(url, props);

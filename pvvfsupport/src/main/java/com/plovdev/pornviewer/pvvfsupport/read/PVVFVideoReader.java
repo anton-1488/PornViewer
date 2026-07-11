@@ -5,6 +5,7 @@ import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoHeader;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoMetadata;
 import com.plovdev.pornviewer.security.CryptoEngine;
 import com.plovdev.pornviewer.security.PVSecurityManager;
+import com.plovdev.pornviewer.security.RegisteredSecurityModule;
 import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
 import com.plovdev.pornviewer.services.json.VideoInfoSerializer;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +37,7 @@ public class PVVFVideoReader {
         try (PVVFParser pvvfParser = new PVVFParser(file)) {
             EncryptedVideo video = pvvfParser.collectEncryptedVideo();
             VideoMetadata metadata = video.getVideoMetadata();
-            CryptoEngine engine = new CryptoEngine(Cipher.DECRYPT_MODE, PVSecurityManager.getPassword(), metadata.metadataNonce());
+            CryptoEngine engine = new CryptoEngine(Cipher.DECRYPT_MODE, PVSecurityManager.getPassword(RegisteredSecurityModule.PVVF_SUPPORT), metadata.metadataNonce());
 
             byte[] decryptedJson = engine.processData(metadata.prepareJsonToDecrypt(), VideoMetadata.getJsonFullNonce(metadata.metadataNonce()), VideoMetadata.jsonId());
             String json = new String(decryptedJson, StandardCharsets.UTF_8);

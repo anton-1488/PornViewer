@@ -1,6 +1,6 @@
-package com.plovdev.pornviewer.signature;
+package com.plovdev.pornviewer.security.signature;
 
-import com.plovdev.pornviewer.exceptions.PornViewerSecurityException;
+import com.plovdev.pornviewer.security.exceptions.PornViewerSecurityException;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.internal.asn1.edec.EdECObjectIdentifiers;
@@ -9,8 +9,8 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 
-public final class KeysUtils {
-    private KeysUtils() {
+public final class SignatureKeysUtils {
+    private SignatureKeysUtils() {
     }
 
     public static PublicKey getPublicKeyFromRaw(byte[] publicKey) {

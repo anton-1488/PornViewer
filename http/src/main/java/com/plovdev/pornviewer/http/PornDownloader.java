@@ -11,10 +11,7 @@ import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoChunk;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoHeader;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoMetadata;
 import com.plovdev.pornviewer.pvvfsupport.write.PVVFWriter;
-import com.plovdev.pornviewer.security.CipherEngineUtils;
-import com.plovdev.pornviewer.security.CryptoEngine;
-import com.plovdev.pornviewer.security.DigestUtils;
-import com.plovdev.pornviewer.security.PVSecurityManager;
+import com.plovdev.pornviewer.security.*;
 import com.plovdev.pornviewer.services.files.PVFileManager;
 import com.plovdev.pornviewer.services.json.DownloadedVideoInfo;
 import com.plovdev.pornviewer.services.json.VideoInfoSerializer;
@@ -55,7 +52,7 @@ public class PornDownloader {
 
                 // step 2 - init cipher engine
                 // get ready to encrypt video chunks
-                CryptoEngine engine = new CryptoEngine(Cipher.ENCRYPT_MODE, PVSecurityManager.getPassword(), header.baseNonce());
+                CryptoEngine engine = new CryptoEngine(Cipher.ENCRYPT_MODE, PVSecurityManager.getPassword(RegisteredSecurityModule.PVVF_SUPPORT), header.baseNonce());
 
                 // step 3 - load, encrypt and save video chunks:
                 loadAndSaveVideoChunks(writer, videoId, engine);
@@ -110,8 +107,8 @@ public class PornDownloader {
 
     private void prepareAndWriteMetadata(@NonNull PVVFWriter writer, FullVideoInfo info, byte[] preview) {
         byte[] nonce = new byte[VideoMetadata.BASE_NONCE_LENGTH];
-        CipherEngineUtils.createRandomPassword(nonce);
-        CryptoEngine engine = new CryptoEngine(Cipher.ENCRYPT_MODE, PVSecurityManager.getPassword(), nonce); // update nonce to encrypt metadata
+        CryptoUtils.createRandomPassword(nonce);
+        CryptoEngine engine = new CryptoEngine(Cipher.ENCRYPT_MODE, PVSecurityManager.getPassword(RegisteredSecurityModule.PVVF_SUPPORT), nonce); // update nonce to encrypt metadata
 
         String json = formJson(info);
         byte[] jsonNonce = VideoMetadata.getJsonFullNonce(nonce);

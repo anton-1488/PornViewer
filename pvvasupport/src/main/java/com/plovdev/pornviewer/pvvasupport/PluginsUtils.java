@@ -16,7 +16,7 @@ public final class PluginsUtils {
     }
 
     public static void saveDownloadedPlugin(String pluginId, byte @NonNull [] pluginData) {
-        if (pluginData.length < 24) {
+        if (pluginData.length < 64) {
             throw new IllegalArgumentException("Plugin data too short: " + pluginData.length);
         }
 

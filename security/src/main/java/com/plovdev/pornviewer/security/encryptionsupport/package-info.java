@@ -2,4 +2,4 @@
  * Пакет, который предоставляет инструменты для работы с зашифрованной системой PV.
  * Например, системных файлов, плагинов и тд.
  */
-package com.plovdev.pornviewer.encryptionsupport;
+package com.plovdev.pornviewer.security.encryptionsupport;

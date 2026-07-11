@@ -1,6 +1,6 @@
 package com.plovdev.pornviewer.security;
 
-import com.plovdev.pornviewer.exceptions.PornViewerSecurityException;
+import com.plovdev.pornviewer.security.exceptions.PornViewerSecurityException;
 import com.plovdev.pornviewer.services.NumberUtils;
 
 import javax.crypto.Cipher;
@@ -18,7 +18,7 @@ public class CryptoEngine {
         try {
             this.mode = mode;
             this.baseNonce = baseNonce;
-            keySpec = CipherEngineUtils.createSecretKeySpecFromPassword(password, baseNonce);
+            keySpec = CryptoUtils.createSecretKeySpecFromPassword(password, baseNonce);
         } catch (Exception e) {
             throw new PornViewerSecurityException(e);
         }
@@ -34,7 +34,7 @@ public class CryptoEngine {
 
     public synchronized byte[] processChunk(long counter, byte[] block) {
         try {
-            IvParameterSpec parameterSpec = CipherEngineUtils.createParameterSpecFromBaseNonce(counter, baseNonce);
+            IvParameterSpec parameterSpec = CryptoUtils.createParameterSpecFromBaseNonce(counter, baseNonce);
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(mode, keySpec, parameterSpec);
             cipher.updateAAD(NumberUtils.longToBytes(counter));
@@ -47,7 +47,7 @@ public class CryptoEngine {
 
     public synchronized byte[] processData(byte[] data, byte[] nonce, byte[] id) {
         try {
-            IvParameterSpec parameterSpec = CipherEngineUtils.createParameterSpecFromNonce(nonce);
+            IvParameterSpec parameterSpec = CryptoUtils.createParameterSpecFromNonce(nonce);
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(mode, keySpec, parameterSpec);
             cipher.updateAAD(id);

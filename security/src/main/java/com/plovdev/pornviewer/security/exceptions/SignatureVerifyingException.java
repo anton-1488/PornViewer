@@ -1,4 +1,4 @@
-package com.plovdev.pornviewer.exceptions;
+package com.plovdev.pornviewer.security.exceptions;
 
 public class SignatureVerifyingException extends PornViewerSecurityException {
     public SignatureVerifyingException() {
@@ -14,9 +14,5 @@ public class SignatureVerifyingException extends PornViewerSecurityException {
 
     public SignatureVerifyingException(Throwable cause) {
         super(cause);
-    }
-
-    public SignatureVerifyingException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

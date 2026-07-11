@@ -1,6 +1,6 @@
 package com.plovdev.pornviewer.pvvasupport.exceptions;
 
-import com.plovdev.pornviewer.exceptions.PornViewerSecurityException;
+import com.plovdev.pornviewer.security.exceptions.PornViewerSecurityException;
 
 public class PluginNotVerifiedException extends PornViewerSecurityException {
     public PluginNotVerifiedException() {

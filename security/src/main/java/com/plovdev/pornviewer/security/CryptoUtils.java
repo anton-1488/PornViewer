@@ -15,15 +15,16 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 
-public class CipherEngineUtils {
+public class CryptoUtils {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-    private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
+    public static final String ALGORITHM = "PBKDF2WithHmacSHA256";
 
-    private static final int ITERATIONS = 310_000;
-    private static final int KEY_LENGTH = 256;
+    public static final int ITERATIONS = 310_000;
+    public static final int KEY_LENGTH = 256;
+    public static final int KEY_LENGTH_BYTES = 32;
+    public static final int SALT_LENGTH = 16;
     public static final int CHACHA20_NONCE_LENGTH = 12;
     public static final int BASE_NONCE_LENGTH = 8;
-    public static final int COUNTER_NONCE_LENGTH = 4;
 
     public static @NonNull SecretKeySpec createSecretKeySpecFromPassword(byte[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
         char[] passwordChars = NativeUtils.bytesToCharsUTF_8(password);

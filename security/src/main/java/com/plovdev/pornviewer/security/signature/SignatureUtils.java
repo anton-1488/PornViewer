@@ -1,6 +1,6 @@
-package com.plovdev.pornviewer.signature;
+package com.plovdev.pornviewer.security.signature;
 
-import com.plovdev.pornviewer.exceptions.SignatureVerifyingException;
+import com.plovdev.pornviewer.security.exceptions.SignatureVerifyingException;
 import org.jspecify.annotations.NonNull;
 
 import java.nio.ByteBuffer;
@@ -43,7 +43,7 @@ public final class SignatureUtils {
         }
 
         Signature signature = Signature.getInstance(ALGORITHM);
-        signature.initVerify(KeysUtils.getPublicKeyFromRaw(publicKey));
+        signature.initVerify(SignatureKeysUtils.getPublicKeyFromRaw(publicKey));
 
         return signature;
     }

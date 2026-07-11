@@ -5,7 +5,7 @@ import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.core.models.adapter.PublicKeyInfo;
 import com.plovdev.pornviewer.services.files.EnvReader;
 import com.plovdev.pornviewer.services.json.JSONSerializer;
-import com.plovdev.pornviewer.signature.SignatureUtils;
+import com.plovdev.pornviewer.security.signature.SignatureUtils;
 import org.jspecify.annotations.NonNull;
 
 import java.net.URI;

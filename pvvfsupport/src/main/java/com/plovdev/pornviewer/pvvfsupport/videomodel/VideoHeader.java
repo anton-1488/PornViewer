@@ -1,7 +1,7 @@
 package com.plovdev.pornviewer.pvvfsupport.videomodel;
 
 import com.plovdev.pornviewer.pvvfsupport.PVVFUtils;
-import com.plovdev.pornviewer.security.CipherEngineUtils;
+import com.plovdev.pornviewer.security.CryptoUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -69,7 +69,7 @@ public record VideoHeader(byte version, byte flag, String mime, int lastChunkPad
         byte flag = 0;
 
         byte[] baseNonce = new byte[8];
-        CipherEngineUtils.createRandomPassword(baseNonce);
+        CryptoUtils.createRandomPassword(baseNonce);
         long encVideoSize = PVVFUtils.calculateTotalEncVideoSize(plainVideoSize);
 
         return new VideoHeader(version, flag, mime, lastChunkPaddingSize, plainVideoSize, encVideoSize, baseNonce);

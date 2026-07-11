@@ -14,7 +14,7 @@ public class HashPluginVerifier implements PluginVerifier {
 
     @Override
     public boolean verifyPlugin(byte @NonNull [] pluginData) {
-        if (pluginData.length <= 24) { // plugin's header size
+        if (pluginData.length <= 64) {
             throw new IllegalArgumentException("Plugin data too short: " + pluginData.length);
         }
 

@@ -1,54 +1,50 @@
 package com.plovdev.pornviewer.security;
 
-import com.plovdev.pornviewer.services.files.PVFileManager;
-import org.jetbrains.annotations.NotNull;
-import org.plovdev.keyer.Keychain;
-import org.plovdev.keyer.exceptions.KeyerException;
+import com.plovdev.pornviewer.security.keys.KeysEncoder;
+import com.plovdev.pornviewer.security.keys.KeysEncoderImpl;
+import com.plovdev.pornviewer.security.keys.KeysManager;
+import com.plovdev.pornviewer.security.keys.KeysManagerImpl;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
 public class PVSecurityManager {
-    private static final Keychain KEYCHAIN = Keychain.getKeychain(PVFileManager.PORN_VIEWER);
     private static final Logger log = LoggerFactory.getLogger(PVSecurityManager.class);
+    private static final KeysManager KEYS_MANAGER = new KeysManagerImpl();
+    private static final KeysEncoder KEYS_ENCODER = new KeysEncoderImpl();
 
     private PVSecurityManager() {
     }
 
     static {
-        createPasswordIfNotExist();
+        KEYS_MANAGER.initKeysIfNotExist();
     }
 
-    public static void createPasswordIfNotExist() {
-        try {
-            String alias = PVFileManager.PORN_VIEWER;
-            byte[] retrievedPassword = null;
+    public static boolean verifyAppPin(String appPin) {
+        log.info("Verifying app pin");
+        if (appPin == null || appPin.isBlank()) {
+            throw new IllegalArgumentException("App pin should be not empty.");
+        }
+
+        Optional<byte[]> userPinHash = KEYS_MANAGER.getUserPinHash();
+        if (userPinHash.isPresent()) {
+            byte[] pin = userPinHash.get();
+            char[] appPinChars = appPin.toCharArray();          // will be clear in KeysEncoder.
             try {
-                retrievedPassword = KEYCHAIN.getRawPassword(alias);
-            } catch (KeyerException e) {
-                log.error("Error to get password. Trying setup a new password. ", e);
+                return KEYS_ENCODER.verify(appPinChars, pin);
+            } finally {
+                Arrays.fill(pin, (byte) 0);
             }
-
-            if (retrievedPassword == null) {
-                byte[] password = new byte[32];
-                CipherEngineUtils.createRandomPassword(password);
-                KEYCHAIN.setPassword(alias, password);
-                log.info("New password generated and saved to keychain");
-            } else {
-                Arrays.fill(retrievedPassword, (byte) 0);
-            }
-        } catch (Exception e) {
-            throw new KeyerException("Keychain error", e);
+        } else {
+            log.info("User not specificate pin, skipping.");
+            return true; // No hash - skip verifying(user not specificate pin).
         }
     }
 
-    public static byte @NotNull [] getPassword() {
-        byte[] password = KEYCHAIN.getRawPassword(PVFileManager.PORN_VIEWER);
-        if (password == null) {
-            throw new NoSuchElementException("Master password not found in Keychain!");
-        }
-        return password;
+    public static byte[] getPassword(@NonNull RegisteredSecurityModule module) {
+        return KEYS_MANAGER.getKeyForModule(module.getModuleId());
     }
 }

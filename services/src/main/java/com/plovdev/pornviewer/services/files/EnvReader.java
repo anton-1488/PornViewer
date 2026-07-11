@@ -1,7 +1,7 @@
 package com.plovdev.pornviewer.services.files;
 
 import com.plovdev.pornviewer.core.models.app.AppInfo;
-import com.plovdev.pornviewer.exceptions.EnvLoadException;
+import com.plovdev.pornviewer.services.exceptions.EnvLoadException;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 
