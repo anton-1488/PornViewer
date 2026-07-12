@@ -2,6 +2,9 @@ package com.plovdev.pornviewer.core.http;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
@@ -27,5 +30,15 @@ public final class HttpUtils {
         }
 
         return foramttedBody;
+    }
+
+    @Contract(pure = true)
+    public static @NonNull @Unmodifiable Map<String, Object> parseResponseBody(HttpMethod method, String body) {
+        if (method == HttpMethod.POST) {
+            return HTTP_BODY_JSON.fromJson(body, new TypeToken<>() {
+            });
+        } else {
+            return Map.of();
+        }
     }
 }

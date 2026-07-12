@@ -1,4 +1,4 @@
-package com.plovdev.pornviewer.exceptions;
+package com.plovdev.pornviewer.server.exceptions;
 
 import com.plovdev.pornviewer.core.exceptions.PornViewerException;
 

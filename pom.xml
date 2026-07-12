@@ -126,7 +126,7 @@
                 <configuration>
                     <updatePomFile>true</updatePomFile>
                     <flattenMode>resolveCiFriendliesOnly</flattenMode>
-                    <flattenedPomFilename>${project.build.directory}/.flattened-pom.xml</flattenedPomFilename>
+                    <flattenedPomFilename>target/.flattened-pom.xml</flattenedPomFilename>
                 </configuration>
                 <executions>
                     <execution>

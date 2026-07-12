@@ -17,7 +17,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Properties;
 
-public class SecureDB {
+public final class SecureDB {
     private static final Logger log = LoggerFactory.getLogger(SecureDB.class);
 
     public static void initDB() {

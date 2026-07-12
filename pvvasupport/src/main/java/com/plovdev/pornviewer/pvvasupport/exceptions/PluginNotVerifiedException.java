@@ -6,8 +6,8 @@ public class PluginNotVerifiedException extends PornViewerSecurityException {
     public PluginNotVerifiedException() {
     }
 
-    public PluginNotVerifiedException(String message) {
-        super(message);
+    public PluginNotVerifiedException(String s) {
+        super(s);
     }
 
     public PluginNotVerifiedException(String message, Throwable cause) {
@@ -16,9 +16,5 @@ public class PluginNotVerifiedException extends PornViewerSecurityException {
 
     public PluginNotVerifiedException(Throwable cause) {
         super(cause);
-    }
-
-    public PluginNotVerifiedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

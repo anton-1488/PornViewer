@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 public final class DurationParser {
     private static final Pattern pattern = Pattern.compile("^(?:(\\d+):)?(?:(\\d+):)?(?:(\\d+):)?(\\d+)(?:\\.(\\d{1,9}))?$");
+
     private DurationParser() {
     }
 

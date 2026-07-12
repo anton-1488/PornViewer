@@ -6,6 +6,7 @@ import com.plovdev.pornviewer.core.events.VideoDownloadingChannel;
 import com.plovdev.pornviewer.core.exceptions.VideoDownloadingError;
 import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.core.models.porn.FullVideoInfo;
+import com.plovdev.pornviewer.core.models.video.DownloadedVideoInfo;
 import com.plovdev.pornviewer.http.providers.PornRequestProvider;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoChunk;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoHeader;
@@ -13,13 +14,13 @@ import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoMetadata;
 import com.plovdev.pornviewer.pvvfsupport.write.PVVFWriter;
 import com.plovdev.pornviewer.security.*;
 import com.plovdev.pornviewer.services.files.PVFileManager;
-import com.plovdev.pornviewer.core.models.video.DownloadedVideoInfo;
 import com.plovdev.pornviewer.services.json.VideoInfoSerializer;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.Cipher;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -79,29 +80,27 @@ public class PornDownloader {
     }
 
     private void loadAndSaveVideoChunks(PVVFWriter writer, String videoId, CryptoEngine engine) {
-        try {
-            try (InputStream readStream = requestProvider.requestStream(request)) {
-                byte[] chunkBuffer = new byte[PLAIN_CHUNK_SIZE];
-                long totalReaded = 0;
-                int readed;
-                long chunkIndex = 0;
+        try (InputStream readStream = requestProvider.requestStream(request)) {
+            byte[] chunkBuffer = new byte[PLAIN_CHUNK_SIZE];
+            long totalReaded = 0;
+            int readed;
+            long chunkIndex = 0;
 
-                while ((readed = readStream.readNBytes(chunkBuffer, 0, PLAIN_CHUNK_SIZE)) > 0) {
-                    byte[] plainChunk = chunkBuffer;
-                    if (readed < PLAIN_CHUNK_SIZE) {
-                        plainChunk = new byte[PLAIN_CHUNK_SIZE];
-                        System.arraycopy(chunkBuffer, 0, plainChunk, 0, readed);
-                    }
-                    byte[] encryptedWithTag = engine.processChunk(chunkIndex, plainChunk);
-                    writer.appendVideoChunk(VideoChunk.ofEncryptedWithTag(chunkIndex, encryptedWithTag));
-                    GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(videoId, totalReaded, DownloadingType.PROCESS));
-                    totalReaded += readed;
-                    chunkIndex++;
+            while ((readed = readStream.readNBytes(chunkBuffer, 0, PLAIN_CHUNK_SIZE)) > 0) {
+                byte[] plainChunk = chunkBuffer;
+                if (readed < PLAIN_CHUNK_SIZE) {
+                    plainChunk = new byte[PLAIN_CHUNK_SIZE];
+                    System.arraycopy(chunkBuffer, 0, plainChunk, 0, readed);
                 }
+                byte[] encryptedWithTag = engine.processChunk(chunkIndex, plainChunk);
+                writer.appendVideoChunk(VideoChunk.ofEncryptedWithTag(chunkIndex, encryptedWithTag));
+                GlobalEventManager.broadcastEvent(new VideoDownloadingChannel(videoId, totalReaded, DownloadingType.PROCESS));
+                totalReaded += readed;
+                chunkIndex++;
             }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            log.error("Error while writing chunks: ", e);
+            throw new VideoDownloadingError(e);
         }
     }
 

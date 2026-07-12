@@ -4,8 +4,8 @@ public class PornViewerSecurityException extends SecurityException {
     public PornViewerSecurityException() {
     }
 
-    public PornViewerSecurityException(String message) {
-        super(message);
+    public PornViewerSecurityException(String s) {
+        super(s);
     }
 
     public PornViewerSecurityException(String message, Throwable cause) {
