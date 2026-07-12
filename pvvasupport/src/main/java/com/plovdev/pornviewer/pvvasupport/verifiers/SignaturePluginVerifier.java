@@ -3,7 +3,7 @@ package com.plovdev.pornviewer.pvvasupport.verifiers;
 import com.plovdev.pornviewer.core.http.InternalHttpClient;
 import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.core.models.adapter.PublicKeyInfo;
-import com.plovdev.pornviewer.services.files.EnvReader;
+import com.plovdev.pornviewer.services.files.ConfigReader;
 import com.plovdev.pornviewer.services.json.JSONSerializer;
 import com.plovdev.pornviewer.security.signature.SignatureUtils;
 import org.jspecify.annotations.NonNull;
@@ -24,7 +24,7 @@ public class SignaturePluginVerifier implements PluginVerifier {
             throw new IllegalArgumentException("Plugin data too short: " + pluginData.length);
         }
 
-        EnvReader reader = new EnvReader(HTTP_PATHS_CONFIG);
+        ConfigReader reader = new ConfigReader(HTTP_PATHS_CONFIG);
         String baseUrl = reader.getEnv("base.url");
         String endpoint = reader.getEnv("get-public-key.url") + "?developerId=" + developerId;
 

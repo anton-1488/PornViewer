@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,7 +30,7 @@ public abstract class AbstractServerHandler implements HttpHandler {
             HttpMethod method = HttpMethod.valueOf(exchange.getRequestMethod());
             Headers headers = exchange.getRequestHeaders();
 
-            if (method != getSupportedMethod()) {
+            if (!getSupportedMethods().contains(method)) {
                 log.warn("Method {} not allowed here", method);
                 if (method == HttpMethod.HEAD) {
                     exchange.sendResponseHeaders(405, -1);
@@ -90,5 +91,5 @@ public abstract class AbstractServerHandler implements HttpHandler {
      *
      * @return поддерживаемый http-метод.
      */
-    protected abstract HttpMethod getSupportedMethod();
+    protected abstract List<HttpMethod> getSupportedMethods();
 }

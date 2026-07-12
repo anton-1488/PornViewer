@@ -5,7 +5,7 @@ import com.plovdev.pornviewer.core.http.HttpUtils;
 import com.plovdev.pornviewer.core.http.InternalHttpClient;
 import com.plovdev.pornviewer.core.http.PornRequest;
 import com.plovdev.pornviewer.core.models.adapter.PluginsList;
-import com.plovdev.pornviewer.services.files.EnvReader;
+import com.plovdev.pornviewer.services.files.ConfigReader;
 import com.plovdev.pornviewer.services.json.JSONSerializer;
 
 import java.net.URI;
@@ -63,7 +63,7 @@ public class PluginsCatalogRequestor {
     }
 
     public PluginsList requestCatalog() {
-        EnvReader reader = new EnvReader(HTTP_PATHS_CONFIG);
+        ConfigReader reader = new ConfigReader(HTTP_PATHS_CONFIG);
         String baseUrl = reader.getEnv("base.url");
         String endpoint = reader.getEnv("get-plugins-catalog.url");
 

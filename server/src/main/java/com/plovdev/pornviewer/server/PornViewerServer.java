@@ -5,7 +5,7 @@ import com.plovdev.pornviewer.core.events.ServerChannelEvent;
 import com.plovdev.pornviewer.core.utils.Globals;
 import com.plovdev.pornviewer.server.exceptions.PornViewerServerException;
 import com.plovdev.pornviewer.server.handlers.AppInfoHandler;
-import com.plovdev.pornviewer.services.files.EnvReader;
+import com.plovdev.pornviewer.services.files.ConfigReader;
 import com.sun.net.httpserver.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,11 +36,11 @@ public class PornViewerServer {
 
     private PornViewerServer() {
         try {
-            EnvReader reader = new EnvReader("/configs/server.properties");
+            ConfigReader reader = new ConfigReader("/configs/server.properties");
             this.host = reader.getEnv("host");
-            this.port = Integer.parseInt(reader.getEnv("port"));
-            this.backlog = Integer.parseInt(reader.getEnv("backlog"));
-            this.stopDelay = Integer.parseInt(reader.getEnv("stop-delay"));
+            this.port = reader.getInt("port");
+            this.backlog = reader.getInt("backlog");
+            this.stopDelay = reader.getInt("stop-delay");
 
             server = HttpServer.create(new InetSocketAddress(host, port), backlog);
             server.setExecutor(Globals.VIRTUAL_EXECUTOR);
@@ -71,7 +71,7 @@ public class PornViewerServer {
         return stopDelay;
     }
 
-    public boolean getIsServerStarted() {
+    public boolean isServerStarted() {
         return isServerStarted.get();
     }
 
@@ -84,9 +84,14 @@ public class PornViewerServer {
 
     public void startServer() {
         if (isServerStarted.compareAndSet(false, true)) {
-            server.start();
-            log.info("PornViewer local server started...");
-            GlobalEventManager.broadcastEvent(new ServerChannelEvent(ServerChannelEvent.ServerEventType.SERVER_STARTED));
+            try {
+                server.start();
+                log.info("PornViewer local server started...");
+                GlobalEventManager.broadcastEvent(new ServerChannelEvent(ServerChannelEvent.ServerEventType.SERVER_STARTED));
+            } catch (Exception e) {
+                isServerStarted.set(false);
+                throw new PornViewerServerException("Unable to start server", e);
+            }
         } else {
             throw new IllegalStateException("Server already started");
         }

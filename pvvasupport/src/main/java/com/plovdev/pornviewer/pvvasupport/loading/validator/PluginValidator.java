@@ -1,7 +1,7 @@
 package com.plovdev.pornviewer.pvvasupport.loading.validator;
 
 import com.plovdev.pornviewer.core.models.app.AppInfo;
-import com.plovdev.pornviewer.services.files.EnvReader;
+import com.plovdev.pornviewer.services.files.ConfigReader;
 import org.jspecify.annotations.NonNull;
 import org.plovdev.keyer.exceptions.PlatformNotSupportedException;
 import org.plovdev.pvva.models.PVVAHeader;
@@ -13,7 +13,7 @@ public final class PluginValidator {
     }
 
     public static void validatePlugin(@NonNull PVVAHost host) {
-        AppInfo info = EnvReader.loadAppInfo();
+        AppInfo info = ConfigReader.loadAppInfo();
         int appVersion = VersionUtils.versionToInt(info.version());
 
         PVVAHeader header = host.header();
