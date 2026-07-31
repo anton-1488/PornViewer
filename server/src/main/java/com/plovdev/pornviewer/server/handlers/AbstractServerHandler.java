@@ -60,7 +60,7 @@ public abstract class AbstractServerHandler implements HttpHandler {
                         } else {
                             body = uri.toString();
                         }
-                        onRequest(exchange, uri, HttpUtils.parseResponseBody(method, body));
+                        onRequest(exchange, uri, method, HttpUtils.parseResponseBody(method, body));
                     } else {
                         ServerSendsUtils.send403(exchange);
                     }
@@ -84,7 +84,7 @@ public abstract class AbstractServerHandler implements HttpHandler {
      * @param uri    запрашиваемый путь.
      * @param params параметры запрос. Query string в GET, или json body в POST.
      */
-    protected abstract void onRequest(HttpExchange exchange, URI uri, Map<String, Object> params) throws IOException;
+    protected abstract void onRequest(HttpExchange exchange, URI uri, HttpMethod method, Map<String, Object> params) throws Exception;
 
     /**
      * Возвращает поддерживаемый реализацией http-метод.

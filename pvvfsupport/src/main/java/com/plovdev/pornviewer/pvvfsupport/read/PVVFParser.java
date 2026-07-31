@@ -1,11 +1,11 @@
 package com.plovdev.pornviewer.pvvfsupport.read;
 
+import com.plovdev.pornviewer.pvvfsupport.exceptions.PVVFException;
+import com.plovdev.pornviewer.pvvfsupport.exceptions.PVVFOpenException;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.EncryptedVideo;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoChunk;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoHeader;
 import com.plovdev.pornviewer.pvvfsupport.videomodel.VideoMetadata;
-import com.plovdev.pornviewer.pvvfsupport.exceptions.PVVFException;
-import com.plovdev.pornviewer.pvvfsupport.exceptions.PVVFOpenException;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
@@ -90,8 +90,8 @@ public class PVVFParser implements AutoCloseable {
             // step 3 - read flag:
             byte flag = RAF.readByte();
 
-            // step 4 - read video mime type:
-            String mimeType = readString(FOUR_BYTE_ARRAY);
+            // step 4 - read video mime type length:
+            byte mimeLength = RAF.readByte();
 
             // step 5 - reading sizes:
             int lastChunkPaddingSize = RAF.readInt();
@@ -107,8 +107,12 @@ public class PVVFParser implements AutoCloseable {
                 throw new IOException("Error parse file header: invalid pointer: " + RAF.getFilePointer());
             }
 
+            // step 8 - read mime type
+            byte[] mimeTypeBytes = new byte[mimeLength];
+            String mimeType = readString(mimeTypeBytes);
+
             // collecting results and return VideoHeader class
-            return new VideoHeader(fileVersion, flag, mimeType, lastChunkPaddingSize, plainVideoSize, encryptedVideoSize, baseNonce);
+            return new VideoHeader(fileVersion, flag, mimeLength, lastChunkPaddingSize, plainVideoSize, encryptedVideoSize, baseNonce, mimeType);
         } catch (IOException e) {
             throw new PVVFException("Error to read pvvf header", e);
         }
@@ -186,8 +190,12 @@ public class PVVFParser implements AutoCloseable {
         }
 
         try {
+            // step 0 - read mime type length for calculating offset.
+            RAF.seek(6);
+            byte mimeLength = RAF.readByte();
+
             // step 1 - calculating chunk offset in file:
-            long chunkStart = HEADER_SIZE + (TOTAL_CHUNK_SIZE * chunkIndex);
+            long chunkStart = HEADER_SIZE + mimeLength + (TOTAL_CHUNK_SIZE * chunkIndex);
             RAF.seek(chunkStart); // seek to chunk
 
             /*

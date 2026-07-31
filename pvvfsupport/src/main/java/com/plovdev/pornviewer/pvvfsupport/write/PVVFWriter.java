@@ -67,17 +67,19 @@ public class PVVFWriter implements AutoCloseable {
             // step 3 - write flag:
             writeStream.writeByte(videoHeader.flag());
 
-            // step 4 - write video mime type:
-            writeString(videoHeader.mime());
-
+            // step 4 - write video mime type length:
+            writeStream.writeByte(videoHeader.mimeLength());
 
             // step 5 - write sizes:
             writeStream.writeInt(videoHeader.lastChunkPaddingSize());
             writeStream.writeLong(videoHeader.plainVideoSize());
             writeStream.writeLong(videoHeader.encVideoSize());
 
-            // step 6 - write nonce and crc:
+            // step 6 - write nonce:
             writeStream.write(videoHeader.baseNonce());
+
+            // step 7 - write mime type string:
+            writeString(videoHeader.mime());
         } catch (IOException e) {
             throw new PVVFException("Error to write video header", e);
         }
@@ -124,7 +126,11 @@ public class PVVFWriter implements AutoCloseable {
         }
 
         try (RandomAccessFile RAF = new RandomAccessFile(path.toFile(), "rw")) {
-            long metadataOffset = HEADER_SIZE + encVideoSize;
+            // step 0 - read mime type length for calculating offset.
+            RAF.seek(6);
+            byte mimeLength = RAF.readByte();
+
+            long metadataOffset = HEADER_SIZE + mimeLength + encVideoSize;
             RAF.seek(metadataOffset); // seek to metadata block
 
             /*

@@ -8,6 +8,7 @@
     <artifactId>pornviewer-root</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
+
     <name>PornViewer</name>
     <description>Watch likly video in secure viewer!</description>
     <url>https://github.com/plovdev/PornViewer</url>

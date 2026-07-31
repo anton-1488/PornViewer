@@ -17,9 +17,8 @@ public class AppInfoHandler extends AbstractServerHandler {
     private final AtomicReference<String> cachedAppInfo = new AtomicReference<>(null);
 
     @Override
-    protected void onRequest(HttpExchange exchange, URI uri, Map<String, Object> params) throws IOException {
+    protected void onRequest(HttpExchange exchange, URI uri, HttpMethod method, Map<String, Object> params) throws IOException {
         String appInfoStr = cachedAppInfo.updateAndGet(currentValue -> Objects.requireNonNullElseGet(currentValue, () -> JSONSerializer.serialize(ConfigReader.loadAppInfo())));
-
         ServerSendsUtils.sendJson(exchange, appInfoStr);
     }
 

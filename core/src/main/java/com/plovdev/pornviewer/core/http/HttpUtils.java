@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -19,13 +20,11 @@ public final class HttpUtils {
     public static @NonNull String formatRequestBody(HttpMethod method, Map<String, Object> body) {
         String foramttedBody = "";
         if (body != null && !body.isEmpty()) {
-            if (method == HttpMethod.GET) {
-                Map<String, Object> filteredData = body.entrySet().stream().filter(entry -> entry.getValue() != null).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                foramttedBody = filteredData.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue()).collect(Collectors.joining("&"));
-            } else if (method == HttpMethod.POST) {
+            if (method == HttpMethod.POST) {
                 foramttedBody = HTTP_BODY_JSON.toJson(body);
             } else {
-                throw new IllegalArgumentException("Unsupported http method: " + method);
+                Map<String, Object> filteredData = body.entrySet().stream().filter(entry -> entry.getValue() != null).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                foramttedBody = filteredData.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue()).collect(Collectors.joining("&"));
             }
         }
 
@@ -38,7 +37,12 @@ public final class HttpUtils {
             return HTTP_BODY_JSON.fromJson(body, new TypeToken<>() {
             });
         } else {
-            return Map.of();
+            if (body.contains("?")) {
+                body = body.substring(body.lastIndexOf('?') + 1); // to query string(abc=123&bca=321)
+                return Arrays.stream(body.split("&")).collect(Collectors.toUnmodifiableMap(k -> k.substring(0, k.indexOf('=')), v -> v.substring(v.indexOf('=') + 1)));
+            } else {
+                return Map.of();
+            }
         }
     }
 }

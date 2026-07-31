@@ -5,6 +5,7 @@ import com.plovdev.pornviewer.core.events.ServerChannelEvent;
 import com.plovdev.pornviewer.core.utils.Globals;
 import com.plovdev.pornviewer.server.exceptions.PornViewerServerException;
 import com.plovdev.pornviewer.server.handlers.AppInfoHandler;
+import com.plovdev.pornviewer.server.handlers.WatchHandler;
 import com.plovdev.pornviewer.services.files.ConfigReader;
 import com.sun.net.httpserver.HttpServer;
 import org.slf4j.Logger;
@@ -46,8 +47,8 @@ public class PornViewerServer {
             server.setExecutor(Globals.VIRTUAL_EXECUTOR);
 
             //TODO: create handlers
-//            server.createContext("/video", null);
-//            server.createContext("/export", null);
+            server.createContext("/watch", new WatchHandler());            // /watch/video or /watch/image
+            server.createContext("/export", null);           // /export/video or /export/image
 //            server.createContext("/plugins", null);
             server.createContext("/app-info", new AppInfoHandler());
         } catch (Exception e) {

@@ -1,9 +1,9 @@
 package com.plovdev.pornviewer.pvvasupport.loading.validator;
 
 import com.plovdev.pornviewer.core.models.app.AppInfo;
+import com.plovdev.pornviewer.pvvasupport.exceptions.UnsupportedPluginException;
 import com.plovdev.pornviewer.services.files.ConfigReader;
 import org.jspecify.annotations.NonNull;
-import org.plovdev.keyer.exceptions.PlatformNotSupportedException;
 import org.plovdev.pvva.models.PVVAHeader;
 import org.plovdev.pvva.models.PVVAHost;
 import org.plovdev.pvva.utils.VersionUtils;
@@ -21,7 +21,7 @@ public final class PluginValidator {
         int maxAppVersion = header.getMaxAppVersion();
 
         if (VersionUtils.isCompatibleWithAppVersion(minAppVersion, maxAppVersion, appVersion)) {
-            throw new PlatformNotSupportedException("Plugin " + host.getSystemPluginId() + " not support this app version" + appVersion);
+            throw new UnsupportedPluginException("Plugin " + host.getSystemPluginId() + " not support this app version" + appVersion);
         }
     }
 }

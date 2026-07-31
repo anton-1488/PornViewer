@@ -18,18 +18,20 @@ import java.util.Objects;
  *
  * @param version              Версия формата файла (по умолчанию {@value #DEFAULT_VERSION}).
  * @param flag                 Системные флаги (например, наличие метаданных в конце файла).
- * @param mime                 Тип контейнера (например, "MP4 ", "MKV "). Должен занимать 4 символа.
+ * @param mimeLength           Длина mime-type строки.
  * @param lastChunkPaddingSize Количество байт-заполнителей (padding) в последнем зашифрованном чанке.
  * @param plainVideoSize       Размер оригинального видеофайла в байтах до шифрования.
  * @param encVideoSize         Общий размер зашифрованной части видео (сумма всех чанков с тегами).
  * @param baseNonce            Базовый вектор инициализации (8 байт), используемый для формирования nonce чанков.
+ * @param mime                 Тип контейнера.
  */
-public record VideoHeader(byte version, byte flag, String mime, int lastChunkPaddingSize, long plainVideoSize,
-                          long encVideoSize, byte[] baseNonce) {
+public record VideoHeader(byte version, byte flag, byte mimeLength, int lastChunkPaddingSize,
+                          long plainVideoSize,
+                          long encVideoSize, byte[] baseNonce, String mime) {
     /**
      * Фиксированный размер заголовка в байтах.
      */
-    public static final int HEADER_SIZE = 34;
+    public static final int HEADER_SIZE = 31;
 
     public static final int ENC_VIDEO_SIZE_OFFSET = 22;
 
@@ -72,7 +74,7 @@ public record VideoHeader(byte version, byte flag, String mime, int lastChunkPad
         CryptoUtils.createRandomPassword(baseNonce);
         long encVideoSize = PVVFUtils.calculateTotalEncVideoSize(plainVideoSize);
 
-        return new VideoHeader(version, flag, mime, lastChunkPaddingSize, plainVideoSize, encVideoSize, baseNonce);
+        return new VideoHeader(version, flag, (byte) mime.length(), lastChunkPaddingSize, plainVideoSize, encVideoSize, baseNonce, mime);
     }
 
     /**
@@ -87,18 +89,15 @@ public record VideoHeader(byte version, byte flag, String mime, int lastChunkPad
     @NotNull
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("[header:start]\n");
-        builder.append("[").append(MAGIC_NUMBER).append("]\n");
-        builder.append("version - ").append(version).append("\n");
-        builder.append("flag - ").append(flag).append("\n");
-        builder.append("mime - ").append(mime).append("\n");
-        builder.append("LCPS - ").append(lastChunkPaddingSize).append("\n");
-        builder.append("plain size - ").append(plainVideoSize).append("\n");
-        builder.append("enc size - ").append(encVideoSize).append("\n");
-        builder.append("nonce - ").append(Arrays.toString(baseNonce)).append("\n");
-        builder.append("[header:end]\n");
-
-        return builder.toString();
+        return "[header:start]\n" +
+                "[" + MAGIC_NUMBER + "]\n" +
+                "version - " + version + "\n" +
+                "flag - " + flag + "\n" +
+                "mime - " + mime + "\n" +
+                "LCPS - " + lastChunkPaddingSize + "\n" +
+                "plain size - " + plainVideoSize + "\n" +
+                "enc size - " + encVideoSize + "\n" +
+                "nonce - " + Arrays.toString(baseNonce) + "\n" +
+                "[header:end]\n";
     }
 }

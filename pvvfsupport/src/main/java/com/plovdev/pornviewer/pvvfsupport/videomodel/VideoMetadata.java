@@ -92,18 +92,15 @@ public record VideoMetadata(int metadataSize, int encryptedJsonSize, int encrypt
     @NotNull
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("[metadata:start]\n");
-        builder.append("metasize - ").append(metadataSize).append("\n");
-        builder.append("jsonsize - ").append(encryptedJsonSize).append("\n");
-        builder.append("previewsize - ").append(encryptedPreviewSize).append("\n");
-        builder.append("nonce - ").append(Arrays.toString(metadataNonce)).append("\n");
-        builder.append("[encrypted json]\n");
-        builder.append("json tag - ").append(Arrays.toString(jsonTag)).append("\n");
-        builder.append("[encrypted preview]\n");
-        builder.append("preview tag - ").append(Arrays.toString(previewTag)).append("\n");
-        builder.append("[metadata:end]\n");
-
-        return builder.toString();
+        return "[metadata:start]\n" +
+                "metasize - " + metadataSize + "\n" +
+                "jsonsize - " + encryptedJsonSize + "\n" +
+                "previewsize - " + encryptedPreviewSize + "\n" +
+                "nonce - " + Arrays.toString(metadataNonce) + "\n" +
+                "[encrypted json]\n" +
+                "json tag - " + Arrays.toString(jsonTag) + "\n" +
+                "[encrypted preview]\n" +
+                "preview tag - " + Arrays.toString(previewTag) + "\n" +
+                "[metadata:end]\n";
     }
 }

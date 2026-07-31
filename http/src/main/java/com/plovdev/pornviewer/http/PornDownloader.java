@@ -73,7 +73,7 @@ public class PornDownloader {
     private @NonNull VideoHeader prepareAndWriteHeader(@NonNull PVVFWriter writer, long videSize) {
         long remainder = videSize % PLAIN_CHUNK_SIZE;
         int lastChunkPaddingSize = (remainder == 0) ? 0 : (int) (PLAIN_CHUNK_SIZE - remainder);
-        String mimeType = PVFileManager.guessMimeType(request.path().toString());
+        String mimeType = PVFileManager.guessMimeType(Path.of(request.path()), "video/mp4");
         VideoHeader header = VideoHeader.ofOnlyRequired(mimeType, lastChunkPaddingSize, videSize);
         writer.writeVideoHeader(header);
         return header;
