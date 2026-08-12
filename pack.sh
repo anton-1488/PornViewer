@@ -4,7 +4,7 @@
   --main-jar PornViewer.jar \
   --main-class com.plovdev.pornviewer.Launcher \
   --name "PornViewer" \
-  --app-version "1.7.9" \
+  --app-version "1.7.9.2" \
   --vendor "PlovDev" \
   --copyright "(c) 2026 PlovDev. All rights reserved." \
   --description "Secure and anonime 18+ video viewer with encrypting and plugins support" \
@@ -20,6 +20,6 @@
   --runtime-image ./files/pv-jre \
   --mac-app-category "public.app-category.entertainment" \
   --license-file ./files/LICENSE.txt \
-  --about-url "https://github.com/anton-1488/PornViewer" \
+  --about-url "https://github.com/plovdev/PornViewer" \
   --file-associations ./files/video-assoc.properties \
   --verbose

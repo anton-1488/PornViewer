@@ -42,9 +42,9 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.anton-1488</groupId>
-            <artifactId>Keyer</artifactId>
-            <version>1.6</version>
+            <groupId>io.github.plovdev</groupId>
+            <artifactId>keyer</artifactId>
+            <version>1.7.1-beta</version>
         </dependency>
 
         <dependency>
@@ -53,22 +53,6 @@
             <version>3.51.1.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>io.projectreactor.netty</groupId>
-            <artifactId>reactor-netty-core</artifactId>
-            <version>1.1.13</version>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor.netty</groupId>
-            <artifactId>reactor-netty-http</artifactId>
-            <version>1.1.13</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>2.0.2</version>
-        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -115,8 +99,14 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>17.0.0</version>
+            <version>26.0.2</version>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 

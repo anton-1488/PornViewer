@@ -21,8 +21,6 @@ public class PBPornHandler {
     public PBPornHandler(RequestProvider provider) {
         if (provider == RequestProvider.OK_HTTP) {
             requestProvider = new OkHttpRequestProvider();
-        } else if (provider == RequestProvider.NETTY) {
-            requestProvider = new NettyHttpProvider();
         } else {
             requestProvider = new HttpClientRequstProvider();
         }
