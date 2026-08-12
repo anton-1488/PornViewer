@@ -1,4 +1,4 @@
-[header:42]
+[header:38]
     PVVF                // 4b magic
     1                   // 1b version
     0                   // 1b flag
@@ -7,7 +7,6 @@
     12345678            // 8b plain video size
     12345678            // 8b enc video size
     12345678            // 8b nonce
-    CRC32               // 4b crc32
 
 [encrypted body:n % 128kb + 16b == 0]
     [chunk:128kb + 16b]
@@ -26,4 +25,3 @@ ENC_STRING              // nb encrypted JSON
 123456...16             // 16b ChaCha20 JSON tag
 ...                     // nb encrypted preview
 123456...16             // 16b ChaCha20 preview tag
-CRC32                   // 4b metadata crc32(last 4b)

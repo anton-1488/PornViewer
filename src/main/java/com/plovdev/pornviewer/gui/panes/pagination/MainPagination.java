@@ -21,8 +21,8 @@ import java.util.concurrent.CompletableFuture;
 public class MainPagination {
     private static final Logger log = LoggerFactory.getLogger(MainPagination.class);
     private final Object parserLock = new Object();
-    private final IntegerProperty page = new SimpleIntegerProperty(0);
-    private String baseUrl = DefRes.BASE6;
+    private final IntegerProperty page = new SimpleIntegerProperty(1);
+    private String baseUrl = DefRes.BASE;
     private final TrianglePaginationBlock block;
     private final DefPornParser pornParser = new DefPornParser();
     private final PBPornHandler pornHandler = new PBPornHandler();
@@ -84,9 +84,9 @@ public class MainPagination {
     }
 
     public void reset() {
-        page.set(0);
+        page.set(1);
         block.getBack().setText("Назад 0");
-        block.getNext().setText("1 Вперед");
+        block.getNext().setText("2 Вперед");
     }
 
     public void setBaseUrl(@NotNull String baseUrl) {

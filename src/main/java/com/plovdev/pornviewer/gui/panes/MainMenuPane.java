@@ -88,7 +88,6 @@ public class MainMenuPane extends AnchorPane {
 
         Label clear = new Label("✕");
         clear.setVisible(false);
-        clear.setOnMousePressed(e -> field.setText(""));
         clear.getStyleClass().add("clear-search");
 
         Button deepSaarch = new Button("Глубокий поиск");
@@ -101,6 +100,9 @@ public class MainMenuPane extends AnchorPane {
         ContextMenu menu = new ContextMenu(item);
         menu.setOnShowing(e -> menu.getScene().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/com/plovdev/pornviewer/styles/context-menu.css")).toExternalForm()));
         deepSaarch.setContextMenu(menu);
+
+        DeepSearcher searcher = new DeepSearcher();
+
         deepSaarch.setOnAction(e -> {
             deepSaarch.setDisable(true);
             TextInputDialog keywordsInput = new TextInputDialog();
@@ -116,7 +118,7 @@ public class MainMenuPane extends AnchorPane {
 
                     String[] keywords = string.toLowerCase().replace(" ", "").split(",");
                     String url = resourcer.baseUrl() + resourcer.searchUrl() + URLEncoder.encode(field.getText(), Charset.defaultCharset()) + "/popular/";
-                    DeepSearcher.searchVideo(new DefPornParser(), url, Arrays.stream(keywords).toList(), MAX_PAGES.get(), card -> {
+                    searcher.searchVideo(new DefPornParser(), url, Arrays.stream(keywords).toList(), MAX_PAGES.get(), card -> {
                         if (!originNots.contains(card)) {
                             card.render();
                             originNots.add(card);
@@ -129,6 +131,11 @@ public class MainMenuPane extends AnchorPane {
                     deepSaarch.setDisable(false);
                 }
             }));
+        });
+
+        clear.setOnMousePressed(e -> {
+            field.setText("");
+            searcher.stopSearch();
         });
 
 

@@ -12,21 +12,25 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DeepSearcher {
     private static final Logger log = LoggerFactory.getLogger(DeepSearcher.class);
+    private final AtomicBoolean isSearching = new AtomicBoolean(false);
 
-    public static synchronized void searchVideo(@NotNull DefPornParser pornParser, String url, List<String> keywords, int maxPages, @NotNull SearcherFoundVideoListener onFound) {
+    public synchronized void searchVideo(@NotNull DefPornParser pornParser, String url, List<String> keywords, int maxPages, @NotNull SearcherFoundVideoListener onFound) {
         if (maxPages == 0) return;
 
         Toast.showToast("Начался глубокий поиск");
+        isSearching.set(true);
+
         PBPornHandler handler = new PBPornHandler();
         String html = handler.requestPorn(url + 0);
         Optional<VideoCard> mc = containsKeywordsInVideos(pornParser.getAllVideos(html), keywords);
         mc.ifPresent(onFound::onFound);
 
         int page = 1;
-        while (handler.getNextLink(html) != null) {
+        while (handler.getNextLink(html) != null && isSearching()) {
             try {
                 if (page >= maxPages) break;
                 if (page % 10 == 0) {
@@ -47,8 +51,16 @@ public class DeepSearcher {
         Toast.showToast("Глубокий поиск завершен");
     }
 
+    public void stopSearch() {
+        isSearching.set(false);
+    }
+
+    public boolean isSearching() {
+        return isSearching.get();
+    }
+
     @Contract(pure = true)
-    private static @NotNull Optional<VideoCard> containsKeywordsInVideos(@NotNull List<VideoCard> videoCards, @NotNull List<String> keywords) {
+    private @NotNull Optional<VideoCard> containsKeywordsInVideos(@NotNull List<VideoCard> videoCards, @NotNull List<String> keywords) {
         return videoCards.stream()
                 .filter(card -> keywords.stream().allMatch(keyword -> card.getTitle().toLowerCase().contains(keyword)))
                 .findFirst();

@@ -136,7 +136,7 @@ public class VideoPlyer extends StackPane {
             contextMenu.show(magn, x, y);
         });
 
-        this.setOnKeyPressed(event -> {
+        setOnKeyPressed(event -> {
             if (event.isControlDown()) {
                 magnifier.toggle();
             }
@@ -182,6 +182,10 @@ public class VideoPlyer extends StackPane {
                 resetHideTimer();
             }
         });
+
+        requestFocus();
+        setFocused(true);
+        setFocusTraversable(true);
     }
 
     private void setupControlInteractions() {

@@ -85,7 +85,7 @@ public class CategoryManager extends VBox {
 
             PornParser parser = adapter.getParser();
             List<Category> ctgs = parser.getCategories(handler.requestPorn(resourcer.baseUrl()));
-            ctgs.add(new Category("Главная", DefRes.BASE6));
+            ctgs.add(new Category("Главная", DefRes.BASE));
 
             for (Category category : ctgs) {
                 Hyperlink link = new Hyperlink(category.getName());

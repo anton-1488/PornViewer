@@ -66,9 +66,13 @@ public class PBPornHandler {
     }
 
     public String getNextLink(String html) {
-        Document document = Jsoup.parse(html);
-        Elements elements = document.select("div.navigation");
+        try {
+            Document document = Jsoup.parse(html);
+            Elements elements = document.select("div.navigation");
 
-        return elements.stream().findFirst().orElseThrow().attr("abs:href");
+            return elements.stream().findFirst().orElseThrow().attr("abs:href");
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

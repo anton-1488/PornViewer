@@ -1,6 +1,6 @@
 package com.plovdev.pornviewer;
 
-import com.plovdev.pornviewer.httpquering.defimpl.PBPornHandler;
+import com.plovdev.pornviewer.databases.FavoriteVideos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,7 +8,6 @@ public class Test {
     private static final Logger log = LoggerFactory.getLogger(Test.class);
 
     static void main(String[] args) {
-        PBPornHandler handler = new PBPornHandler();
-        System.out.println(handler.requestPorn("https://hot.noodlemagazine.com/"));
+        System.out.println(FavoriteVideos.getAll());
     }
 }

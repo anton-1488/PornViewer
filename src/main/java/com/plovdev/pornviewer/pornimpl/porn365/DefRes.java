@@ -5,16 +5,11 @@ import com.plovdev.pornviewer.httpquering.Resourcer;
 import java.util.List;
 
 public class DefRes implements Resourcer {
-    public static final String BASE1 = "http://my.porno365.bike";
-    public static final String BASE2 = "http://5porno365.net";
-    public static final String BASE3 = "http://7porno365.net";
-    public static final String BASE4 = "http://1porno365.info";
-    public static final String BASE5 = "http://2porno365.info";
-    public static final String BASE6 = "http://9porno365.info";
+    public static final String BASE = "http://8porno365.run";
 
     @Override
     public String baseUrl() {
-        return BASE6;
+        return BASE;
     }
 
     @Override
@@ -39,7 +34,7 @@ public class DefRes implements Resourcer {
 
     @Override
     public List<String> getUrls() {
-        return List.of(BASE1, BASE2, BASE3, BASE4, BASE5, BASE6);
+        return List.of();
     }
 
     @Override
