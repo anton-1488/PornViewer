@@ -1,5 +1,8 @@
 package com.plovdev.pornviewer.core.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -14,6 +17,7 @@ public final class Globals {
     private static final List<Runnable> SHUTDOWN_HOOKS = new CopyOnWriteArrayList<>();
 
     public static final UUID APP_ACCESS_TOKEN = UUID.randomUUID();
+    private static final Logger log = LoggerFactory.getLogger(Globals.class);
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(VIRTUAL_EXECUTOR::close));
@@ -30,5 +34,14 @@ public final class Globals {
 
     public static void removeShutdownHook(Runnable hook) {
         SHUTDOWN_HOOKS.remove(hook);
+    }
+
+    public static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            log.error("Error to sleep: ", e);
+            Thread.currentThread().interrupt();
+        }
     }
 }

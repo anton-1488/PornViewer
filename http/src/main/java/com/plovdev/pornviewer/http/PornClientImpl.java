@@ -12,6 +12,7 @@ import com.plovdev.pornviewer.database.tables.UserSettingsManager;
 import com.plovdev.pornviewer.http.providers.HttpClientRequestProvider;
 import com.plovdev.pornviewer.http.providers.OkHttpRequestProvider;
 import com.plovdev.pornviewer.http.providers.PornRequestProvider;
+import com.plovdev.pornviewer.http.providers.RetryableRequestProvider;
 import com.plovdev.pornviewer.pvvasupport.exceptions.NoSuchRequestProviderException;
 import com.plovdev.pornviewer.pvvasupport.loading.PVVALoaderManager;
 import com.plovdev.pornviewer.pvvasupport.parser.ScriptEngineExecutor;
@@ -64,7 +65,8 @@ public final class PornClientImpl implements PornClient {
     }
 
     public PornClientImpl(@NonNull PVVAHost host) {
-        requestProvider = createProvider(host.optHttpConfig().orElse(DEFAULT_HTTP_CONFIG));
+        HttpConfig config = host.optHttpConfig().orElse(DEFAULT_HTTP_CONFIG);
+        this.requestProvider = new RetryableRequestProvider(createProvider(config), config);
         this.host = host;
         this.resourceConfig = host.resourceConfig();
         this.checker = new PVVAResourceChecker(resourceConfig);

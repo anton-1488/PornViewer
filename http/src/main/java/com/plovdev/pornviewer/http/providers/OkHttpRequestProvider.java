@@ -133,13 +133,6 @@ public class OkHttpRequestProvider implements PornRequestProvider {
         }
     }
 
-    @Override
-    public void setProxy(Proxy proxy) {
-        OkHttpClient.Builder builder = client.newBuilder();
-        builder.proxy(Objects.requireNonNullElse(proxy, Proxy.NO_PROXY));
-        client = builder.build();
-    }
-
     @Contract("_ -> new")
     private @NonNull OkHttpClient configureHttpClient(@NonNull HttpConfig config) {
         return new OkHttpClient.Builder()
@@ -162,6 +155,13 @@ public class OkHttpRequestProvider implements PornRequestProvider {
                     }
                 })
                 .build();
+    }
+
+    @Override
+    public void setProxy(Proxy proxy) {
+        OkHttpClient.Builder builder = client.newBuilder();
+        builder.proxy(Objects.requireNonNullElse(proxy, Proxy.NO_PROXY));
+        client = builder.build();
     }
 
     @Override
