@@ -28,6 +28,7 @@ import static com.plovdev.pornviewer.core.exceptions.NoInternetException.ERR_MES
 
 public class OkHttpRequestProvider implements PornRequestProvider {
     private static final Logger log = LoggerFactory.getLogger(OkHttpRequestProvider.class);
+
     private OkHttpClient client;
     private final HttpConfig httpConfig;
 
