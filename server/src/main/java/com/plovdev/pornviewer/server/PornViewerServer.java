@@ -47,8 +47,8 @@ public class PornViewerServer {
             server.setExecutor(Globals.VIRTUAL_EXECUTOR);
 
             //TODO: create handlers
-            server.createContext("/watch", new WatchHandler());            // /watch/video or /watch/image
-            server.createContext("/export", null);           // /export/video or /export/image
+            server.createContext("/watch", new WatchHandler());
+            server.createContext("/export", null);
 //            server.createContext("/plugins", null);
             server.createContext("/app-info", new AppInfoHandler());
         } catch (Exception e) {

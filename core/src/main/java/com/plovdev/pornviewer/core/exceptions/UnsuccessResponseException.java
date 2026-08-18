@@ -24,7 +24,6 @@ public class UnsuccessResponseException extends RequestProviderException {
 
     public UnsuccessResponseException(String s, int code) {
         super(s);
-        this.response = response;
         this.code = code;
     }
 
