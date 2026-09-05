@@ -5,6 +5,8 @@ import com.plovdev.pornviewer.core.events.ServerChannelEvent;
 import com.plovdev.pornviewer.core.utils.Globals;
 import com.plovdev.pornviewer.server.exceptions.PornViewerServerException;
 import com.plovdev.pornviewer.server.handlers.AppInfoHandler;
+import com.plovdev.pornviewer.server.handlers.ExportHandler;
+import com.plovdev.pornviewer.server.handlers.PluginsHandler;
 import com.plovdev.pornviewer.server.handlers.WatchHandler;
 import com.plovdev.pornviewer.services.files.ConfigReader;
 import com.sun.net.httpserver.HttpServer;
@@ -46,10 +48,9 @@ public class PornViewerServer {
             server = HttpServer.create(new InetSocketAddress(host, port), backlog);
             server.setExecutor(Globals.VIRTUAL_EXECUTOR);
 
-            //TODO: create handlers
             server.createContext("/watch", new WatchHandler());
-            server.createContext("/export", null);
-//            server.createContext("/plugins", null);
+            server.createContext("/export", new ExportHandler());
+            server.createContext("/plugins", new PluginsHandler());
             server.createContext("/app-info", new AppInfoHandler());
         } catch (Exception e) {
             throw new PornViewerServerException("Can't create server: ", e);

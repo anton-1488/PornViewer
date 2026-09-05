@@ -32,6 +32,10 @@ public final class ServerSendsUtils {
         sendMessage(exchange, 200, msg);
     }
 
+    public static void send400(@NonNull HttpExchange exchange, String msg) throws IOException {
+        sendMessage(exchange, 400, new BasicServerResponse(409, msg));
+    }
+
     public static void send401(@NonNull HttpExchange exchange) throws IOException {
         sendMessage(exchange, 401, new BasicServerResponse(401, "Unauthorized"));
     }
